@@ -1,60 +1,130 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
-import { WorkflowBuilderPage } from "../pages/WorkflowBuilderPage";
+import {
+  createBrowserRouter,
+  Navigate,
+} from "react-router-dom";
 
-import { AppLayout } from "../components/layout/AppLayout";
-import { HomePage } from "../pages/HomePage";
-import { PlaceholderPage } from "../pages/PlaceholderPage";
-import { WorkflowRecommendationPage } from "../pages/WorkflowRecommendationPage";
+import {
+  AppLayout,
+} from "../components/layout/AppLayout";
 
-export const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <AppLayout />,
-    children: [
-      {
-        index: true,
-        element: <Navigate to="/home" replace />,
-      },
-      {
-        path: "home",
-        element: <HomePage />,
-      },
-      {
-        path: "new-task",
-        element: <PlaceholderPage />,
-      },
-      {
-        path: "workflows",
-        element: <PlaceholderPage />,
-      },
-      {
-        path: "workflows/recommend",
-        element: <WorkflowRecommendationPage />,
-      },
-      {
-         path: "workflows/:workflowId/builder",
-         element: <WorkflowBuilderPage />,
-      },
-      {
-        path: "runs",
-        element: <PlaceholderPage />,
-      },
-      {
-        path: "runs/:runId",
-        element: <PlaceholderPage />,
-      },
-      {
-        path: "agents",
-        element: <PlaceholderPage />,
-      },
-      {
-        path: "tools",
-        element: <PlaceholderPage />,
-      },
-      {
-        path: "settings",
-        element: <PlaceholderPage />,
-      },
-    ],
-  },
-]);
+import {
+  HomePage,
+} from "../pages/HomePage";
+
+import {
+  PlaceholderPage,
+} from "../pages/PlaceholderPage";
+
+import {
+  WorkflowRecommendationPage,
+} from "../pages/WorkflowRecommendationPage";
+
+import {
+  WorkflowBuilderPage,
+} from "../pages/WorkflowBuilderPage";
+
+import {
+  WorkflowRuntimePage,
+} from "../pages/WorkflowRuntimePage";
+
+export const router =
+  createBrowserRouter([
+    {
+      path: "/",
+
+      element: <AppLayout />,
+
+      children: [
+        {
+          index: true,
+
+          element: (
+            <Navigate
+              to="/home"
+              replace
+            />
+          ),
+        },
+
+        {
+          path: "home",
+
+          element:
+            <HomePage />,
+        },
+
+        {
+          path: "new-task",
+
+          element:
+            <PlaceholderPage />,
+        },
+
+        {
+          path: "workflows",
+
+          element:
+            <PlaceholderPage />,
+        },
+
+        {
+          path:
+            "workflows/recommend",
+
+          element:
+            <WorkflowRecommendationPage />,
+        },
+
+        {
+          path:
+            "workflows/:workflowId/builder",
+
+          element:
+            <WorkflowBuilderPage />,
+        },
+
+        {
+          path: "runs",
+
+          element:
+            <PlaceholderPage />,
+        },
+
+        {
+          path:
+            "runs/:runId",
+
+          element:
+            <WorkflowRuntimePage />,
+        },
+
+        {
+          path: "workspace",
+
+          element:
+            <PlaceholderPage />,
+        },
+
+        {
+          path: "agents",
+
+          element:
+            <PlaceholderPage />,
+        },
+
+        {
+          path: "tools",
+
+          element:
+            <PlaceholderPage />,
+        },
+
+        {
+          path: "settings",
+
+          element:
+            <PlaceholderPage />,
+        },
+      ],
+    },
+  ]);
