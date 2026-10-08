@@ -1,107 +1,195 @@
 import {
   Bot,
-  Clock3,
   GitBranch,
-  GitMerge,
   Hand,
-  Layers3,
   PackageOpen,
   Wrench,
 } from "lucide-react";
 
-const nodeGroups = [
-  {
-    title: "Agent",
-    items: [
-      {
-        id: "agent",
-        label: "Agent",
-        icon: Bot,
-      },
-    ],
-  },
+import type {
+  WorkflowNode,
+  WorkflowNodeType,
+} from "../types";
 
-  {
-    title: "Tools",
-    items: [
-      {
-        id: "tool",
-        label: "Tool",
-        icon: Wrench,
-      },
-    ],
-  },
+interface NodeLibraryProps {
+  onAddNode: (
+    node: WorkflowNode,
+  ) => void;
+}
 
+const nodeItems: {
+  type: WorkflowNodeType;
+  label: string;
+  description: string;
+  icon: typeof Bot;
+}[] = [
   {
-    title: "Flow",
-    items: [
-      {
-        id: "input-output",
-        label: "Input / Output",
-        icon: PackageOpen,
-      },
-      {
-        id: "condition",
-        label: "Condition",
-        icon: GitBranch,
-      },
-      {
-        id: "parallel",
-        label: "Parallel",
-        icon: Layers3,
-      },
-      {
-        id: "merge",
-        label: "Merge",
-        icon: GitMerge,
-      },
-      {
-        id: "delay",
-        label: "Delay",
-        icon: Clock3,
-      },
-      {
-        id: "approval",
-        label: "Human Approval",
-        icon: Hand,
-      },
-    ],
+    type: "agent",
+    label: "Agent",
+    description:
+      "AI Agent 작업 단계를 추가합니다.",
+    icon: Bot,
+  },
+  {
+    type: "tool",
+    label: "Tool",
+    description:
+      "Tool 실행 단계를 추가합니다.",
+    icon: Wrench,
+  },
+  {
+    type: "input",
+    label: "Input",
+    description:
+      "Workflow 입력을 추가합니다.",
+    icon: PackageOpen,
+  },
+  {
+    type: "condition",
+    label: "Condition",
+    description:
+      "조건 분기를 추가합니다.",
+    icon: GitBranch,
+  },
+  {
+    type: "approval",
+    label: "Human Approval",
+    description:
+      "사용자 승인 단계를 추가합니다.",
+    icon: Hand,
+  },
+  {
+    type: "output",
+    label: "Output",
+    description:
+      "Workflow 출력을 추가합니다.",
+    icon: PackageOpen,
   },
 ];
 
-export function NodeLibrary() {
+export function NodeLibrary({
+  onAddNode,
+}: NodeLibraryProps) {
+  const handleAddNode = (
+    type: WorkflowNodeType,
+  ) => {
+    const nodeId =
+      `${type}-${crypto.randomUUID()}`;
+
+    const node: WorkflowNode = {
+      id: nodeId,
+
+      type,
+
+      name: getDefaultNodeName(type),
+
+      description:
+        getDefaultDescription(type),
+
+      position: {
+        x: 300,
+        y: 300,
+      },
+
+      config: {
+        retryCount: 0,
+        timeoutSeconds: 600,
+        requireApproval:
+          type === "approval",
+      },
+    };
+
+    onAddNode(node);
+  };
+
   return (
     <aside className="node-library">
       <div className="node-library__header">
         <h2>Nodes</h2>
+
+        <p>
+          클릭하여 Node를 추가합니다.
+        </p>
       </div>
 
-      {nodeGroups.map((group) => (
-        <section
-          key={group.title}
-          className="node-library__group"
-        >
-          <h3>{group.title}</h3>
+      <div className="node-library__items">
+        {nodeItems.map((item) => {
+          const Icon = item.icon;
 
-          <div className="node-library__items">
-            {group.items.map((item) => {
-              const Icon = item.icon;
+          return (
+            <button
+              key={item.type}
+              type="button"
+              className="node-library__item"
+              onClick={() =>
+                handleAddNode(
+                  item.type,
+                )
+              }
+            >
+              <Icon size={15} />
 
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  className="node-library__item"
-                >
-                  <Icon size={15} />
+              <div>
+                <strong>
+                  {item.label}
+                </strong>
 
-                  <span>{item.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-      ))}
+                <span>
+                  {item.description}
+                </span>
+              </div>
+            </button>
+          );
+        })}
+      </div>
     </aside>
   );
+}
+
+function getDefaultNodeName(
+  type: WorkflowNodeType,
+) {
+  switch (type) {
+    case "input":
+      return "User Input";
+
+    case "agent":
+      return "New Agent";
+
+    case "tool":
+      return "New Tool";
+
+    case "condition":
+      return "Condition";
+
+    case "approval":
+      return "Human Approval";
+
+    case "output":
+      return "Output";
+  }
+}
+
+function getDefaultDescription(
+  type: WorkflowNodeType,
+) {
+  switch (type) {
+    case "input":
+      return "사용자 입력";
+
+    case "agent":
+      return "Agent 작업";
+
+    case "tool":
+      return "Tool 실행";
+
+    case "condition":
+      return "조건에 따라 실행 경로 분기";
+
+    case "approval":
+      return "사용자 승인 대기";
+
+    case "output":
+      return "최종 결과 출력";
+  }
 }

@@ -1,4 +1,5 @@
 import {
+  Check,
   MoreHorizontal,
   Play,
   Save,
@@ -8,25 +9,39 @@ interface BuilderHeaderProps {
   workflowName: string;
 
   isDirty?: boolean;
+
+  onSave: () => void;
+
+  onRun: () => void;
 }
 
 export function BuilderHeader({
   workflowName,
   isDirty = false,
+  onSave,
+  onRun,
 }: BuilderHeaderProps) {
   return (
     <header className="builder-header">
       <div>
         <div className="builder-header__breadcrumb">
-          Workflows / {workflowName}
+          Workflows /{" "}
+          {workflowName}
         </div>
 
         <div className="builder-header__title">
-          <h1>{workflowName}</h1>
+          <h1>
+            {workflowName}
+          </h1>
 
-          {isDirty && (
+          {isDirty ? (
             <span className="builder-unsaved">
               저장되지 않은 변경사항
+            </span>
+          ) : (
+            <span className="builder-saved">
+              <Check size={11} />
+              저장됨
             </span>
           )}
         </div>
@@ -59,6 +74,7 @@ export function BuilderHeader({
         <button
           type="button"
           className="secondary-button"
+          onClick={onSave}
         >
           <Save size={15} />
           저장
@@ -69,12 +85,15 @@ export function BuilderHeader({
           className="builder-icon-button"
           aria-label="더보기"
         >
-          <MoreHorizontal size={18} />
+          <MoreHorizontal
+            size={18}
+          />
         </button>
 
         <button
           type="button"
           className="primary-button"
+          onClick={onRun}
         >
           <Play size={15} />
           실행

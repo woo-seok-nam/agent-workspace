@@ -19,9 +19,17 @@ interface WorkflowBuilderState {
 
   isDirty: boolean;
 
-  initializeWorkflow: (workflow: Workflow) => void;
+  initializeWorkflow: (
+    workflow: Workflow,
+  ) => void;
 
-  selectNode: (nodeId: string | null) => void;
+  selectNode: (
+    nodeId: string | null,
+  ) => void;
+
+  addNode: (
+    node: WorkflowNode,
+  ) => void;
 
   updateNode: (
     nodeId: string,
@@ -36,9 +44,19 @@ interface WorkflowBuilderState {
     },
   ) => void;
 
-  addEdge: (edge: WorkflowEdge) => void;
+  removeNode: (
+    nodeId: string,
+  ) => void;
 
-  removeEdge: (edgeId: string) => void;
+  addEdge: (
+    edge: WorkflowEdge,
+  ) => void;
+
+  removeEdge: (
+    edgeId: string,
+  ) => void;
+
+  markSaved: () => void;
 
   reset: () => void;
 }
@@ -61,8 +79,13 @@ export const useWorkflowBuilderStore =
         workflowId: workflow.id,
         name: workflow.name,
 
-        nodes: structuredClone(workflow.nodes),
-        edges: structuredClone(workflow.edges),
+        nodes: structuredClone(
+          workflow.nodes,
+        ),
+
+        edges: structuredClone(
+          workflow.edges,
+        ),
 
         selectedNodeId: null,
         isDirty: false,
@@ -75,31 +98,74 @@ export const useWorkflowBuilderStore =
       });
     },
 
-    updateNode: (nodeId, updates) => {
+    addNode: (node) => {
       set((state) => ({
-        nodes: state.nodes.map((node) =>
-          node.id === nodeId
-            ? {
-                ...node,
-                ...updates,
-              }
-            : node,
+        nodes: [
+          ...state.nodes,
+          node,
+        ],
+
+        selectedNodeId: node.id,
+
+        isDirty: true,
+      }));
+    },
+
+    updateNode: (
+      nodeId,
+      updates,
+    ) => {
+      set((state) => ({
+        nodes: state.nodes.map(
+          (node) =>
+            node.id === nodeId
+              ? {
+                  ...node,
+                  ...updates,
+                }
+              : node,
         ),
 
         isDirty: true,
       }));
     },
 
-    updateNodePosition: (nodeId, position) => {
+    updateNodePosition: (
+      nodeId,
+      position,
+    ) => {
       set((state) => ({
-        nodes: state.nodes.map((node) =>
-          node.id === nodeId
-            ? {
-                ...node,
-                position,
-              }
-            : node,
+        nodes: state.nodes.map(
+          (node) =>
+            node.id === nodeId
+              ? {
+                  ...node,
+                  position,
+                }
+              : node,
         ),
+
+        isDirty: true,
+      }));
+    },
+
+    removeNode: (nodeId) => {
+      set((state) => ({
+        nodes: state.nodes.filter(
+          (node) =>
+            node.id !== nodeId,
+        ),
+
+        edges: state.edges.filter(
+          (edge) =>
+            edge.source !== nodeId &&
+            edge.target !== nodeId,
+        ),
+
+        selectedNodeId:
+          state.selectedNodeId === nodeId
+            ? null
+            : state.selectedNodeId,
 
         isDirty: true,
       }));
@@ -107,7 +173,10 @@ export const useWorkflowBuilderStore =
 
     addEdge: (edge) => {
       set((state) => ({
-        edges: [...state.edges, edge],
+        edges: [
+          ...state.edges,
+          edge,
+        ],
 
         isDirty: true,
       }));
@@ -116,11 +185,18 @@ export const useWorkflowBuilderStore =
     removeEdge: (edgeId) => {
       set((state) => ({
         edges: state.edges.filter(
-          (edge) => edge.id !== edgeId,
+          (edge) =>
+            edge.id !== edgeId,
         ),
 
         isDirty: true,
       }));
+    },
+
+    markSaved: () => {
+      set({
+        isDirty: false,
+      });
     },
 
     reset: () => {
