@@ -1,11 +1,38 @@
-import { ArrowRight, BarChart3, Code2, FileText, Search } from "lucide-react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  ArrowRight,
+  BarChart3,
+  Code2,
+  FileText,
+  Search,
+} from "lucide-react";
 
 export function GoalInput() {
+  const navigate = useNavigate();
+
+  const [prompt, setPrompt] = useState("");
+
+  const handleSubmit = () => {
+    const trimmedPrompt = prompt.trim();
+
+    if (!trimmedPrompt) {
+      return;
+    }
+
+    navigate("/workflows/recommend", {
+      state: {
+        prompt: trimmedPrompt,
+      },
+    });
+  };
+
   return (
     <section className="goal-input">
       <textarea
         className="goal-input__textarea"
-        placeholder="예) 경쟁사 3곳을 조사해서 비교 보고서를 만들어줘."
+        value={prompt}
+        onChange={(event) => setPrompt(event.target.value)}
       />
 
       <div className="goal-input__footer">
@@ -35,6 +62,7 @@ export function GoalInput() {
           type="button"
           className="goal-input__submit"
           aria-label="작업 시작"
+          onClick={handleSubmit}
         >
           <ArrowRight size={18} />
         </button>

@@ -1,0 +1,282 @@
+.recommendation-page {
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.recommendation-header {
+  margin-bottom: 24px;
+}
+
+.recommendation-header > span {
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.recommendation-header h1 {
+  margin: 6px 0 0;
+
+  font-size: 28px;
+  letter-spacing: -0.6px;
+}
+
+.recommendation-header p {
+  margin: 8px 0 0;
+
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+.recommendation-prompt {
+  margin-bottom: 16px;
+  padding: 14px 16px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+
+  background: #f8fafc;
+}
+
+.recommendation-prompt span {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.recommendation-prompt p {
+  margin: 5px 0 0;
+
+  font-size: 14px;
+}
+
+.recommended-workflow-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+
+  padding: 20px;
+
+  border: 1px solid #bdd1ff;
+  border-radius: 14px;
+
+  background: var(--color-surface);
+}
+
+.recommended-workflow-card__label {
+  color: var(--color-primary);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.recommended-workflow-card h2 {
+  margin: 6px 0 0;
+
+  font-size: 21px;
+}
+
+.recommended-workflow-card p {
+  max-width: 620px;
+
+  margin: 8px 0 14px;
+
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.recommended-workflow-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.recommended-workflow-card__meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  padding: 5px 8px;
+
+  border-radius: 7px;
+
+  background: #f3f6fa;
+
+  color: var(--color-text-secondary);
+  font-size: 11px;
+}
+
+.recommended-workflow-card__actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+.primary-button,
+.secondary-button {
+  height: 36px;
+
+  padding: 0 14px;
+
+  border-radius: 8px;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.primary-button {
+  border: 1px solid var(--color-primary);
+
+  background: var(--color-primary);
+  color: white;
+}
+
+.secondary-button {
+  border: 1px solid var(--color-border);
+
+  background: white;
+  color: var(--color-text-primary);
+}
+
+.recommendation-steps {
+  overflow: hidden;
+
+  margin-top: 20px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+
+  background: white;
+}
+
+.recommendation-step {
+  display: grid;
+
+  grid-template-columns:
+    34px minmax(0, 1fr) auto;
+
+  gap: 12px;
+
+  align-items: center;
+
+  padding: 15px 16px;
+
+  border-bottom: 1px solid #eef1f5;
+}
+
+.recommendation-step:last-child {
+  border-bottom: none;
+}
+
+.recommendation-step__number {
+  display: grid;
+  place-items: center;
+
+  width: 28px;
+  height: 28px;
+
+  border-radius: 50%;
+
+  background: var(--color-primary);
+  color: white;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.recommendation-step__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.recommendation-step__title h3 {
+  margin: 0;
+
+  font-size: 13px;
+}
+
+.recommendation-step__main p {
+  margin: 4px 0 0;
+
+  color: var(--color-text-secondary);
+  font-size: 11px;
+}
+
+.recommendation-step__meta {
+  display: flex;
+  gap: 6px;
+}
+
+.recommendation-step__meta span,
+.approval-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  padding: 4px 7px;
+
+  border-radius: 6px;
+
+  background: #f4f6f8;
+
+  color: var(--color-text-secondary);
+  font-size: 10px;
+}
+
+.approval-label {
+  background: #fff7e6;
+  color: #b45309;
+}
+
+.alternative-workflows {
+  margin-top: 28px;
+}
+
+.alternative-workflows > h2 {
+  margin: 0 0 12px;
+
+  font-size: 16px;
+}
+
+.alternative-workflows__grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 10px;
+}
+
+.alternative-workflow-card {
+  padding: 14px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+
+  background: white;
+}
+
+.alternative-workflow-card h3 {
+  margin: 0;
+
+  font-size: 13px;
+}
+
+.alternative-workflow-card p {
+  min-height: 38px;
+
+  margin: 6px 0 10px;
+
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.alternative-workflow-card span {
+  color: var(--color-text-secondary);
+  font-size: 10px;
+}
