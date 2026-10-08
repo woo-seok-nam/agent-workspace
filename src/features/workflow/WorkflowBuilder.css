@@ -34,11 +34,29 @@
   font-size: 10px;
 }
 
+.builder-header__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .builder-header h1 {
   margin: 7px 0 12px;
 
   font-size: 18px;
   line-height: 1.2;
+}
+
+.builder-unsaved {
+  padding: 4px 7px;
+
+  border-radius: 999px;
+
+  background: #fff7e6;
+  color: #b45309;
+
+  font-size: 9px;
+  font-weight: 600;
 }
 
 .builder-header__tabs {
@@ -74,6 +92,7 @@
 
 .builder-tab--active::after {
   position: absolute;
+
   right: 0;
   bottom: -1px;
   left: 0;
@@ -119,6 +138,7 @@
 
 .builder-icon-button:hover {
   background: #f8fafc;
+
   color: var(--color-text-primary);
 }
 
@@ -130,7 +150,7 @@
   display: grid;
 
   grid-template-columns:
-    180px minmax(0, 1fr) 270px;
+    180px minmax(0, 1fr) 280px;
 
   flex: 1;
 
@@ -174,7 +194,6 @@
 .node-library__items {
   display: flex;
   flex-direction: column;
-
   gap: 5px;
 }
 
@@ -231,17 +250,13 @@
   background: #fbfcff;
 }
 
-/*
-  React Flow 자체 wrapper가 부모 높이를
-  정확히 사용하도록 보정
-*/
 .workflow-canvas .react-flow {
   width: 100%;
   height: 100%;
 }
 
-/* React Flow 기본 노드 */
-.workflow-canvas .react-flow__node-default {
+.workflow-canvas
+  .react-flow__node-default {
   min-width: 160px;
 
   padding: 10px 14px;
@@ -254,94 +269,98 @@
   color: var(--color-text-primary);
 
   box-shadow:
-    0 2px 8px rgba(15, 23, 42, 0.05);
+    0 2px 8px
+    rgba(15, 23, 42, 0.05);
 
   font-size: 11px;
   font-weight: 600;
 }
 
-/* 선택된 Node */
-.workflow-canvas .react-flow__node.selected {
+.workflow-canvas
+  .react-flow__node.selected {
   border-color: var(--color-primary);
 
   box-shadow:
-    0 0 0 2px rgba(37, 99, 235, 0.12),
-    0 4px 12px rgba(15, 23, 42, 0.08);
+    0 0 0 2px
+      rgba(37, 99, 235, 0.12),
+    0 4px 12px
+      rgba(15, 23, 42, 0.08);
 }
 
-/* Edge */
-.workflow-canvas .react-flow__edge-path {
+.workflow-canvas
+  .react-flow__edge-path {
   stroke: #b6c1cf;
   stroke-width: 1.5;
 }
 
-/* 선택된 Edge */
-.workflow-canvas .react-flow__edge.selected .react-flow__edge-path {
+.workflow-canvas
+  .react-flow__edge.selected
+  .react-flow__edge-path {
   stroke: var(--color-primary);
 }
 
-/* Handle */
-.workflow-canvas .react-flow__handle {
-  width: 7px;
-  height: 7px;
+.workflow-canvas
+  .react-flow__handle {
+  width: 8px;
+  height: 8px;
 
   border: 1px solid #ffffff;
 
   background: #94a3b8;
 }
 
-/* Controls */
-.workflow-canvas .react-flow__controls {
+.workflow-canvas
+  .react-flow__controls {
   overflow: hidden;
 
-  border: 1px solid var(--color-border);
+  border: 1px solid
+    var(--color-border);
+
   border-radius: 8px;
 
   box-shadow:
-    0 2px 8px rgba(15, 23, 42, 0.06);
+    0 2px 8px
+      rgba(15, 23, 42, 0.06);
 }
 
-.workflow-canvas .react-flow__controls-button {
+.workflow-canvas
+  .react-flow__controls-button {
   width: 30px;
   height: 30px;
 
-  border-bottom: 1px solid var(--color-border);
+  border-bottom:
+    1px solid var(--color-border);
 
   background: #ffffff;
 
   color: #475569;
 }
 
-.workflow-canvas .react-flow__controls-button:last-child {
+.workflow-canvas
+  .react-flow__controls-button:last-child {
   border-bottom: none;
 }
 
-.workflow-canvas .react-flow__controls-button:hover {
+.workflow-canvas
+  .react-flow__controls-button:hover {
   background: #f8fafc;
 }
 
-/* MiniMap */
-.workflow-canvas .react-flow__minimap {
+.workflow-canvas
+  .react-flow__minimap {
   overflow: hidden;
 
-  border: 1px solid var(--color-border);
+  border:
+    1px solid var(--color-border);
+
   border-radius: 8px;
 
-  background: rgba(255, 255, 255, 0.95);
+  background:
+    rgba(255, 255, 255, 0.95);
 
   box-shadow:
-    0 2px 8px rgba(15, 23, 42, 0.05);
-}
-
-/* Attribution */
-.workflow-canvas .react-flow__attribution {
-  padding: 2px 5px;
-
-  border-radius: 4px;
-
-  background: rgba(255, 255, 255, 0.7);
-
-  font-size: 8px;
+    0 2px 8px
+      rgba(15, 23, 42, 0.05);
 }
 
 /* =========================
@@ -351,7 +370,8 @@
 .step-settings {
   overflow-y: auto;
 
-  border-left: 1px solid var(--color-border);
+  border-left:
+    1px solid var(--color-border);
 
   background: #ffffff;
 }
@@ -361,11 +381,12 @@
   align-items: center;
   justify-content: space-between;
 
-  height: 48px;
+  min-height: 48px;
 
   padding: 0 14px;
 
-  border-bottom: 1px solid var(--color-border);
+  border-bottom:
+    1px solid var(--color-border);
 }
 
 .step-settings__header h2 {
@@ -374,20 +395,18 @@
   font-size: 13px;
 }
 
-.step-settings__close {
-  border: none;
+.step-settings__node-id {
+  max-width: 120px;
 
-  background: transparent;
+  overflow: hidden;
 
-  color: var(--color-text-secondary);
+  color:
+    var(--color-text-secondary);
 
-  font-size: 20px;
+  font-size: 8px;
 
-  cursor: pointer;
-}
-
-.step-settings__close:hover {
-  color: var(--color-text-primary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .step-settings__tabs {
@@ -395,7 +414,8 @@
 
   padding: 0 12px;
 
-  border-bottom: 1px solid var(--color-border);
+  border-bottom:
+    1px solid var(--color-border);
 }
 
 .step-settings__tab {
@@ -407,15 +427,12 @@
 
   background: transparent;
 
-  color: var(--color-text-secondary);
+  color:
+    var(--color-text-secondary);
 
   font-size: 9px;
 
   cursor: pointer;
-}
-
-.step-settings__tab:hover {
-  color: var(--color-text-primary);
 }
 
 .step-settings__tab--active {
@@ -445,10 +462,12 @@
 .step-settings__empty {
   padding: 28px 16px;
 
-  color: var(--color-text-secondary);
+  color:
+    var(--color-text-secondary);
 
   font-size: 11px;
   line-height: 1.6;
+
   text-align: center;
 }
 
@@ -477,12 +496,15 @@
 .settings-field textarea {
   width: 100%;
 
-  border: 1px solid var(--color-border);
+  border:
+    1px solid var(--color-border);
+
   border-radius: 7px;
 
   background: #ffffff;
 
-  color: var(--color-text-primary);
+  color:
+    var(--color-text-primary);
 
   font-size: 10px;
 
@@ -502,8 +524,6 @@
   padding: 8px 9px;
 
   resize: vertical;
-
-  line-height: 1.5;
 }
 
 .settings-field input:focus,
@@ -512,62 +532,62 @@
   border-color: #9bbcff;
 
   box-shadow:
-    0 0 0 2px rgba(37, 99, 235, 0.08);
+    0 0 0 2px
+      rgba(37, 99, 235, 0.08);
 }
 
 .settings-field input[readonly] {
   background: #f8fafc;
 
-  color: var(--color-text-secondary);
+  color:
+    var(--color-text-secondary);
 }
 
 /* =========================
-   Tool Chips
+   Tool Options
 ========================= */
 
-.settings-tool-list {
+.settings-tool-options {
   display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
+  flex-direction: column;
+
+  gap: 6px;
 }
 
-.settings-tool-list span {
-  padding: 4px 6px;
+.settings-tool-option {
+  display: flex;
+  align-items: center;
+  gap: 7px;
 
-  border-radius: 5px;
-
-  background: #f1f5f9;
-
-  color: var(--color-text-secondary);
-
-  font-size: 9px;
-}
-
-.settings-add-tool {
-  align-self: flex-start;
+  min-height: 30px;
 
   padding: 5px 7px;
 
-  border: 1px solid var(--color-border);
+  border:
+    1px solid #edf0f4;
+
   border-radius: 6px;
 
-  background: #ffffff;
-
-  color: var(--color-text-secondary);
+  color: #475569;
 
   font-size: 9px;
 
   cursor: pointer;
 }
 
-.settings-add-tool:hover {
+.settings-tool-option:hover {
   background: #f8fafc;
+}
 
-  color: var(--color-text-primary);
+.settings-tool-option input {
+  width: 13px;
+  height: 13px;
+
+  margin: 0;
 }
 
 /* =========================
-   Toggle / Settings Row
+   Settings Row
 ========================= */
 
 .settings-row {
@@ -575,24 +595,47 @@
   align-items: center;
   justify-content: space-between;
 
-  min-height: 36px;
+  gap: 12px;
+
+  min-height: 50px;
 
   margin-bottom: 8px;
 
-  color: #374151;
+  padding: 8px 0;
+
+  border-top:
+    1px solid #f0f2f5;
 
   font-size: 10px;
 }
 
-.settings-row input[type="checkbox"] {
-  width: 14px;
-  height: 14px;
+.settings-row strong {
+  display: block;
+
+  font-size: 10px;
+}
+
+.settings-row p {
+  margin: 3px 0 0;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 8px;
+}
+
+.settings-row
+  input[type="checkbox"] {
+  flex-shrink: 0;
+
+  width: 15px;
+  height: 15px;
 
   cursor: pointer;
 }
 
 /* =========================
-   Shared Builder Buttons
+   Buttons
 ========================= */
 
 .primary-button,
@@ -610,23 +653,28 @@
 }
 
 .primary-button {
-  border: 1px solid var(--color-primary);
+  border:
+    1px solid var(--color-primary);
 
-  background: var(--color-primary);
+  background:
+    var(--color-primary);
 
   color: #ffffff;
 }
 
 .primary-button:hover {
-  background: var(--color-primary-hover);
+  background:
+    var(--color-primary-hover);
 }
 
 .secondary-button {
-  border: 1px solid var(--color-border);
+  border:
+    1px solid var(--color-border);
 
   background: #ffffff;
 
-  color: var(--color-text-primary);
+  color:
+    var(--color-text-primary);
 }
 
 .secondary-button:hover {
@@ -634,13 +682,13 @@
 }
 
 /* =========================
-   Responsive Protection
+   Responsive
 ========================= */
 
 @media (max-width: 1100px) {
   .builder-layout {
     grid-template-columns:
-      160px minmax(0, 1fr) 240px;
+      160px minmax(0, 1fr) 250px;
   }
 }
 

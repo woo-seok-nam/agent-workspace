@@ -1,11 +1,18 @@
-import { MoreHorizontal, Play, Save } from "lucide-react";
+import {
+  MoreHorizontal,
+  Play,
+  Save,
+} from "lucide-react";
 
 interface BuilderHeaderProps {
   workflowName: string;
+
+  isDirty?: boolean;
 }
 
 export function BuilderHeader({
   workflowName,
+  isDirty = false,
 }: BuilderHeaderProps) {
   return (
     <header className="builder-header">
@@ -14,7 +21,15 @@ export function BuilderHeader({
           Workflows / {workflowName}
         </div>
 
-        <h1>{workflowName}</h1>
+        <div className="builder-header__title">
+          <h1>{workflowName}</h1>
+
+          {isDirty && (
+            <span className="builder-unsaved">
+              저장되지 않은 변경사항
+            </span>
+          )}
+        </div>
 
         <div className="builder-header__tabs">
           <button
@@ -24,18 +39,27 @@ export function BuilderHeader({
             Builder
           </button>
 
-          <button type="button" className="builder-tab">
+          <button
+            type="button"
+            className="builder-tab"
+          >
             Settings
           </button>
 
-          <button type="button" className="builder-tab">
+          <button
+            type="button"
+            className="builder-tab"
+          >
             Versions
           </button>
         </div>
       </div>
 
       <div className="builder-header__actions">
-        <button type="button" className="secondary-button">
+        <button
+          type="button"
+          className="secondary-button"
+        >
           <Save size={15} />
           저장
         </button>
@@ -48,7 +72,10 @@ export function BuilderHeader({
           <MoreHorizontal size={18} />
         </button>
 
-        <button type="button" className="primary-button">
+        <button
+          type="button"
+          className="primary-button"
+        >
           <Play size={15} />
           실행
         </button>
