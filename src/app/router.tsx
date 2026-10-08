@@ -30,6 +30,10 @@ export const router = createBrowserRouter([
         element: <PlaceholderPage />,
       },
       {
+        path: "runs/:runId",
+        element: <PlaceholderPage />,
+      },
+      {
         path: "agents",
         element: <PlaceholderPage />,
       },
