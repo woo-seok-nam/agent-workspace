@@ -1,4 +1,5 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
+import { WorkflowBuilderPage } from "../pages/WorkflowBuilderPage";
 
 import { AppLayout } from "../components/layout/AppLayout";
 import { HomePage } from "../pages/HomePage";
@@ -31,8 +32,8 @@ export const router = createBrowserRouter([
         element: <WorkflowRecommendationPage />,
       },
       {
-        path: "workflows/:workflowId/builder",
-        element: <PlaceholderPage />,
+         path: "workflows/:workflowId/builder",
+         element: <WorkflowBuilderPage />,
       },
       {
         path: "runs",
