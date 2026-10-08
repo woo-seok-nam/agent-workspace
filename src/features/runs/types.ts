@@ -57,6 +57,8 @@ export interface WorkflowRun {
 
   workflowId: string;
 
+  name: string;
+
   status: WorkflowRunStatus;
 
   startedAt?: string;
