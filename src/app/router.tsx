@@ -31,12 +31,17 @@ import {
   WorkspaceResultPage,
 } from "../pages/WorkspaceResultPage";
 
+import {
+  AgentManagementPage,
+} from "../pages/AgentManagementPage";
+
 export const router =
   createBrowserRouter([
     {
       path: "/",
 
-      element: <AppLayout />,
+      element:
+        <AppLayout />,
 
       children: [
         {
@@ -121,7 +126,7 @@ export const router =
           path: "agents",
 
           element:
-            <PlaceholderPage />,
+            <AgentManagementPage />,
         },
 
         {
