@@ -11,11 +11,11 @@ import type {
   UpdateAgentInput,
 } from "./agent.types.js";
 
-export function getAgents() {
+export async function getAgents() {
   return findAllAgents();
 }
 
-export function getAgent(
+export async function getAgent(
   agentId: string,
 ) {
   return findAgentById(
@@ -23,7 +23,7 @@ export function getAgent(
   );
 }
 
-export function addAgent(
+export async function addAgent(
   input: CreateAgentInput,
 ) {
   if (
@@ -53,7 +53,7 @@ export function addAgent(
   });
 }
 
-export function editAgent(
+export async function editAgent(
   agentId: string,
   input: UpdateAgentInput,
 ) {
@@ -80,7 +80,7 @@ export function editAgent(
   );
 }
 
-export function removeAgent(
+export async function removeAgent(
   agentId: string,
 ) {
   return deleteAgent(

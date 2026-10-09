@@ -18,72 +18,90 @@ import type {
 } from "./agent.types.js";
 
 function getParamValue(
-  value: string | string[] | undefined,
+  value:
+    | string
+    | string[]
+    | undefined,
 ): string | undefined {
-  if (Array.isArray(value)) {
+  if (
+    Array.isArray(value)
+  ) {
     return value[0];
   }
 
   return value;
 }
 
-export function listAgents(
+export async function listAgents(
   _request: Request,
   response: Response,
+  next: NextFunction,
 ) {
-  response.status(200).json({
-    data: getAgents(),
-  });
+  try {
+    const agents =
+      await getAgents();
+
+    response.status(200).json({
+      data: agents,
+    });
+  } catch (error) {
+    next(error);
+  }
 }
 
-export function readAgent(
+export async function readAgent(
   request: Request,
   response: Response,
+  next: NextFunction,
 ) {
-  const agentId =
-    getParamValue(
-      request.params.agentId,
-    );
+  try {
+    const agentId =
+      getParamValue(
+        request.params.agentId,
+      );
 
-  if (!agentId) {
-    response.status(400).json({
-      error: {
-        code:
-          "INVALID_AGENT_ID",
+    if (!agentId) {
+      response.status(400).json({
+        error: {
+          code:
+            "INVALID_AGENT_ID",
 
-        message:
-          "Agent ID가 필요합니다.",
-      },
+          message:
+            "Agent ID가 필요합니다.",
+        },
+      });
+
+      return;
+    }
+
+    const agent =
+      await getAgent(
+        agentId,
+      );
+
+    if (!agent) {
+      response.status(404).json({
+        error: {
+          code:
+            "AGENT_NOT_FOUND",
+
+          message:
+            "Agent를 찾을 수 없습니다.",
+        },
+      });
+
+      return;
+    }
+
+    response.status(200).json({
+      data: agent,
     });
-
-    return;
+  } catch (error) {
+    next(error);
   }
-
-  const agent =
-    getAgent(
-      agentId,
-    );
-
-  if (!agent) {
-    response.status(404).json({
-      error: {
-        code:
-          "AGENT_NOT_FOUND",
-
-        message:
-          "Agent를 찾을 수 없습니다.",
-      },
-    });
-
-    return;
-  }
-
-  response.status(200).json({
-    data: agent,
-  });
 }
 
-export function createAgentController(
+export async function createAgentController(
   request: Request<
     Record<string, never>,
     unknown,
@@ -94,7 +112,7 @@ export function createAgentController(
 ) {
   try {
     const agent =
-      addAgent(
+      await addAgent(
         request.body,
       );
 
@@ -106,7 +124,7 @@ export function createAgentController(
   }
 }
 
-export function updateAgentController(
+export async function updateAgentController(
   request: Request<
     {
       agentId: string;
@@ -138,7 +156,7 @@ export function updateAgentController(
     }
 
     const agent =
-      editAgent(
+      await editAgent(
         agentId,
         request.body,
       );
@@ -165,49 +183,54 @@ export function updateAgentController(
   }
 }
 
-export function deleteAgentController(
+export async function deleteAgentController(
   request: Request,
   response: Response,
+  next: NextFunction,
 ) {
-  const agentId =
-    getParamValue(
-      request.params.agentId,
-    );
+  try {
+    const agentId =
+      getParamValue(
+        request.params.agentId,
+      );
 
-  if (!agentId) {
-    response.status(400).json({
-      error: {
-        code:
-          "INVALID_AGENT_ID",
+    if (!agentId) {
+      response.status(400).json({
+        error: {
+          code:
+            "INVALID_AGENT_ID",
 
-        message:
-          "Agent ID가 필요합니다.",
-      },
-    });
+          message:
+            "Agent ID가 필요합니다.",
+        },
+      });
 
-    return;
+      return;
+    }
+
+    const deleted =
+      await removeAgent(
+        agentId,
+      );
+
+    if (!deleted) {
+      response.status(404).json({
+        error: {
+          code:
+            "AGENT_NOT_FOUND",
+
+          message:
+            "Agent를 찾을 수 없습니다.",
+        },
+      });
+
+      return;
+    }
+
+    response
+      .status(204)
+      .send();
+  } catch (error) {
+    next(error);
   }
-
-  const deleted =
-    removeAgent(
-      agentId,
-    );
-
-  if (!deleted) {
-    response.status(404).json({
-      error: {
-        code:
-          "AGENT_NOT_FOUND",
-
-        message:
-          "Agent를 찾을 수 없습니다.",
-      },
-    });
-
-    return;
-  }
-
-  response
-    .status(204)
-    .send();
 }

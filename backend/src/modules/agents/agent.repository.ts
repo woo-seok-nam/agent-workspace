@@ -1,240 +1,213 @@
+import {
+  prisma,
+} from "../../lib/prisma.js";
+
 import type {
   Agent,
   CreateAgentInput,
   UpdateAgentInput,
 } from "./agent.types.js";
 
-const initialAgents: Agent[] = [
-  {
-    id: "planner-agent",
-
-    name: "Planner Agent",
-
-    description:
-      "사용자 요청을 분석하고 Workflow 실행 계획을 수립합니다.",
-
-    modelId: "gpt-4o",
-
-    toolIds: [],
-
-    enabled: true,
-
-    createdAt:
-      new Date().toISOString(),
-
-    updatedAt:
-      new Date().toISOString(),
+function mapAgent(
+  agent: {
+    id: string;
+    name: string;
+    description: string | null;
+    modelId: string;
+    toolIds: string;
+    enabled: boolean;
+    createdAt: Date;
+    updatedAt: Date;
   },
+): Agent {
+  let parsedToolIds: string[] = [];
 
-  {
-    id: "research-agent",
+  try {
+    const parsed =
+      JSON.parse(
+        agent.toolIds,
+      );
 
-    name: "Research Agent",
+    if (
+      Array.isArray(parsed)
+    ) {
+      parsedToolIds =
+        parsed.filter(
+          (
+            value,
+          ): value is string =>
+            typeof value === "string",
+        );
+    }
+  } catch {
+    parsedToolIds = [];
+  }
+
+  return {
+    id:
+      agent.id,
+
+    name:
+      agent.name,
 
     description:
-      "웹과 문서를 조사하여 필요한 정보를 수집합니다.",
+      agent.description ??
+      undefined,
 
     modelId:
-      "claude-3-5-sonnet",
+      agent.modelId,
 
-    toolIds: [
-      "web-search",
-      "browser",
-    ],
+    toolIds:
+      parsedToolIds,
 
-    enabled: true,
-
-    createdAt:
-      new Date().toISOString(),
-
-    updatedAt:
-      new Date().toISOString(),
-  },
-
-  {
-    id: "analysis-agent",
-
-    name: "Analysis Agent",
-
-    description:
-      "수집된 정보를 분석하고 핵심 인사이트를 추출합니다.",
-
-    modelId:
-      "gemini-2-5-pro",
-
-    toolIds: [],
-
-    enabled: true,
+    enabled:
+      agent.enabled,
 
     createdAt:
-      new Date().toISOString(),
+      agent.createdAt.toISOString(),
 
     updatedAt:
-      new Date().toISOString(),
-  },
+      agent.updatedAt.toISOString(),
+  };
+}
 
-  {
-    id: "writer-agent",
+export async function findAllAgents(): Promise<
+  Agent[]
+> {
+  const agents =
+    await prisma.agent.findMany({
+      orderBy: {
+        createdAt: "asc",
+      },
+    });
 
-    name: "Writer Agent",
-
-    description:
-      "분석 결과를 문서 형태로 작성합니다.",
-
-    modelId: "gpt-4o",
-
-    toolIds: [
-      "file-tool",
-    ],
-
-    enabled: true,
-
-    createdAt:
-      new Date().toISOString(),
-
-    updatedAt:
-      new Date().toISOString(),
-  },
-
-  {
-    id: "reviewer-agent",
-
-    name: "Reviewer Agent",
-
-    description:
-      "생성된 결과를 검토하고 개선점을 확인합니다.",
-
-    modelId: "gpt-4o",
-
-    toolIds: [],
-
-    enabled: true,
-
-    createdAt:
-      new Date().toISOString(),
-
-    updatedAt:
-      new Date().toISOString(),
-  },
-];
-
-let agents =
-  structuredClone(
-    initialAgents,
-  );
-
-export function findAllAgents(): Agent[] {
-  return structuredClone(
-    agents,
+  return agents.map(
+    mapAgent,
   );
 }
 
-export function findAgentById(
+export async function findAgentById(
   agentId: string,
-): Agent | undefined {
+): Promise<
+  Agent | undefined
+> {
   const agent =
-    agents.find(
-      (item) =>
-        item.id === agentId,
-    );
+    await prisma.agent.findUnique({
+      where: {
+        id: agentId,
+      },
+    });
 
   return agent
-    ? structuredClone(
-        agent,
-      )
+    ? mapAgent(agent)
     : undefined;
 }
 
-export function createAgent(
+export async function createAgent(
   input: CreateAgentInput,
-): Agent {
-  const now =
-    new Date().toISOString();
+): Promise<Agent> {
+  const agent =
+    await prisma.agent.create({
+      data: {
+        id:
+          `agent-${crypto.randomUUID()}`,
 
-  const agent: Agent = {
-    id:
-      `agent-${crypto.randomUUID()}`,
+        name:
+          input.name,
 
-    name:
-      input.name,
+        description:
+          input.description,
 
-    description:
-      input.description,
+        modelId:
+          input.modelId,
 
-    modelId:
-      input.modelId,
+        toolIds:
+          JSON.stringify(
+            input.toolIds ??
+              [],
+          ),
 
-    toolIds:
-      input.toolIds ?? [],
+        enabled:
+          input.enabled ??
+          true,
+      },
+    });
 
-    enabled:
-      input.enabled ?? true,
-
-    createdAt: now,
-
-    updatedAt: now,
-  };
-
-  agents.push(
-    agent,
-  );
-
-  return structuredClone(
+  return mapAgent(
     agent,
   );
 }
 
-export function updateAgent(
+export async function updateAgent(
   agentId: string,
   input: UpdateAgentInput,
-): Agent | undefined {
-  const index =
-    agents.findIndex(
-      (agent) =>
-        agent.id === agentId,
-    );
+): Promise<
+  Agent | undefined
+> {
+  const existing =
+    await prisma.agent.findUnique({
+      where: {
+        id: agentId,
+      },
+    });
 
-  if (index < 0) {
+  if (!existing) {
     return undefined;
   }
 
-  const current =
-    agents[index];
+  const agent =
+    await prisma.agent.update({
+      where: {
+        id: agentId,
+      },
 
-  if (!current) {
-    return undefined;
-  }
+      data: {
+        name:
+          input.name,
 
-  const updated: Agent = {
-    ...current,
-    ...input,
+        description:
+          input.description,
 
-    updatedAt:
-      new Date().toISOString(),
-  };
+        modelId:
+          input.modelId,
 
-  agents[index] =
-    updated;
+        toolIds:
+          input.toolIds !==
+          undefined
+            ? JSON.stringify(
+                input.toolIds,
+              )
+            : undefined,
 
-  return structuredClone(
-    updated,
+        enabled:
+          input.enabled,
+      },
+    });
+
+  return mapAgent(
+    agent,
   );
 }
 
-export function deleteAgent(
+export async function deleteAgent(
   agentId: string,
-): boolean {
-  const originalLength =
-    agents.length;
+): Promise<boolean> {
+  const existing =
+    await prisma.agent.findUnique({
+      where: {
+        id: agentId,
+      },
+    });
 
-  agents =
-    agents.filter(
-      (agent) =>
-        agent.id !== agentId,
-    );
+  if (!existing) {
+    return false;
+  }
 
-  return (
-    agents.length <
-    originalLength
-  );
+  await prisma.agent.delete({
+    where: {
+      id: agentId,
+    },
+  });
+
+  return true;
 }
