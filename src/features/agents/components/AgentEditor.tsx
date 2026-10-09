@@ -9,12 +9,9 @@ import type {
 } from "../types";
 
 import {
-  mockModels,
-} from "../../../mocks/models";
-
-import {
-  mockTools,
-} from "../../../mocks/tools";
+  getModels,
+  getTools,
+} from "../../../data/catalogRepository";
 
 interface AgentEditorProps {
   agent?: Agent;
@@ -56,9 +53,30 @@ export function AgentEditor({
     );
   }
 
+  const models =
+    getModels();
+
+  const tools =
+    getTools();
+
   const handleToolToggle = (
     toolId: string,
   ) => {
+    const tool =
+      tools.find(
+        (item) =>
+          item.id === toolId,
+      );
+
+    if (
+      !tool?.enabled &&
+      !agent.toolIds.includes(
+        toolId,
+      )
+    ) {
+      return;
+    }
+
     const hasTool =
       agent.toolIds.includes(
         toolId,
@@ -177,7 +195,6 @@ export function AgentEditor({
                   agent.description ??
                   ""
                 }
-                placeholder="이 Agent가 어떤 역할을 수행하는지 설명하세요."
                 onChange={(
                   event,
                 ) => {
@@ -220,7 +237,7 @@ export function AgentEditor({
                   });
                 }}
               >
-                {mockModels.map(
+                {models.map(
                   (model) => (
                     <option
                       key={
@@ -228,6 +245,9 @@ export function AgentEditor({
                       }
                       value={
                         model.id
+                      }
+                      disabled={
+                        !model.enabled
                       }
                     >
                       {
@@ -299,7 +319,7 @@ export function AgentEditor({
           </div>
 
           <div className="agent-tool-grid">
-            {mockTools.map(
+            {tools.map(
               (tool) => {
                 const checked =
                   agent.toolIds.includes(
@@ -316,6 +336,9 @@ export function AgentEditor({
                       checked
                         ? "agent-tool-card--selected"
                         : "",
+                      !tool.enabled
+                        ? "agent-tool-card--disabled"
+                        : "",
                     ]
                       .filter(Boolean)
                       .join(" ")}
@@ -324,6 +347,10 @@ export function AgentEditor({
                       type="checkbox"
                       checked={
                         checked
+                      }
+                      disabled={
+                        !tool.enabled &&
+                        !checked
                       }
                       onChange={() =>
                         handleToolToggle(
@@ -338,8 +365,10 @@ export function AgentEditor({
                       </strong>
 
                       <span>
-                        {tool.description ??
-                          tool.type}
+                        {tool.enabled
+                          ? tool.description ??
+                            tool.type
+                          : "비활성화된 Tool"}
                       </span>
                     </div>
                   </label>

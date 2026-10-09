@@ -7,6 +7,10 @@ import {
 } from "lucide-react";
 
 import type {
+  ComponentType,
+} from "react";
+
+import type {
   StepRun,
 } from "../types";
 
@@ -15,16 +19,10 @@ import type {
 } from "../../workflow/types";
 
 import {
-  mockAgents,
-} from "../../../mocks/agents";
-
-import {
-  mockModels,
-} from "../../../mocks/models";
-
-import {
-  mockTools,
-} from "../../../mocks/tools";
+  getAgentById,
+  getModelById,
+  getToolById,
+} from "../../../data/catalogRepository";
 
 interface StepExecutionPanelProps {
   node?: WorkflowNode;
@@ -47,35 +45,30 @@ export function StepExecutionPanel({
   }
 
   const agent =
-    node.agentId
-      ? mockAgents.find(
-          (item) =>
-            item.id === node.agentId,
-        )
-      : undefined;
+    getAgentById(
+      node.agentId,
+    );
 
   const model =
-    node.modelId
-      ? mockModels.find(
-          (item) =>
-            item.id === node.modelId,
-        )
-      : undefined;
+    getModelById(
+      node.modelId,
+    );
 
   const tools =
     (node.toolIds ?? [])
-      .map((toolId) =>
-        mockTools.find(
-          (tool) =>
-            tool.id === toolId,
-        ),
+      .map(
+        (toolId) =>
+          getToolById(
+            toolId,
+          ),
       )
       .filter(
         (
           tool,
         ): tool is NonNullable<
           typeof tool
-        > => Boolean(tool),
+        > =>
+          Boolean(tool),
       );
 
   return (
@@ -86,7 +79,9 @@ export function StepExecutionPanel({
             현재 Step
           </span>
 
-          <h2>{node.name}</h2>
+          <h2>
+            {node.name}
+          </h2>
 
           <p>
             {node.description ??
@@ -162,9 +157,13 @@ export function StepExecutionPanel({
             {tools.map(
               (tool) => (
                 <span
-                  key={tool.id}
+                  key={
+                    tool.id
+                  }
                 >
-                  {tool.name}
+                  {
+                    tool.name
+                  }
                 </span>
               ),
             )}
@@ -188,7 +187,9 @@ export function StepExecutionPanel({
             stepRun.logs.map(
               (log) => (
                 <div
-                  key={log.id}
+                  key={
+                    log.id
+                  }
                   className={[
                     "execution-log__row",
                     `execution-log__row--${log.level}`,
@@ -206,7 +207,9 @@ export function StepExecutionPanel({
                   </time>
 
                   <span>
-                    {log.message}
+                    {
+                      log.message
+                    }
                   </span>
                 </div>
               ),
@@ -224,7 +227,7 @@ export function StepExecutionPanel({
 
 interface RuntimeInfoProps {
   icon:
-    React.ComponentType<{
+    ComponentType<{
       size?: number;
     }>;
 
@@ -245,7 +248,9 @@ function RuntimeInfo({
       </div>
 
       <div>
-        <span>{label}</span>
+        <span>
+          {label}
+        </span>
 
         <strong>
           {value}
@@ -260,16 +265,21 @@ function getDuration(
   completedAt: string,
 ) {
   const start =
-    new Date(startedAt).getTime();
+    new Date(
+      startedAt,
+    ).getTime();
 
   const end =
-    new Date(completedAt).getTime();
+    new Date(
+      completedAt,
+    ).getTime();
 
   const seconds =
     Math.max(
       0,
       Math.round(
-        (end - start) / 1000,
+        (end - start) /
+          1000,
       ),
     );
 
@@ -278,7 +288,9 @@ function getDuration(
   }
 
   const minutes =
-    Math.floor(seconds / 60);
+    Math.floor(
+      seconds / 60,
+    );
 
   return `${minutes}분 ${seconds % 60}초`;
 }

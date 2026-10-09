@@ -10,8 +10,8 @@ import type {
 } from "../types";
 
 import {
-  mockModels,
-} from "../../../mocks/models";
+  getModelById,
+} from "../../../data/catalogRepository";
 
 interface AgentCardProps {
   agent: Agent;
@@ -27,10 +27,8 @@ export function AgentCard({
   onClick,
 }: AgentCardProps) {
   const model =
-    mockModels.find(
-      (item) =>
-        item.id ===
-        agent.modelId,
+    getModelById(
+      agent.modelId,
     );
 
   return (

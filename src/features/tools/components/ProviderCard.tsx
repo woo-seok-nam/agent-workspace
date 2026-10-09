@@ -10,8 +10,8 @@ import type {
 } from "../types";
 
 import {
-  mockModels,
-} from "../../../mocks/models";
+  getModels,
+} from "../../../data/catalogRepository";
 
 interface ProviderCardProps {
   provider: ProviderConfig;
@@ -26,7 +26,7 @@ export function ProviderCard({
   onToggle,
 }: ProviderCardProps) {
   const providerModels =
-    mockModels.filter(
+    getModels().filter(
       (model) =>
         model.provider ===
         provider.id,
@@ -136,7 +136,9 @@ function ProviderStatus({
     );
   }
 
-  if (status === "error") {
+  if (
+    status === "error"
+  ) {
     return (
       <span className="provider-status provider-status--error">
         <CircleOff

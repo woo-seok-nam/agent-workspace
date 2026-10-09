@@ -14,12 +14,10 @@ import type {
 } from "../features/agents/types";
 
 import {
-  mockAgents,
-} from "../mocks/agents";
-
-import {
-  mockModels,
-} from "../mocks/models";
+  getAgents,
+  getEnabledModels,
+  saveAgents,
+} from "../data/catalogRepository";
 
 import {
   AgentCard,
@@ -31,43 +29,13 @@ import {
 
 import "../features/agents/AgentManagement.css";
 
-const STORAGE_KEY =
-  "agent-workspace-agents";
-
-function loadAgents(): Agent[] {
-  const saved =
-    localStorage.getItem(
-      STORAGE_KEY,
-    );
-
-  if (!saved) {
-    return structuredClone(
-      mockAgents,
-    );
-  }
-
-  try {
-    return JSON.parse(
-      saved,
-    ) as Agent[];
-  } catch {
-    localStorage.removeItem(
-      STORAGE_KEY,
-    );
-
-    return structuredClone(
-      mockAgents,
-    );
-  }
-}
-
 export function AgentManagementPage() {
   const [
     agents,
     setAgents,
   ] =
     useState<Agent[]>(
-      loadAgents,
+      getAgents,
     );
 
   const [
@@ -151,17 +119,9 @@ export function AgentManagementPage() {
       },
     );
 
-  const handleSelectAgent = (
-    agentId: string,
-  ) => {
-    setSelectedAgentId(
-      agentId,
-    );
-  };
-
   const handleCreateAgent = () => {
     const defaultModel =
-      mockModels[0];
+      getEnabledModels()[0];
 
     if (!defaultModel) {
       window.alert(
@@ -196,11 +156,17 @@ export function AgentManagementPage() {
       updatedAt: now,
     };
 
+    const nextAgents = [
+      ...agents,
+      newAgent,
+    ];
+
     setAgents(
-      (current) => [
-        ...current,
-        newAgent,
-      ],
+      nextAgents,
+    );
+
+    saveAgents(
+      nextAgents,
     );
 
     setSelectedAgentId(
@@ -258,11 +224,8 @@ export function AgentManagementPage() {
       ),
     );
 
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(
-        nextAgents,
-      ),
+    saveAgents(
+      nextAgents,
     );
 
     window.alert(
@@ -295,16 +258,12 @@ export function AgentManagementPage() {
       nextAgents,
     );
 
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(
-        nextAgents,
-      ),
+    saveAgents(
+      nextAgents,
     );
 
     const nextSelected =
-      nextAgents[0] ??
-      undefined;
+      nextAgents[0];
 
     setSelectedAgentId(
       nextSelected?.id ??
@@ -406,7 +365,7 @@ export function AgentManagementPage() {
                       selectedAgentId
                     }
                     onClick={() =>
-                      handleSelectAgent(
+                      setSelectedAgentId(
                         agent.id,
                       )
                     }

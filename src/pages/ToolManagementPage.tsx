@@ -15,12 +15,11 @@ import type {
 } from "../features/tools/types";
 
 import {
-  mockProviders,
-} from "../mocks/providers";
-
-import {
-  mockTools,
-} from "../mocks/tools";
+  getProviders,
+  getTools,
+  saveProviders,
+  saveTools,
+} from "../data/catalogRepository";
 
 import {
   ProviderCard,
@@ -36,66 +35,6 @@ import {
 
 import "../features/tools/ToolManagement.css";
 
-const PROVIDER_STORAGE_KEY =
-  "agent-workspace-providers";
-
-const TOOL_STORAGE_KEY =
-  "agent-workspace-tools";
-
-function loadProviders(): ProviderConfig[] {
-  const saved =
-    localStorage.getItem(
-      PROVIDER_STORAGE_KEY,
-    );
-
-  if (!saved) {
-    return structuredClone(
-      mockProviders,
-    );
-  }
-
-  try {
-    return JSON.parse(
-      saved,
-    ) as ProviderConfig[];
-  } catch {
-    localStorage.removeItem(
-      PROVIDER_STORAGE_KEY,
-    );
-
-    return structuredClone(
-      mockProviders,
-    );
-  }
-}
-
-function loadTools(): Tool[] {
-  const saved =
-    localStorage.getItem(
-      TOOL_STORAGE_KEY,
-    );
-
-  if (!saved) {
-    return structuredClone(
-      mockTools,
-    );
-  }
-
-  try {
-    return JSON.parse(
-      saved,
-    ) as Tool[];
-  } catch {
-    localStorage.removeItem(
-      TOOL_STORAGE_KEY,
-    );
-
-    return structuredClone(
-      mockTools,
-    );
-  }
-}
-
 export function ToolManagementPage() {
   const [
     providers,
@@ -104,7 +43,7 @@ export function ToolManagementPage() {
     useState<
       ProviderConfig[]
     >(
-      loadProviders,
+      getProviders,
     );
 
   const [
@@ -112,7 +51,7 @@ export function ToolManagementPage() {
     setTools,
   ] =
     useState<Tool[]>(
-      loadTools,
+      getTools,
     );
 
   const [
@@ -218,12 +157,8 @@ export function ToolManagementPage() {
       nextProviders,
     );
 
-    localStorage.setItem(
-      PROVIDER_STORAGE_KEY,
-
-      JSON.stringify(
-        nextProviders,
-      ),
+    saveProviders(
+      nextProviders,
     );
   };
 
@@ -268,12 +203,8 @@ export function ToolManagementPage() {
       ),
     );
 
-    localStorage.setItem(
-      TOOL_STORAGE_KEY,
-
-      JSON.stringify(
-        nextTools,
-      ),
+    saveTools(
+      nextTools,
     );
 
     window.alert(

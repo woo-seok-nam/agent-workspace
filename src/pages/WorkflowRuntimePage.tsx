@@ -16,8 +16,8 @@ import {
 } from "../mocks/workflows";
 
 import {
-  mockAgents,
-} from "../mocks/agents";
+  getAgentById,
+} from "../data/catalogRepository";
 
 import type {
   StepRun,
@@ -48,26 +48,51 @@ import "../features/runs/WorkflowRuntime.css";
 
 const previewStepRuns: StepRun[] = [
   {
-    id: "preview-step-planner",
-    runId: "run-preview",
-    nodeId: "planner",
-    status: "COMPLETED",
-    startedAt: "2026-10-09T03:00:00Z",
-    completedAt: "2026-10-09T03:00:12Z",
+    id:
+      "preview-step-planner",
+
+    runId:
+      "run-preview",
+
+    nodeId:
+      "planner",
+
+    status:
+      "COMPLETED",
+
+    startedAt:
+      "2026-10-09T03:00:00Z",
+
+    completedAt:
+      "2026-10-09T03:00:12Z",
+
     tokenUsage: 620,
+
     cost: 0.01,
+
     logs: [
       {
-        id: "planner-log-1",
-        timestamp: "2026-10-09T03:00:01Z",
+        id:
+          "planner-log-1",
+
+        timestamp:
+          "2026-10-09T03:00:01Z",
+
         level: "info",
+
         message:
           "사용자 요청을 분석합니다.",
       },
+
       {
-        id: "planner-log-2",
-        timestamp: "2026-10-09T03:00:12Z",
+        id:
+          "planner-log-2",
+
+        timestamp:
+          "2026-10-09T03:00:12Z",
+
         level: "info",
+
         message:
           "작업 계획 생성이 완료되었습니다.",
       },
@@ -75,68 +100,140 @@ const previewStepRuns: StepRun[] = [
   },
 
   {
-    id: "preview-step-web",
-    runId: "run-preview",
-    nodeId: "web-research",
-    status: "COMPLETED",
-    startedAt: "2026-10-09T03:00:13Z",
-    completedAt: "2026-10-09T03:02:28Z",
+    id:
+      "preview-step-web",
+
+    runId:
+      "run-preview",
+
+    nodeId:
+      "web-research",
+
+    status:
+      "COMPLETED",
+
+    startedAt:
+      "2026-10-09T03:00:13Z",
+
+    completedAt:
+      "2026-10-09T03:02:28Z",
+
     tokenUsage: 3100,
+
     cost: 0.05,
+
     logs: [],
   },
 
   {
-    id: "preview-step-document",
-    runId: "run-preview",
-    nodeId: "document-research",
-    status: "COMPLETED",
-    startedAt: "2026-10-09T03:00:13Z",
-    completedAt: "2026-10-09T03:01:58Z",
+    id:
+      "preview-step-document",
+
+    runId:
+      "run-preview",
+
+    nodeId:
+      "document-research",
+
+    status:
+      "COMPLETED",
+
+    startedAt:
+      "2026-10-09T03:00:13Z",
+
+    completedAt:
+      "2026-10-09T03:01:58Z",
+
     tokenUsage: 2110,
+
     cost: 0.04,
+
     logs: [],
   },
 
   {
-    id: "preview-step-analysis",
-    runId: "run-preview",
-    nodeId: "analysis",
-    status: "COMPLETED",
-    startedAt: "2026-10-09T03:02:29Z",
-    completedAt: "2026-10-09T03:03:15Z",
+    id:
+      "preview-step-analysis",
+
+    runId:
+      "run-preview",
+
+    nodeId:
+      "analysis",
+
+    status:
+      "COMPLETED",
+
+    startedAt:
+      "2026-10-09T03:02:29Z",
+
+    completedAt:
+      "2026-10-09T03:03:15Z",
+
     tokenUsage: 1240,
+
     cost: 0.02,
+
     logs: [],
   },
 
   {
-    id: "preview-step-writer",
-    runId: "run-preview",
-    nodeId: "writer",
-    status: "WAITING_APPROVAL",
-    startedAt: "2026-10-09T03:03:16Z",
+    id:
+      "preview-step-writer",
+
+    runId:
+      "run-preview",
+
+    nodeId:
+      "writer",
+
+    status:
+      "WAITING_APPROVAL",
+
+    startedAt:
+      "2026-10-09T03:03:16Z",
+
     tokenUsage: 2050,
+
     cost: 0.03,
+
     logs: [
       {
-        id: "writer-log-1",
-        timestamp: "2026-10-09T03:03:16Z",
+        id:
+          "writer-log-1",
+
+        timestamp:
+          "2026-10-09T03:03:16Z",
+
         level: "info",
+
         message:
           "보고서 초안을 생성합니다.",
       },
+
       {
-        id: "writer-log-2",
-        timestamp: "2026-10-09T03:04:10Z",
+        id:
+          "writer-log-2",
+
+        timestamp:
+          "2026-10-09T03:04:10Z",
+
         level: "info",
+
         message:
           "보고서 초안 생성이 완료되었습니다.",
       },
+
       {
-        id: "writer-log-3",
-        timestamp: "2026-10-09T03:04:11Z",
-        level: "warning",
+        id:
+          "writer-log-3",
+
+        timestamp:
+          "2026-10-09T03:04:11Z",
+
+        level:
+          "warning",
+
         message:
           "사용자 승인을 기다리고 있습니다.",
       },
@@ -144,23 +241,37 @@ const previewStepRuns: StepRun[] = [
   },
 
   {
-    id: "preview-step-reviewer",
-    runId: "run-preview",
-    nodeId: "reviewer",
-    status: "PENDING",
+    id:
+      "preview-step-reviewer",
+
+    runId:
+      "run-preview",
+
+    nodeId:
+      "reviewer",
+
+    status:
+      "PENDING",
+
     tokenUsage: 0,
+
     cost: 0,
+
     logs: [],
   },
 ];
 
 export function WorkflowRuntimePage() {
-  const { runId } = useParams();
+  const {
+    runId,
+  } =
+    useParams();
 
   const storedRun =
     mockRuns.find(
       (run) =>
-        run.id === runId,
+        run.id ===
+        runId,
     );
 
   const workflow =
@@ -178,7 +289,8 @@ export function WorkflowRuntimePage() {
     setStatus,
   ] =
     useState<WorkflowRunStatus>(
-      runId === "run-preview"
+      runId ===
+        "run-preview"
         ? "WAITING_APPROVAL"
         : storedRun?.status ??
             "RUNNING",
@@ -189,7 +301,8 @@ export function WorkflowRuntimePage() {
     setStepRuns,
   ] =
     useState<StepRun[]>(
-      runId === "run-preview"
+      runId ===
+        "run-preview"
         ? previewStepRuns
         : storedRun?.stepRuns ??
             previewStepRuns,
@@ -200,8 +313,10 @@ export function WorkflowRuntimePage() {
       () =>
         workflow?.nodes.filter(
           (node) =>
-            node.type !== "input" &&
-            node.type !== "output",
+            node.type !==
+              "input" &&
+            node.type !==
+              "output",
         ) ?? [],
       [workflow],
     );
@@ -227,7 +342,9 @@ export function WorkflowRuntimePage() {
     selectedNodeId,
     setSelectedNodeId,
   ] =
-    useState<string | null>(
+    useState<
+      string | null
+    >(
       defaultSelected,
     );
 
@@ -284,16 +401,14 @@ export function WorkflowRuntimePage() {
       : undefined;
 
   const approvalAgent =
-    approvalNode?.agentId
-      ? mockAgents.find(
-          (agent) =>
-            agent.id ===
-            approvalNode.agentId,
-        )
-      : undefined;
+    getAgentById(
+      approvalNode?.agentId,
+    );
 
   const handleApprove = () => {
-    if (!waitingApprovalStep) {
+    if (
+      !waitingApprovalStep
+    ) {
       return;
     }
 
@@ -308,13 +423,15 @@ export function WorkflowRuntimePage() {
               return {
                 ...stepRun,
 
-                status: "COMPLETED",
+                status:
+                  "COMPLETED",
 
                 completedAt:
                   new Date().toISOString(),
 
                 logs: [
                   ...stepRun.logs,
+
                   {
                     id:
                       `log-${crypto.randomUUID()}`,
@@ -322,7 +439,8 @@ export function WorkflowRuntimePage() {
                     timestamp:
                       new Date().toISOString(),
 
-                    level: "info",
+                    level:
+                      "info",
 
                     message:
                       "사용자 승인이 완료되었습니다.",
@@ -338,7 +456,8 @@ export function WorkflowRuntimePage() {
               return {
                 ...stepRun,
 
-                status: "RUNNING",
+                status:
+                  "RUNNING",
 
                 startedAt:
                   new Date().toISOString(),
@@ -350,17 +469,23 @@ export function WorkflowRuntimePage() {
         ),
     );
 
-    setStatus("RUNNING");
+    setStatus(
+      "RUNNING",
+    );
 
     setSelectedNodeId(
       "reviewer",
     );
 
-    setApprovalOpen(false);
+    setApprovalOpen(
+      false,
+    );
   };
 
   const handleReject = () => {
-    if (!waitingApprovalStep) {
+    if (
+      !waitingApprovalStep
+    ) {
       return;
     }
 
@@ -373,13 +498,15 @@ export function WorkflowRuntimePage() {
               ? {
                   ...stepRun,
 
-                  status: "FAILED",
+                  status:
+                    "FAILED",
 
                   completedAt:
                     new Date().toISOString(),
 
                   logs: [
                     ...stepRun.logs,
+
                     {
                       id:
                         `log-${crypto.randomUUID()}`,
@@ -387,7 +514,8 @@ export function WorkflowRuntimePage() {
                       timestamp:
                         new Date().toISOString(),
 
-                      level: "error",
+                      level:
+                        "error",
 
                       message:
                         "사용자가 실행 결과를 거절했습니다.",
@@ -398,20 +526,28 @@ export function WorkflowRuntimePage() {
         ),
     );
 
-    setStatus("FAILED");
+    setStatus(
+      "FAILED",
+    );
 
-    setApprovalOpen(false);
+    setApprovalOpen(
+      false,
+    );
   };
 
   return (
     <>
       <div className="workflow-runtime-page">
         <RunHeader
-          name={runName}
+          name={
+            runName
+          }
           workflowName={
             workflow.name
           }
-          status={status}
+          status={
+            status
+          }
           onPause={() => {
             setStatus(
               "PAUSED",
@@ -428,7 +564,9 @@ export function WorkflowRuntimePage() {
                 "Workflow 실행을 중지하시겠습니까?",
               );
 
-            if (confirmed) {
+            if (
+              confirmed
+            ) {
               setStatus(
                 "CANCELLED",
               );

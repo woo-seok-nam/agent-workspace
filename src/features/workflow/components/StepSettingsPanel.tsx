@@ -7,16 +7,10 @@ import type {
 } from "../types";
 
 import {
-  mockAgents,
-} from "../../../mocks/agents";
-
-import {
-  mockModels,
-} from "../../../mocks/models";
-
-import {
-  mockTools,
-} from "../../../mocks/tools";
+  getEnabledAgents,
+  getEnabledModels,
+  getEnabledTools,
+} from "../../../data/catalogRepository";
 
 interface StepSettingsPanelProps {
   node?: WorkflowNode;
@@ -53,6 +47,15 @@ export function StepSettingsPanel({
     );
   }
 
+  const agents =
+    getEnabledAgents();
+
+  const models =
+    getEnabledModels();
+
+  const tools =
+    getEnabledTools();
+
   const handleToolToggle = (
     toolId: string,
   ) => {
@@ -64,21 +67,23 @@ export function StepSettingsPanel({
         toolId,
       );
 
-    const nextTools = exists
-      ? currentTools.filter(
-          (currentToolId) =>
-            currentToolId !==
+    const nextTools =
+      exists
+        ? currentTools.filter(
+            (currentToolId) =>
+              currentToolId !==
+              toolId,
+          )
+        : [
+            ...currentTools,
             toolId,
-        )
-      : [
-          ...currentTools,
-          toolId,
-        ];
+          ];
 
     onNodeChange(
       node.id,
       {
-        toolIds: nextTools,
+        toolIds:
+          nextTools,
       },
     );
   };
@@ -126,7 +131,9 @@ export function StepSettingsPanel({
 
           <input
             type="text"
-            value={node.name}
+            value={
+              node.name
+            }
             onChange={(
               event,
             ) => {
@@ -149,7 +156,9 @@ export function StepSettingsPanel({
 
           <input
             type="text"
-            value={node.type}
+            value={
+              node.type
+            }
             readOnly
           />
         </div>
@@ -170,14 +179,34 @@ export function StepSettingsPanel({
                 onChange={(
                   event,
                 ) => {
+                  const agentId =
+                    event.target
+                      .value ||
+                    undefined;
+
+                  const selectedAgent =
+                    agents.find(
+                      (agent) =>
+                        agent.id ===
+                        agentId,
+                    );
+
                   onNodeChange(
                     node.id,
                     {
-                      agentId:
-                        event
-                          .target
-                          .value ||
-                        undefined,
+                      agentId,
+
+                      modelId:
+                        selectedAgent
+                          ?.modelId ??
+                        node.modelId,
+
+                      toolIds:
+                        selectedAgent
+                          ? [
+                              ...selectedAgent.toolIds,
+                            ]
+                          : node.toolIds,
                     },
                   );
                 }}
@@ -186,7 +215,7 @@ export function StepSettingsPanel({
                   Agent 선택
                 </option>
 
-                {mockAgents.map(
+                {agents.map(
                   (agent) => (
                     <option
                       key={
@@ -222,8 +251,7 @@ export function StepSettingsPanel({
                     node.id,
                     {
                       modelId:
-                        event
-                          .target
+                        event.target
                           .value ||
                         undefined,
                     },
@@ -234,7 +262,7 @@ export function StepSettingsPanel({
                   Model 선택
                 </option>
 
-                {mockModels.map(
+                {models.map(
                   (model) => (
                     <option
                       key={
@@ -259,7 +287,7 @@ export function StepSettingsPanel({
               </label>
 
               <div className="settings-tool-options">
-                {mockTools.map(
+                {tools.map(
                   (tool) => {
                     const checked =
                       node.toolIds

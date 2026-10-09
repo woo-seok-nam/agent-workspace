@@ -697,3 +697,13 @@
     grid-column: auto;
   }
 }
+
+.agent-tool-card--disabled {
+  opacity: 0.45;
+
+  cursor: not-allowed;
+}
+
+.agent-tool-card--disabled:hover {
+  background: transparent;
+}
