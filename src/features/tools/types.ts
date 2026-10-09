@@ -35,3 +35,18 @@ export interface Tool {
 
   enabled: boolean;
 }
+
+export interface ProviderConfig {
+  id: ProviderType;
+
+  name: string;
+
+  description: string;
+
+  enabled: boolean;
+
+  connectionStatus:
+    | "connected"
+    | "not_configured"
+    | "error";
+}

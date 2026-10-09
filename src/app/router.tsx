@@ -35,6 +35,10 @@ import {
   AgentManagementPage,
 } from "../pages/AgentManagementPage";
 
+import {
+  ToolManagementPage,
+} from "../pages/ToolManagementPage";
+
 export const router =
   createBrowserRouter([
     {
@@ -133,7 +137,7 @@ export const router =
           path: "tools",
 
           element:
-            <PlaceholderPage />,
+            <ToolManagementPage />,
         },
 
         {
