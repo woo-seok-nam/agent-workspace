@@ -39,6 +39,10 @@ import {
   ToolManagementPage,
 } from "../pages/ToolManagementPage";
 
+import {
+  RunsHistoryPage,
+} from "../pages/RunsHistoryPage";
+
 export const router =
   createBrowserRouter([
     {
@@ -100,7 +104,7 @@ export const router =
           path: "runs",
 
           element:
-            <PlaceholderPage />,
+            <RunsHistoryPage />,
         },
 
         {
