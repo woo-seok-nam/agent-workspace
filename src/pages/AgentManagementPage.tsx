@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useMemo,
   useState,
 } from "react";
 
@@ -14,9 +15,14 @@ import type {
 } from "../features/agents/types";
 
 import {
-  getAgents,
+  createAgent,
+  deleteAgent,
+  fetchAgents,
+  updateAgent,
+} from "../api/agents";
+
+import {
   getEnabledModels,
-  saveAgents,
 } from "../data/catalogRepository";
 
 import {
@@ -33,41 +39,77 @@ export function AgentManagementPage() {
   const [
     agents,
     setAgents,
-  ] =
-    useState<Agent[]>(
-      getAgents,
-    );
+  ] = useState<Agent[]>([]);
 
   const [
     selectedAgentId,
     setSelectedAgentId,
-  ] =
-    useState<
-      string | null
-    >(
-      agents[0]?.id ??
-        null,
-    );
+  ] = useState<string | null>(
+    null,
+  );
 
   const [
     draftAgent,
     setDraftAgent,
-  ] =
-    useState<
-      Agent | undefined
-    >(
-      agents[0]
-        ? structuredClone(
-            agents[0],
-          )
-        : undefined,
-    );
+  ] = useState<
+    Agent | undefined
+  >();
 
   const [
     search,
     setSearch,
-  ] =
-    useState("");
+  ] = useState("");
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
+
+  const [
+    error,
+    setError,
+  ] = useState<
+    string | null
+  >(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const data =
+          await fetchAgents();
+
+        setAgents(data);
+
+        const firstAgent =
+          data[0];
+
+        if (firstAgent) {
+          setSelectedAgentId(
+            firstAgent.id,
+          );
+
+          setDraftAgent(
+            structuredClone(
+              firstAgent,
+            ),
+          );
+        }
+      } catch (loadError) {
+        setError(
+          loadError instanceof Error
+            ? loadError.message
+            : "Agent 목록을 불러오지 못했습니다.",
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    void load();
+  }, []);
 
   useEffect(() => {
     const selected =
@@ -90,18 +132,18 @@ export function AgentManagementPage() {
   ]);
 
   const filteredAgents =
-    agents.filter(
-      (agent) => {
-        const keyword =
-          search
-            .trim()
-            .toLowerCase();
+    useMemo(() => {
+      const keyword =
+        search
+          .trim()
+          .toLowerCase();
 
-        if (!keyword) {
-          return true;
-        }
+      if (!keyword) {
+        return agents;
+      }
 
-        return (
+      return agents.filter(
+        (agent) =>
           agent.name
             .toLowerCase()
             .includes(
@@ -114,170 +156,200 @@ export function AgentManagementPage() {
             .toLowerCase()
             .includes(
               keyword,
-            )
+            ),
+      );
+    }, [
+      agents,
+      search,
+    ]);
+
+  const handleCreateAgent =
+    async () => {
+      const defaultModel =
+        getEnabledModels()[0];
+
+      if (!defaultModel) {
+        window.alert(
+          "사용 가능한 Model이 없습니다.",
         );
-      },
-    );
 
-  const handleCreateAgent = () => {
-    const defaultModel =
-      getEnabledModels()[0];
+        return;
+      }
 
-    if (!defaultModel) {
-      window.alert(
-        "사용 가능한 Model이 없습니다.",
-      );
+      try {
+        const newAgent =
+          await createAgent({
+            name:
+              "New Agent",
 
-      return;
-    }
+            description:
+              "새로운 AI Agent",
 
-    const now =
-      new Date().toISOString();
+            modelId:
+              defaultModel.id,
 
-    const newAgent: Agent = {
-      id:
-        `agent-${crypto.randomUUID()}`,
+            toolIds: [],
 
-      name:
-        "New Agent",
+            enabled: true,
+          });
 
-      description:
-        "새로운 AI Agent",
+        setAgents(
+          (current) => [
+            ...current,
+            newAgent,
+          ],
+        );
 
-      modelId:
-        defaultModel.id,
-
-      toolIds: [],
-
-      enabled: true,
-
-      createdAt: now,
-
-      updatedAt: now,
+        setSelectedAgentId(
+          newAgent.id,
+        );
+      } catch (createError) {
+        window.alert(
+          createError instanceof Error
+            ? createError.message
+            : "Agent 생성에 실패했습니다.",
+        );
+      }
     };
 
-    const nextAgents = [
-      ...agents,
-      newAgent,
-    ];
+  const handleSave =
+    async () => {
+      if (!draftAgent) {
+        return;
+      }
 
-    setAgents(
-      nextAgents,
-    );
+      if (
+        !draftAgent.name.trim()
+      ) {
+        window.alert(
+          "Agent 이름을 입력하세요.",
+        );
 
-    saveAgents(
-      nextAgents,
-    );
+        return;
+      }
 
-    setSelectedAgentId(
-      newAgent.id,
-    );
+      try {
+        const savedAgent =
+          await updateAgent(
+            draftAgent.id,
+            {
+              name:
+                draftAgent.name.trim(),
 
-    setDraftAgent(
-      structuredClone(
-        newAgent,
-      ),
-    );
-  };
+              description:
+                draftAgent.description,
 
-  const handleSave = () => {
-    if (!draftAgent) {
-      return;
-    }
+              modelId:
+                draftAgent.modelId,
 
-    if (
-      !draftAgent.name.trim()
-    ) {
-      window.alert(
-        "Agent 이름을 입력하세요.",
-      );
+              toolIds:
+                draftAgent.toolIds,
 
-      return;
-    }
+              enabled:
+                draftAgent.enabled,
+            },
+          );
 
-    const nextAgent: Agent = {
-      ...draftAgent,
+        setAgents(
+          (current) =>
+            current.map(
+              (agent) =>
+                agent.id ===
+                savedAgent.id
+                  ? savedAgent
+                  : agent,
+            ),
+        );
 
-      name:
-        draftAgent.name.trim(),
+        setDraftAgent(
+          structuredClone(
+            savedAgent,
+          ),
+        );
 
-      updatedAt:
-        new Date().toISOString(),
+        window.alert(
+          "Agent가 저장되었습니다.",
+        );
+      } catch (saveError) {
+        window.alert(
+          saveError instanceof Error
+            ? saveError.message
+            : "Agent 저장에 실패했습니다.",
+        );
+      }
     };
 
-    const nextAgents =
-      agents.map(
-        (agent) =>
-          agent.id ===
-          nextAgent.id
-            ? nextAgent
-            : agent,
-      );
+  const handleDelete =
+    async () => {
+      if (!draftAgent) {
+        return;
+      }
 
-    setAgents(
-      nextAgents,
-    );
+      const confirmed =
+        window.confirm(
+          `"${draftAgent.name}" Agent를 삭제하시겠습니까?`,
+        );
 
-    setDraftAgent(
-      structuredClone(
-        nextAgent,
-      ),
-    );
+      if (!confirmed) {
+        return;
+      }
 
-    saveAgents(
-      nextAgents,
-    );
-
-    window.alert(
-      "Agent가 저장되었습니다.",
-    );
-  };
-
-  const handleDelete = () => {
-    if (!draftAgent) {
-      return;
-    }
-
-    const confirmed =
-      window.confirm(
-        `"${draftAgent.name}" Agent를 삭제하시겠습니까?`,
-      );
-
-    if (!confirmed) {
-      return;
-    }
-
-    const nextAgents =
-      agents.filter(
-        (agent) =>
-          agent.id !==
+      try {
+        await deleteAgent(
           draftAgent.id,
-      );
+        );
 
-    setAgents(
-      nextAgents,
+        const nextAgents =
+          agents.filter(
+            (agent) =>
+              agent.id !==
+              draftAgent.id,
+          );
+
+        setAgents(
+          nextAgents,
+        );
+
+        setSelectedAgentId(
+          nextAgents[0]?.id ??
+            null,
+        );
+      } catch (deleteError) {
+        window.alert(
+          deleteError instanceof Error
+            ? deleteError.message
+            : "Agent 삭제에 실패했습니다.",
+        );
+      }
+    };
+
+  if (loading) {
+    return (
+      <div className="agent-management-page">
+        Agent 목록을 불러오는 중입니다...
+      </div>
     );
+  }
 
-    saveAgents(
-      nextAgents,
+  if (error) {
+    return (
+      <div className="agent-management-page">
+        <h1>
+          Agents
+        </h1>
+
+        <p>
+          {error}
+        </p>
+
+        <p>
+          Backend 서버가
+          http://localhost:4000 에서
+          실행 중인지 확인하세요.
+        </p>
+      </div>
     );
-
-    const nextSelected =
-      nextAgents[0];
-
-    setSelectedAgentId(
-      nextSelected?.id ??
-        null,
-    );
-
-    setDraftAgent(
-      nextSelected
-        ? structuredClone(
-            nextSelected,
-          )
-        : undefined,
-    );
-  };
+  }
 
   return (
     <div className="agent-management-page">
@@ -301,9 +373,9 @@ export function AgentManagementPage() {
         <button
           type="button"
           className="primary-button"
-          onClick={
-            handleCreateAgent
-          }
+          onClick={() => {
+            void handleCreateAgent();
+          }}
         >
           <Plus size={15} />
           New Agent
@@ -334,9 +406,7 @@ export function AgentManagementPage() {
             <input
               type="text"
               placeholder="Agent 검색"
-              value={
-                search
-              }
+              value={search}
               onChange={(
                 event,
               ) => {
@@ -387,12 +457,12 @@ export function AgentManagementPage() {
           onChange={
             setDraftAgent
           }
-          onSave={
-            handleSave
-          }
-          onDelete={
-            handleDelete
-          }
+          onSave={() => {
+            void handleSave();
+          }}
+          onDelete={() => {
+            void handleDelete();
+          }}
         />
       </div>
     </div>
