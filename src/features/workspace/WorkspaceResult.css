@@ -1,0 +1,453 @@
+.workspace-result-page {
+  width: 100%;
+  max-width: 1180px;
+
+  margin: 0 auto;
+}
+
+/* =========================
+   Header
+========================= */
+
+.result-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 24px;
+
+  margin-bottom: 20px;
+}
+
+.result-header__breadcrumb {
+  color:
+    var(--color-text-secondary);
+
+  font-size: 10px;
+}
+
+.result-header h1 {
+  margin: 6px 0 0;
+
+  font-size: 24px;
+
+  letter-spacing: -0.5px;
+}
+
+.result-header p {
+  margin: 7px 0 0;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 11px;
+}
+
+.result-header__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.result-header__actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* =========================
+   Tabs
+========================= */
+
+.result-tabs {
+  display: flex;
+  gap: 20px;
+
+  margin-bottom: 18px;
+
+  border-bottom:
+    1px solid var(--color-border);
+}
+
+.result-tab {
+  position: relative;
+
+  padding: 0 0 10px;
+
+  border: none;
+
+  background: transparent;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 11px;
+
+  cursor: pointer;
+}
+
+.result-tab:hover {
+  color:
+    var(--color-text-primary);
+}
+
+.result-tab--active {
+  color:
+    var(--color-primary);
+
+  font-weight: 700;
+}
+
+.result-tab--active::after {
+  position: absolute;
+
+  right: 0;
+  bottom: -1px;
+  left: 0;
+
+  height: 2px;
+
+  background:
+    var(--color-primary);
+
+  content: "";
+}
+
+/* =========================
+   Main Layout
+========================= */
+
+.workspace-result-layout {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr) 280px;
+
+  gap: 16px;
+}
+
+/* =========================
+   Result Viewer
+========================= */
+
+.result-viewer {
+  min-height: 600px;
+
+  overflow: hidden;
+
+  border:
+    1px solid var(--color-border);
+
+  border-radius: 12px;
+
+  background: #ffffff;
+}
+
+.result-document__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 14px 18px;
+
+  border-bottom:
+    1px solid #edf0f4;
+
+  background: #fbfcfe;
+}
+
+.result-document__header span {
+  color:
+    var(--color-text-secondary);
+
+  font-size: 9px;
+}
+
+.result-document__header strong {
+  font-size: 10px;
+}
+
+.result-document__content {
+  max-width: 760px;
+
+  padding: 28px 32px;
+
+  color: #334155;
+
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.result-document__content h2 {
+  margin: 0 0 18px;
+
+  color: #0f172a;
+
+  font-size: 22px;
+
+  letter-spacing: -0.5px;
+}
+
+.result-document__content h3 {
+  margin: 28px 0 10px;
+
+  color: #0f172a;
+
+  font-size: 14px;
+}
+
+.result-document__content p {
+  margin: 0 0 12px;
+}
+
+.result-document__content ul {
+  margin: 0;
+
+  padding-left: 20px;
+}
+
+.result-document__content li {
+  margin-bottom: 6px;
+}
+
+.result-viewer__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 500px;
+
+  padding: 30px;
+
+  text-align: center;
+}
+
+.result-viewer__empty h2 {
+  margin: 0;
+
+  font-size: 16px;
+}
+
+.result-viewer__empty p {
+  max-width: 360px;
+
+  margin: 8px 0 0;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+/* =========================
+   Logs
+========================= */
+
+.result-log-preview {
+  min-height: 500px;
+
+  padding: 20px;
+
+  background: #0f172a;
+}
+
+.result-log-preview > div {
+  display: grid;
+
+  grid-template-columns:
+    80px minmax(0, 1fr);
+
+  gap: 12px;
+
+  padding: 9px 0;
+
+  border-bottom:
+    1px solid rgba(
+      255,
+      255,
+      255,
+      0.06
+    );
+
+  color: #cbd5e1;
+
+  font-size: 10px;
+}
+
+.result-log-preview time {
+  color: #64748b;
+}
+
+/* =========================
+   Files
+========================= */
+
+.generated-files-panel {
+  min-height: 400px;
+
+  overflow: hidden;
+
+  align-self: start;
+
+  border:
+    1px solid var(--color-border);
+
+  border-radius: 12px;
+
+  background: #ffffff;
+}
+
+.generated-files-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  height: 48px;
+
+  padding: 0 14px;
+
+  border-bottom:
+    1px solid var(--color-border);
+}
+
+.generated-files-panel__header h2 {
+  margin: 0;
+
+  font-size: 12px;
+}
+
+.generated-files-panel__header span {
+  display: grid;
+  place-items: center;
+
+  min-width: 20px;
+  height: 20px;
+
+  padding: 0 6px;
+
+  border-radius: 999px;
+
+  background: #eef4ff;
+
+  color:
+    var(--color-primary);
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.generated-files-panel__list {
+  padding: 8px;
+}
+
+.generated-files-panel__empty {
+  padding: 30px 10px;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 10px;
+
+  text-align: center;
+}
+
+.generated-file-card {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  padding: 9px;
+
+  border-radius: 8px;
+}
+
+.generated-file-card:hover {
+  background: #f8fafc;
+}
+
+.generated-file-card__icon {
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  width: 30px;
+  height: 30px;
+
+  border-radius: 7px;
+
+  background: #eef4ff;
+
+  color:
+    var(--color-primary);
+}
+
+.generated-file-card__content {
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+
+  flex: 1;
+}
+
+.generated-file-card__content strong {
+  overflow: hidden;
+
+  font-size: 9px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.generated-file-card__content span {
+  margin-top: 2px;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 8px;
+}
+
+.generated-file-card__action {
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  width: 28px;
+  height: 28px;
+
+  border: none;
+  border-radius: 6px;
+
+  background: transparent;
+
+  color:
+    var(--color-text-secondary);
+
+  cursor: pointer;
+}
+
+.generated-file-card__action:hover {
+  background: #ffffff;
+
+  color:
+    var(--color-primary);
+}
+
+/* =========================
+   Responsive
+========================= */
+
+@media (max-width: 900px) {
+  .workspace-result-layout {
+    grid-template-columns:
+      1fr;
+  }
+
+  .generated-files-panel {
+    min-height: auto;
+  }
+}

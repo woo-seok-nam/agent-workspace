@@ -27,6 +27,10 @@ import {
   WorkflowRuntimePage,
 } from "../pages/WorkflowRuntimePage";
 
+import {
+  WorkspaceResultPage,
+} from "../pages/WorkspaceResultPage";
+
 export const router =
   createBrowserRouter([
     {
@@ -103,6 +107,14 @@ export const router =
 
           element:
             <PlaceholderPage />,
+        },
+
+        {
+          path:
+            "workspace/:runId",
+
+          element:
+            <WorkspaceResultPage />,
         },
 
         {
