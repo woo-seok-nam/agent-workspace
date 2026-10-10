@@ -1,35 +1,97 @@
-import { mockWorkflows } from "../../../mocks/workflows";
+import {
+  ArrowRight,
+  GitBranch,
+} from "lucide-react";
+
+import {
+  useNavigate,
+} from "react-router-dom";
+
+import type {
+  Workflow,
+} from "../../workflow/types";
 
 interface AlternativeWorkflowsProps {
+  workflows: Workflow[];
+
   currentWorkflowId: string;
 }
 
 export function AlternativeWorkflows({
+  workflows,
   currentWorkflowId,
 }: AlternativeWorkflowsProps) {
-  const alternatives = mockWorkflows.filter(
-    (workflow) => workflow.id !== currentWorkflowId,
-  );
+  const navigate =
+    useNavigate();
+
+  const alternatives =
+    workflows.filter(
+      (workflow) =>
+        workflow.id !==
+        currentWorkflowId,
+    );
+
+  if (
+    alternatives.length === 0
+  ) {
+    return null;
+  }
 
   return (
     <section className="alternative-workflows">
-      <h2>다른 추천 워크플로우</h2>
+      <div className="alternative-workflows__header">
+        <h2>
+          Alternative Workflows
+        </h2>
 
-      <div className="alternative-workflows__grid">
-        {alternatives.map((workflow) => (
-          <article
-            key={workflow.id}
-            className="alternative-workflow-card"
-          >
-            <h3>{workflow.name}</h3>
+        <p>
+          다른 Workflow도 선택할 수
+          있습니다.
+        </p>
+      </div>
 
-            <p>{workflow.description}</p>
+      <div className="alternative-workflows__list">
+        {alternatives.map(
+          (workflow) => (
+            <button
+              key={
+                workflow.id
+              }
+              type="button"
+              className="alternative-workflow-card"
+              onClick={() => {
+                navigate(
+                  `/workflows/${workflow.id}/builder`,
+                );
+              }}
+            >
+              <div className="alternative-workflow-card__icon">
+                <GitBranch
+                  size={15}
+                />
+              </div>
 
-            <span>
-              {workflow.nodes.length} Steps
-            </span>
-          </article>
-        ))}
+              <div className="alternative-workflow-card__content">
+                <strong>
+                  {workflow.name}
+                </strong>
+
+                <span>
+                  {
+                    workflow.nodes
+                      .length
+                  }
+                  {" "}
+                  Steps
+                </span>
+              </div>
+
+              <ArrowRight
+                size={14}
+              />
+            </button>
+          ),
+        )}
       </div>
     </section>
   );

@@ -43,6 +43,10 @@ import {
   RunsHistoryPage,
 } from "../pages/RunsHistoryPage";
 
+import {
+  WorkflowsPage,
+} from "../pages/WorkflowsPage";
+
 export const router =
   createBrowserRouter([
     {
@@ -81,7 +85,7 @@ export const router =
           path: "workflows",
 
           element:
-            <PlaceholderPage />,
+            <WorkflowsPage />,
         },
 
         {

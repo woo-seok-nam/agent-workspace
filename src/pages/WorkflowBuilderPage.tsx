@@ -41,6 +41,13 @@ export function WorkflowBuilderPage() {
   } = useParams();
 
   const [
+    description,
+    setDescription,
+  ] = useState<
+    string | undefined
+  >(undefined);
+
+  const [
     loading,
     setLoading,
   ] = useState(true);
@@ -59,7 +66,6 @@ export function WorkflowBuilderPage() {
 
   const {
     name,
-    description,
     nodes,
     edges,
     selectedNodeId,
@@ -87,6 +93,9 @@ export function WorkflowBuilderPage() {
       return;
     }
 
+    const currentWorkflowId =
+      workflowId;
+
     async function loadWorkflow() {
       try {
         setLoading(true);
@@ -94,8 +103,12 @@ export function WorkflowBuilderPage() {
 
         const workflow =
           await fetchWorkflow(
-            workflowId,
+            currentWorkflowId,
           );
+
+        setDescription(
+          workflow.description,
+        );
 
         initializeWorkflow(
           workflow,
@@ -137,11 +150,14 @@ export function WorkflowBuilderPage() {
         return;
       }
 
+      const currentWorkflowId =
+        workflowId;
+
       try {
         setSaving(true);
 
         await updateWorkflow(
-          workflowId,
+          currentWorkflowId,
           {
             name,
 
@@ -168,6 +184,20 @@ export function WorkflowBuilderPage() {
         setSaving(false);
       }
     };
+
+  const handleEdgeCreate = (
+    source: string,
+    target: string,
+  ) => {
+    addEdge({
+      id:
+        `edge-${crypto.randomUUID()}`,
+
+      source,
+
+      target,
+    });
+  };
 
   if (loading) {
     return (
@@ -238,7 +268,7 @@ export function WorkflowBuilderPage() {
             updateNodePosition
           }
           onEdgeCreate={
-            addEdge
+            handleEdgeCreate
           }
         />
 
