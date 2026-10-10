@@ -22,7 +22,7 @@ const prisma =
     adapter,
   });
 
-async function main() {
+async function seedAgents() {
   const agents = [
     {
       id: "planner-agent",
@@ -98,7 +98,9 @@ async function main() {
       create: agent,
     });
   }
+}
 
+async function seedTools() {
   const tools = [
     {
       id: "web-search",
@@ -166,7 +168,9 @@ async function main() {
       create: tool,
     });
   }
+}
 
+async function seedProviders() {
   const providers = [
     {
       id: "openai",
@@ -209,9 +213,7 @@ async function main() {
     },
   ];
 
-  for (
-    const provider of providers
-  ) {
+  for (const provider of providers) {
     await prisma.provider.upsert({
       where: {
         id: provider.id,
@@ -222,9 +224,471 @@ async function main() {
       create: provider,
     });
   }
+}
+
+async function seedWorkflows() {
+  const workflowId =
+    "workflow-research-report";
+
+  await prisma.workflow.upsert({
+    where: {
+      id: workflowId,
+    },
+
+    update: {
+      name:
+        "Research & Report",
+
+      description:
+        "사용자 요청을 분석하고 조사, 분석, 작성, 검토 과정을 거쳐 최종 보고서를 생성합니다.",
+    },
+
+    create: {
+      id:
+        workflowId,
+
+      name:
+        "Research & Report",
+
+      description:
+        "사용자 요청을 분석하고 조사, 분석, 작성, 검토 과정을 거쳐 최종 보고서를 생성합니다.",
+    },
+  });
+
+  await prisma.workflowEdge.deleteMany({
+    where: {
+      workflowId,
+    },
+  });
+
+  await prisma.workflowNode.deleteMany({
+    where: {
+      workflowId,
+    },
+  });
+
+  const nodes = [
+    {
+      workflowId,
+
+      nodeId: "input",
+
+      type: "input",
+
+      name: "User Input",
+
+      description:
+        "사용자의 작업 목표를 입력받습니다.",
+
+      positionX: 0,
+
+      positionY: 180,
+
+      agentId: null,
+
+      modelId: null,
+
+      toolIds:
+        JSON.stringify([]),
+
+      config:
+        JSON.stringify({}),
+    },
+
+    {
+      workflowId,
+
+      nodeId: "planner",
+
+      type: "agent",
+
+      name: "Planning",
+
+      description:
+        "사용자 요청을 분석하고 실행 계획을 생성합니다.",
+
+      positionX: 260,
+
+      positionY: 180,
+
+      agentId:
+        "planner-agent",
+
+      modelId:
+        "gpt-4o",
+
+      toolIds:
+        JSON.stringify([]),
+
+      config:
+        JSON.stringify({
+          retryCount: 1,
+          timeoutSeconds: 300,
+          requireApproval: false,
+        }),
+    },
+
+    {
+      workflowId,
+
+      nodeId: "web-research",
+
+      type: "agent",
+
+      name: "Web Research",
+
+      description:
+        "웹에서 필요한 정보를 조사합니다.",
+
+      positionX: 540,
+
+      positionY: 80,
+
+      agentId:
+        "research-agent",
+
+      modelId:
+        "claude-3-5-sonnet",
+
+      toolIds:
+        JSON.stringify([
+          "web-search",
+          "browser",
+        ]),
+
+      config:
+        JSON.stringify({
+          retryCount: 2,
+          timeoutSeconds: 600,
+          requireApproval: false,
+        }),
+    },
+
+    {
+      workflowId,
+
+      nodeId:
+        "document-research",
+
+      type: "agent",
+
+      name:
+        "Document Research",
+
+      description:
+        "문서에서 필요한 정보를 수집합니다.",
+
+      positionX: 540,
+
+      positionY: 300,
+
+      agentId:
+        "research-agent",
+
+      modelId:
+        "claude-3-5-sonnet",
+
+      toolIds:
+        JSON.stringify([
+          "document-parser",
+        ]),
+
+      config:
+        JSON.stringify({
+          retryCount: 2,
+          timeoutSeconds: 600,
+          requireApproval: false,
+        }),
+    },
+
+    {
+      workflowId,
+
+      nodeId: "analysis",
+
+      type: "agent",
+
+      name: "Analysis",
+
+      description:
+        "수집된 정보를 종합하고 분석합니다.",
+
+      positionX: 830,
+
+      positionY: 180,
+
+      agentId:
+        "analysis-agent",
+
+      modelId:
+        "gemini-2-5-pro",
+
+      toolIds:
+        JSON.stringify([]),
+
+      config:
+        JSON.stringify({
+          retryCount: 1,
+          timeoutSeconds: 600,
+          requireApproval: false,
+        }),
+    },
+
+    {
+      workflowId,
+
+      nodeId: "writer",
+
+      type: "agent",
+
+      name: "Report Writer",
+
+      description:
+        "분석 결과를 바탕으로 보고서 초안을 작성합니다.",
+
+      positionX: 1100,
+
+      positionY: 180,
+
+      agentId:
+        "writer-agent",
+
+      modelId:
+        "gpt-4o",
+
+      toolIds:
+        JSON.stringify([
+          "file-tool",
+        ]),
+
+      config:
+        JSON.stringify({
+          retryCount: 1,
+          timeoutSeconds: 600,
+          requireApproval: true,
+        }),
+    },
+
+    {
+      workflowId,
+
+      nodeId: "reviewer",
+
+      type: "agent",
+
+      name: "Review",
+
+      description:
+        "작성된 보고서를 검토하고 개선합니다.",
+
+      positionX: 1380,
+
+      positionY: 180,
+
+      agentId:
+        "reviewer-agent",
+
+      modelId:
+        "gpt-4o",
+
+      toolIds:
+        JSON.stringify([]),
+
+      config:
+        JSON.stringify({
+          retryCount: 1,
+          timeoutSeconds: 300,
+          requireApproval: false,
+        }),
+    },
+
+    {
+      workflowId,
+
+      nodeId: "output",
+
+      type: "output",
+
+      name: "Final Output",
+
+      description:
+        "최종 결과물을 반환합니다.",
+
+      positionX: 1650,
+
+      positionY: 180,
+
+      agentId: null,
+
+      modelId: null,
+
+      toolIds:
+        JSON.stringify([]),
+
+      config:
+        JSON.stringify({}),
+    },
+  ];
+
+  await prisma.workflowNode.createMany({
+    data: nodes,
+  });
+
+  const edges = [
+    {
+      workflowId,
+
+      edgeId:
+        "edge-input-planner",
+
+      source: "input",
+
+      target: "planner",
+
+      sourceHandle: null,
+
+      targetHandle: null,
+
+      condition: null,
+    },
+
+    {
+      workflowId,
+
+      edgeId:
+        "edge-planner-web",
+
+      source: "planner",
+
+      target:
+        "web-research",
+
+      sourceHandle: null,
+
+      targetHandle: null,
+
+      condition: null,
+    },
+
+    {
+      workflowId,
+
+      edgeId:
+        "edge-planner-document",
+
+      source: "planner",
+
+      target:
+        "document-research",
+
+      sourceHandle: null,
+
+      targetHandle: null,
+
+      condition: null,
+    },
+
+    {
+      workflowId,
+
+      edgeId:
+        "edge-web-analysis",
+
+      source:
+        "web-research",
+
+      target: "analysis",
+
+      sourceHandle: null,
+
+      targetHandle: null,
+
+      condition: null,
+    },
+
+    {
+      workflowId,
+
+      edgeId:
+        "edge-document-analysis",
+
+      source:
+        "document-research",
+
+      target: "analysis",
+
+      sourceHandle: null,
+
+      targetHandle: null,
+
+      condition: null,
+    },
+
+    {
+      workflowId,
+
+      edgeId:
+        "edge-analysis-writer",
+
+      source: "analysis",
+
+      target: "writer",
+
+      sourceHandle: null,
+
+      targetHandle: null,
+
+      condition: null,
+    },
+
+    {
+      workflowId,
+
+      edgeId:
+        "edge-writer-reviewer",
+
+      source: "writer",
+
+      target: "reviewer",
+
+      sourceHandle: null,
+
+      targetHandle: null,
+
+      condition: null,
+    },
+
+    {
+      workflowId,
+
+      edgeId:
+        "edge-reviewer-output",
+
+      source: "reviewer",
+
+      target: "output",
+
+      sourceHandle: null,
+
+      targetHandle: null,
+
+      condition: null,
+    },
+  ];
+
+  await prisma.workflowEdge.createMany({
+    data: edges,
+  });
+}
+
+async function main() {
+  await seedAgents();
+  await seedTools();
+  await seedProviders();
+  await seedWorkflows();
 
   console.log(
-    "Agent / Tool / Provider seed 완료",
+    "Agent / Tool / Provider / Workflow seed 완료",
   );
 }
 
