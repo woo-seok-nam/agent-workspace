@@ -15,6 +15,10 @@ import {
 } from "../modules/tools/tool.routes.js";
 
 import {
+  workflowRouter,
+} from "../modules/workflows/workflow.routes.js";
+
+import {
   healthRouter,
 } from "./health.routes.js";
 
@@ -39,4 +43,9 @@ apiRouter.use(
 apiRouter.use(
   "/providers",
   providerRouter,
+);
+
+apiRouter.use(
+  "/workflows",
+  workflowRouter,
 );

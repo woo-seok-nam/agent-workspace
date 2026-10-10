@@ -11,4 +11,7 @@
 export type * from './models/Agent.js'
 export type * from './models/Tool.js'
 export type * from './models/Provider.js'
+export type * from './models/Workflow.js'
+export type * from './models/WorkflowNode.js'
+export type * from './models/WorkflowEdge.js'
 export type * from './commonInputTypes.js'

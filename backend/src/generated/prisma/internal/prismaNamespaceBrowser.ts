@@ -53,7 +53,10 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   Agent: 'Agent',
   Tool: 'Tool',
-  Provider: 'Provider'
+  Provider: 'Provider',
+  Workflow: 'Workflow',
+  WorkflowNode: 'WorkflowNode',
+  WorkflowEdge: 'WorkflowEdge'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -107,6 +110,49 @@ export const ProviderScalarFieldEnum = {
 } as const
 
 export type ProviderScalarFieldEnum = (typeof ProviderScalarFieldEnum)[keyof typeof ProviderScalarFieldEnum]
+
+
+export const WorkflowScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WorkflowScalarFieldEnum = (typeof WorkflowScalarFieldEnum)[keyof typeof WorkflowScalarFieldEnum]
+
+
+export const WorkflowNodeScalarFieldEnum = {
+  id: 'id',
+  nodeId: 'nodeId',
+  workflowId: 'workflowId',
+  type: 'type',
+  name: 'name',
+  description: 'description',
+  positionX: 'positionX',
+  positionY: 'positionY',
+  agentId: 'agentId',
+  modelId: 'modelId',
+  toolIds: 'toolIds',
+  config: 'config'
+} as const
+
+export type WorkflowNodeScalarFieldEnum = (typeof WorkflowNodeScalarFieldEnum)[keyof typeof WorkflowNodeScalarFieldEnum]
+
+
+export const WorkflowEdgeScalarFieldEnum = {
+  id: 'id',
+  edgeId: 'edgeId',
+  workflowId: 'workflowId',
+  source: 'source',
+  target: 'target',
+  sourceHandle: 'sourceHandle',
+  targetHandle: 'targetHandle',
+  condition: 'condition'
+} as const
+
+export type WorkflowEdgeScalarFieldEnum = (typeof WorkflowEdgeScalarFieldEnum)[keyof typeof WorkflowEdgeScalarFieldEnum]
 
 
 export const SortOrder = {

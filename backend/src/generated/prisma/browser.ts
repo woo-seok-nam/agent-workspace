@@ -32,3 +32,18 @@ export type Tool = Prisma.ToolModel
  * 
  */
 export type Provider = Prisma.ProviderModel
+/**
+ * Model Workflow
+ * 
+ */
+export type Workflow = Prisma.WorkflowModel
+/**
+ * Model WorkflowNode
+ * 
+ */
+export type WorkflowNode = Prisma.WorkflowNodeModel
+/**
+ * Model WorkflowEdge
+ * 
+ */
+export type WorkflowEdge = Prisma.WorkflowEdgeModel

@@ -37,3 +37,49 @@ model Provider {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 }
+
+model Workflow {
+  id          String         @id
+  name        String
+  description String?
+  nodes       WorkflowNode[]
+  edges       WorkflowEdge[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model WorkflowNode {
+  id          String  @id @default(cuid())
+  nodeId      String
+  workflowId  String
+  type        String
+  name        String
+  description String?
+  positionX   Float
+  positionY   Float
+  agentId     String?
+  modelId     String?
+  toolIds     String
+  config      String
+
+  workflow Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@unique([workflowId, nodeId])
+  @@index([workflowId])
+}
+
+model WorkflowEdge {
+  id           String  @id @default(cuid())
+  edgeId       String
+  workflowId   String
+  source       String
+  target       String
+  sourceHandle String?
+  targetHandle String?
+  condition    String?
+
+  workflow Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@unique([workflowId, edgeId])
+  @@index([workflowId])
+}
