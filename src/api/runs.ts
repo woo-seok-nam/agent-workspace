@@ -69,7 +69,8 @@ export async function createRun(
     await fetch(
       `${API_BASE_URL}/api/runs`,
       {
-        method: "POST",
+        method:
+          "POST",
 
         headers: {
           "Content-Type":
@@ -104,13 +105,68 @@ export async function startRun(
     await fetch(
       `${API_BASE_URL}/api/runs/${runId}/start`,
       {
-        method: "POST",
+        method:
+          "POST",
       },
     );
 
   if (!response.ok) {
     throw new Error(
       "Workflow 실행 시작에 실패했습니다.",
+    );
+  }
+
+  const result =
+    (await response.json()) as ApiResponse<
+      WorkflowRun
+    >;
+
+  return result.data;
+}
+
+export async function approveRunStep(
+  runId: string,
+  nodeId: string,
+): Promise<WorkflowRun> {
+  const response =
+    await fetch(
+      `${API_BASE_URL}/api/runs/${runId}/steps/${nodeId}/approve`,
+      {
+        method:
+          "POST",
+      },
+    );
+
+  if (!response.ok) {
+    throw new Error(
+      "Step 승인에 실패했습니다.",
+    );
+  }
+
+  const result =
+    (await response.json()) as ApiResponse<
+      WorkflowRun
+    >;
+
+  return result.data;
+}
+
+export async function rejectRunStep(
+  runId: string,
+  nodeId: string,
+): Promise<WorkflowRun> {
+  const response =
+    await fetch(
+      `${API_BASE_URL}/api/runs/${runId}/steps/${nodeId}/reject`,
+      {
+        method:
+          "POST",
+      },
+    );
+
+  if (!response.ok) {
+    throw new Error(
+      "Step 거절에 실패했습니다.",
     );
   }
 

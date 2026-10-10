@@ -163,7 +163,8 @@ export async function continueWorkflowRun(
       );
 
     if (
-      pendingSteps.length === 0
+      pendingSteps.length ===
+      0
     ) {
       const hasFailure =
         run.stepRuns.some(
@@ -268,7 +269,9 @@ export async function continueWorkflowRun(
           return (
             node?.config
               ?.requireApproval ===
-            true
+              true &&
+            stepRun.approvalStatus !==
+              "APPROVED"
           );
         },
       );
@@ -287,6 +290,9 @@ export async function continueWorkflowRun(
         {
           status:
             "WAITING_APPROVAL",
+
+          approvalStatus:
+            "PENDING",
 
           logs: [
             ...approvalStep.logs,
@@ -388,6 +394,174 @@ export async function continueWorkflowRun(
   }
 }
 
+export async function approveWorkflowStep(
+  runId: string,
+  nodeId: string,
+) {
+  const run =
+    await getRun(
+      runId,
+    );
+
+  if (!run) {
+    throw new Error(
+      "Run을 찾을 수 없습니다.",
+    );
+  }
+
+  const stepRun =
+    run.stepRuns.find(
+      (step) =>
+        step.nodeId ===
+        nodeId,
+    );
+
+  if (!stepRun) {
+    throw new Error(
+      "승인할 Step을 찾을 수 없습니다.",
+    );
+  }
+
+  if (
+    stepRun.status !==
+    "WAITING_APPROVAL"
+  ) {
+    throw new Error(
+      "현재 승인 대기 중인 Step이 아닙니다.",
+    );
+  }
+
+  await editStepRun(
+    runId,
+    nodeId,
+    {
+      status:
+        "PENDING",
+
+      approvalStatus:
+        "APPROVED",
+
+      logs: [
+        ...stepRun.logs,
+
+        createLog(
+          "사용자가 실행을 승인했습니다.",
+        ),
+      ],
+    },
+  );
+
+  await editRun(
+    runId,
+    {
+      status:
+        "RUNNING",
+    },
+  );
+
+  await continueWorkflowRun(
+    runId,
+  );
+
+  const updatedRun =
+    await getRun(
+      runId,
+    );
+
+  if (!updatedRun) {
+    throw new Error(
+      "승인 후 Run 상태를 불러오지 못했습니다.",
+    );
+  }
+
+  return updatedRun;
+}
+
+export async function rejectWorkflowStep(
+  runId: string,
+  nodeId: string,
+) {
+  const run =
+    await getRun(
+      runId,
+    );
+
+  if (!run) {
+    throw new Error(
+      "Run을 찾을 수 없습니다.",
+    );
+  }
+
+  const stepRun =
+    run.stepRuns.find(
+      (step) =>
+        step.nodeId ===
+        nodeId,
+    );
+
+  if (!stepRun) {
+    throw new Error(
+      "거절할 Step을 찾을 수 없습니다.",
+    );
+  }
+
+  if (
+    stepRun.status !==
+    "WAITING_APPROVAL"
+  ) {
+    throw new Error(
+      "현재 승인 대기 중인 Step이 아닙니다.",
+    );
+  }
+
+  await editStepRun(
+    runId,
+    nodeId,
+    {
+      status:
+        "CANCELLED",
+
+      approvalStatus:
+        "REJECTED",
+
+      completedAt:
+        new Date().toISOString(),
+
+      logs: [
+        ...stepRun.logs,
+
+        createLog(
+          "사용자가 실행을 거절했습니다.",
+        ),
+      ],
+    },
+  );
+
+  await editRun(
+    runId,
+    {
+      status:
+        "CANCELLED",
+
+      completedAt:
+        new Date().toISOString(),
+    },
+  );
+
+  const updatedRun =
+    await getRun(
+      runId,
+    );
+
+  if (!updatedRun) {
+    throw new Error(
+      "거절 후 Run 상태를 불러오지 못했습니다.",
+    );
+  }
+
+  return updatedRun;
+}
+
 async function executeWorkflowNode(
   runId: string,
   run: NonNullable<
@@ -417,9 +591,6 @@ async function executeWorkflowNode(
     return;
   }
 
-  const startedAt =
-    new Date().toISOString();
-
   await editStepRun(
     runId,
     node.id,
@@ -427,7 +598,8 @@ async function executeWorkflowNode(
       status:
         "RUNNING",
 
-      startedAt,
+      startedAt:
+        new Date().toISOString(),
 
       logs: [
         ...stepRun.logs,
@@ -450,13 +622,22 @@ async function executeWorkflowNode(
     const result =
       await executeNode({
         workflow,
-
         run,
-
         node,
-
         dependencyOutputs,
       });
+
+    const latestRun =
+      await getRun(
+        runId,
+      );
+
+    const latestStep =
+      latestRun?.stepRuns.find(
+        (step) =>
+          step.nodeId ===
+          node.id,
+      );
 
     await editStepRun(
       runId,
@@ -478,11 +659,8 @@ async function executeWorkflowNode(
           new Date().toISOString(),
 
         logs: [
-          ...stepRun.logs,
-
-          createLog(
-            `${node.name} 실행을 시작했습니다.`,
-          ),
+          ...(latestStep?.logs ??
+            stepRun.logs),
 
           createLog(
             `${node.name} 실행이 완료되었습니다.`,
@@ -496,6 +674,18 @@ async function executeWorkflowNode(
         ? error.message
         : "Node 실행 중 알 수 없는 오류가 발생했습니다.";
 
+    const latestRun =
+      await getRun(
+        runId,
+      );
+
+    const latestStep =
+      latestRun?.stepRuns.find(
+        (step) =>
+          step.nodeId ===
+          node.id,
+      );
+
     await editStepRun(
       runId,
       node.id,
@@ -507,11 +697,8 @@ async function executeWorkflowNode(
           new Date().toISOString(),
 
         logs: [
-          ...stepRun.logs,
-
-          createLog(
-            `${node.name} 실행을 시작했습니다.`,
-          ),
+          ...(latestStep?.logs ??
+            stepRun.logs),
 
           {
             id:

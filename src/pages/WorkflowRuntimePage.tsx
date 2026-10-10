@@ -17,7 +17,9 @@ import type {
 } from "../features/runs/types";
 
 import {
+  approveRunStep,
   fetchRun,
+  rejectRunStep,
 } from "../api/runs";
 
 import {
@@ -93,6 +95,12 @@ export function WorkflowRuntimePage() {
   const [
     approvalOpen,
     setApprovalOpen,
+  ] =
+    useState(false);
+
+  const [
+    approvalProcessing,
+    setApprovalProcessing,
   ] =
     useState(false);
 
@@ -215,8 +223,8 @@ export function WorkflowRuntimePage() {
             )
             .catch(
               () => {
-                // 일시적인 polling 오류는
-                // 화면 전체 오류로 전환하지 않는다.
+                // 일시적인 polling 실패는
+                // 전체 페이지 오류로 전환하지 않는다.
               },
             );
         },
@@ -299,6 +307,12 @@ export function WorkflowRuntimePage() {
     ]);
 
   useEffect(() => {
+    if (
+      approvalProcessing
+    ) {
+      return;
+    }
+
     setApprovalOpen(
       Boolean(
         approvalStep,
@@ -306,7 +320,107 @@ export function WorkflowRuntimePage() {
     );
   }, [
     approvalStep,
+    approvalProcessing,
   ]);
+
+  const handleApprove =
+    async () => {
+      if (
+        !runId ||
+        !approvalStep ||
+        approvalProcessing
+      ) {
+        return;
+      }
+
+      try {
+        setApprovalProcessing(
+          true,
+        );
+
+        setApprovalOpen(
+          false,
+        );
+
+        const updatedRun =
+          await approveRunStep(
+            runId,
+            approvalStep.nodeId,
+          );
+
+        setRun(
+          updatedRun,
+        );
+      } catch (approvalError) {
+        window.alert(
+          approvalError instanceof Error
+            ? approvalError.message
+            : "승인 처리에 실패했습니다.",
+        );
+
+        setApprovalOpen(
+          true,
+        );
+      } finally {
+        setApprovalProcessing(
+          false,
+        );
+      }
+    };
+
+  const handleReject =
+    async () => {
+      if (
+        !runId ||
+        !approvalStep ||
+        approvalProcessing
+      ) {
+        return;
+      }
+
+      const confirmed =
+        window.confirm(
+          "이 Step을 거절하면 Workflow 실행이 취소됩니다. 계속하시겠습니까?",
+        );
+
+      if (!confirmed) {
+        return;
+      }
+
+      try {
+        setApprovalProcessing(
+          true,
+        );
+
+        setApprovalOpen(
+          false,
+        );
+
+        const updatedRun =
+          await rejectRunStep(
+            runId,
+            approvalStep.nodeId,
+          );
+
+        setRun(
+          updatedRun,
+        );
+      } catch (approvalError) {
+        window.alert(
+          approvalError instanceof Error
+            ? approvalError.message
+            : "거절 처리에 실패했습니다.",
+        );
+
+        setApprovalOpen(
+          true,
+        );
+      } finally {
+        setApprovalProcessing(
+          false,
+        );
+      }
+    };
 
   if (loading) {
     return (
@@ -411,21 +525,25 @@ export function WorkflowRuntimePage() {
         agentName={
           approvalNode?.agentId
         }
-        summary="이 Step은 사용자 승인이 필요합니다."
+        summary={
+          approvalProcessing
+            ? "승인 요청을 처리하고 있습니다."
+            : "이 Step은 사용자 승인이 필요합니다."
+        }
         onApprove={() => {
-          setApprovalOpen(
-            false,
-          );
+          void handleApprove();
         }}
         onReject={() => {
-          setApprovalOpen(
-            false,
-          );
+          void handleReject();
         }}
         onClose={() => {
-          setApprovalOpen(
-            false,
-          );
+          if (
+            !approvalProcessing
+          ) {
+            setApprovalOpen(
+              false,
+            );
+          }
         }}
       />
     </div>

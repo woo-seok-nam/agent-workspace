@@ -18,6 +18,11 @@ export type StepRunStatus =
   | "SKIPPED"
   | "CANCELLED";
 
+export type ApprovalStatus =
+  | "PENDING"
+  | "APPROVED"
+  | "REJECTED";
+
 export type ExecutionLogLevel =
   | "info"
   | "warning"
@@ -41,6 +46,8 @@ export interface StepRun {
   nodeId: string;
 
   status: StepRunStatus;
+
+  approvalStatus?: ApprovalStatus;
 
   startedAt?: string;
 
@@ -105,6 +112,10 @@ export interface UpdateWorkflowRunInput {
 
 export interface UpdateStepRunInput {
   status?: StepRunStatus;
+
+  approvalStatus?:
+    | ApprovalStatus
+    | null;
 
   input?: unknown;
 

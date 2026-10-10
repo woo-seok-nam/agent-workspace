@@ -5,6 +5,8 @@ import type {
 } from "express";
 
 import {
+  approveWorkflowStep,
+  rejectWorkflowStep,
   startWorkflowRun,
 } from "../../orchestrator/orchestrator.service.js";
 
@@ -47,7 +49,8 @@ export async function listRuns(
       await getRuns();
 
     response.status(200).json({
-      data: runs,
+      data:
+        runs,
     });
   } catch (error) {
     next(error);
@@ -99,7 +102,8 @@ export async function readRun(
     }
 
     response.status(200).json({
-      data: run,
+      data:
+        run,
     });
   } catch (error) {
     next(error);
@@ -122,7 +126,8 @@ export async function createRunController(
       );
 
     response.status(201).json({
-      data: run,
+      data:
+        run,
     });
   } catch (error) {
     next(error);
@@ -160,7 +165,104 @@ export async function startRunController(
       );
 
     response.status(200).json({
-      data: run,
+      data:
+        run,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function approveStepController(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+) {
+  try {
+    const runId =
+      getParamValue(
+        request.params.runId,
+      );
+
+    const nodeId =
+      getParamValue(
+        request.params.nodeId,
+      );
+
+    if (
+      !runId ||
+      !nodeId
+    ) {
+      response.status(400).json({
+        error: {
+          code:
+            "INVALID_APPROVAL_TARGET",
+
+          message:
+            "Run ID와 Node ID가 필요합니다.",
+        },
+      });
+
+      return;
+    }
+
+    const run =
+      await approveWorkflowStep(
+        runId,
+        nodeId,
+      );
+
+    response.status(200).json({
+      data:
+        run,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function rejectStepController(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+) {
+  try {
+    const runId =
+      getParamValue(
+        request.params.runId,
+      );
+
+    const nodeId =
+      getParamValue(
+        request.params.nodeId,
+      );
+
+    if (
+      !runId ||
+      !nodeId
+    ) {
+      response.status(400).json({
+        error: {
+          code:
+            "INVALID_APPROVAL_TARGET",
+
+          message:
+            "Run ID와 Node ID가 필요합니다.",
+        },
+      });
+
+      return;
+    }
+
+    const run =
+      await rejectWorkflowStep(
+        runId,
+        nodeId,
+      );
+
+    response.status(200).json({
+      data:
+        run,
     });
   } catch (error) {
     next(error);
@@ -219,7 +321,8 @@ export async function updateRunController(
     }
 
     response.status(200).json({
-      data: run,
+      data:
+        run,
     });
   } catch (error) {
     next(error);
@@ -288,7 +391,8 @@ export async function updateStepRunController(
     }
 
     response.status(200).json({
-      data: stepRun,
+      data:
+        stepRun,
     });
   } catch (error) {
     next(error);

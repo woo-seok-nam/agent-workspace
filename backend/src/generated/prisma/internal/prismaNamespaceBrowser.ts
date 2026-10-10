@@ -179,6 +179,7 @@ export const StepRunScalarFieldEnum = {
   runId: 'runId',
   nodeId: 'nodeId',
   status: 'status',
+  approvalStatus: 'approvalStatus',
   input: 'input',
   output: 'output',
   logs: 'logs',

@@ -41,6 +41,7 @@ export type StepRunMinAggregateOutputType = {
   runId: string | null
   nodeId: string | null
   status: string | null
+  approvalStatus: string | null
   input: string | null
   output: string | null
   logs: string | null
@@ -57,6 +58,7 @@ export type StepRunMaxAggregateOutputType = {
   runId: string | null
   nodeId: string | null
   status: string | null
+  approvalStatus: string | null
   input: string | null
   output: string | null
   logs: string | null
@@ -73,6 +75,7 @@ export type StepRunCountAggregateOutputType = {
   runId: number
   nodeId: number
   status: number
+  approvalStatus: number
   input: number
   output: number
   logs: number
@@ -101,6 +104,7 @@ export type StepRunMinAggregateInputType = {
   runId?: true
   nodeId?: true
   status?: true
+  approvalStatus?: true
   input?: true
   output?: true
   logs?: true
@@ -117,6 +121,7 @@ export type StepRunMaxAggregateInputType = {
   runId?: true
   nodeId?: true
   status?: true
+  approvalStatus?: true
   input?: true
   output?: true
   logs?: true
@@ -133,6 +138,7 @@ export type StepRunCountAggregateInputType = {
   runId?: true
   nodeId?: true
   status?: true
+  approvalStatus?: true
   input?: true
   output?: true
   logs?: true
@@ -236,6 +242,7 @@ export type StepRunGroupByOutputType = {
   runId: string
   nodeId: string
   status: string
+  approvalStatus: string | null
   input: string | null
   output: string | null
   logs: string
@@ -275,6 +282,7 @@ export type StepRunWhereInput = {
   runId?: Prisma.StringFilter<"StepRun"> | string
   nodeId?: Prisma.StringFilter<"StepRun"> | string
   status?: Prisma.StringFilter<"StepRun"> | string
+  approvalStatus?: Prisma.StringNullableFilter<"StepRun"> | string | null
   input?: Prisma.StringNullableFilter<"StepRun"> | string | null
   output?: Prisma.StringNullableFilter<"StepRun"> | string | null
   logs?: Prisma.StringFilter<"StepRun"> | string
@@ -292,6 +300,7 @@ export type StepRunOrderByWithRelationInput = {
   runId?: Prisma.SortOrder
   nodeId?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  approvalStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   input?: Prisma.SortOrderInput | Prisma.SortOrder
   output?: Prisma.SortOrderInput | Prisma.SortOrder
   logs?: Prisma.SortOrder
@@ -313,6 +322,7 @@ export type StepRunWhereUniqueInput = Prisma.AtLeast<{
   runId?: Prisma.StringFilter<"StepRun"> | string
   nodeId?: Prisma.StringFilter<"StepRun"> | string
   status?: Prisma.StringFilter<"StepRun"> | string
+  approvalStatus?: Prisma.StringNullableFilter<"StepRun"> | string | null
   input?: Prisma.StringNullableFilter<"StepRun"> | string | null
   output?: Prisma.StringNullableFilter<"StepRun"> | string | null
   logs?: Prisma.StringFilter<"StepRun"> | string
@@ -330,6 +340,7 @@ export type StepRunOrderByWithAggregationInput = {
   runId?: Prisma.SortOrder
   nodeId?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  approvalStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   input?: Prisma.SortOrderInput | Prisma.SortOrder
   output?: Prisma.SortOrderInput | Prisma.SortOrder
   logs?: Prisma.SortOrder
@@ -354,6 +365,7 @@ export type StepRunScalarWhereWithAggregatesInput = {
   runId?: Prisma.StringWithAggregatesFilter<"StepRun"> | string
   nodeId?: Prisma.StringWithAggregatesFilter<"StepRun"> | string
   status?: Prisma.StringWithAggregatesFilter<"StepRun"> | string
+  approvalStatus?: Prisma.StringNullableWithAggregatesFilter<"StepRun"> | string | null
   input?: Prisma.StringNullableWithAggregatesFilter<"StepRun"> | string | null
   output?: Prisma.StringNullableWithAggregatesFilter<"StepRun"> | string | null
   logs?: Prisma.StringWithAggregatesFilter<"StepRun"> | string
@@ -369,6 +381,7 @@ export type StepRunCreateInput = {
   id: string
   nodeId: string
   status?: string
+  approvalStatus?: string | null
   input?: string | null
   output?: string | null
   logs?: string
@@ -386,6 +399,7 @@ export type StepRunUncheckedCreateInput = {
   runId: string
   nodeId: string
   status?: string
+  approvalStatus?: string | null
   input?: string | null
   output?: string | null
   logs?: string
@@ -401,6 +415,7 @@ export type StepRunUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nodeId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   input?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   output?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logs?: Prisma.StringFieldUpdateOperationsInput | string
@@ -418,6 +433,7 @@ export type StepRunUncheckedUpdateInput = {
   runId?: Prisma.StringFieldUpdateOperationsInput | string
   nodeId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   input?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   output?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logs?: Prisma.StringFieldUpdateOperationsInput | string
@@ -434,6 +450,7 @@ export type StepRunCreateManyInput = {
   runId: string
   nodeId: string
   status?: string
+  approvalStatus?: string | null
   input?: string | null
   output?: string | null
   logs?: string
@@ -449,6 +466,7 @@ export type StepRunUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nodeId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   input?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   output?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logs?: Prisma.StringFieldUpdateOperationsInput | string
@@ -465,6 +483,7 @@ export type StepRunUncheckedUpdateManyInput = {
   runId?: Prisma.StringFieldUpdateOperationsInput | string
   nodeId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   input?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   output?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logs?: Prisma.StringFieldUpdateOperationsInput | string
@@ -496,6 +515,7 @@ export type StepRunCountOrderByAggregateInput = {
   runId?: Prisma.SortOrder
   nodeId?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  approvalStatus?: Prisma.SortOrder
   input?: Prisma.SortOrder
   output?: Prisma.SortOrder
   logs?: Prisma.SortOrder
@@ -517,6 +537,7 @@ export type StepRunMaxOrderByAggregateInput = {
   runId?: Prisma.SortOrder
   nodeId?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  approvalStatus?: Prisma.SortOrder
   input?: Prisma.SortOrder
   output?: Prisma.SortOrder
   logs?: Prisma.SortOrder
@@ -533,6 +554,7 @@ export type StepRunMinOrderByAggregateInput = {
   runId?: Prisma.SortOrder
   nodeId?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  approvalStatus?: Prisma.SortOrder
   input?: Prisma.SortOrder
   output?: Prisma.SortOrder
   logs?: Prisma.SortOrder
@@ -595,6 +617,7 @@ export type StepRunCreateWithoutRunInput = {
   id: string
   nodeId: string
   status?: string
+  approvalStatus?: string | null
   input?: string | null
   output?: string | null
   logs?: string
@@ -610,6 +633,7 @@ export type StepRunUncheckedCreateWithoutRunInput = {
   id: string
   nodeId: string
   status?: string
+  approvalStatus?: string | null
   input?: string | null
   output?: string | null
   logs?: string
@@ -654,6 +678,7 @@ export type StepRunScalarWhereInput = {
   runId?: Prisma.StringFilter<"StepRun"> | string
   nodeId?: Prisma.StringFilter<"StepRun"> | string
   status?: Prisma.StringFilter<"StepRun"> | string
+  approvalStatus?: Prisma.StringNullableFilter<"StepRun"> | string | null
   input?: Prisma.StringNullableFilter<"StepRun"> | string | null
   output?: Prisma.StringNullableFilter<"StepRun"> | string | null
   logs?: Prisma.StringFilter<"StepRun"> | string
@@ -669,6 +694,7 @@ export type StepRunCreateManyRunInput = {
   id: string
   nodeId: string
   status?: string
+  approvalStatus?: string | null
   input?: string | null
   output?: string | null
   logs?: string
@@ -684,6 +710,7 @@ export type StepRunUpdateWithoutRunInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nodeId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   input?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   output?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logs?: Prisma.StringFieldUpdateOperationsInput | string
@@ -699,6 +726,7 @@ export type StepRunUncheckedUpdateWithoutRunInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nodeId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   input?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   output?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logs?: Prisma.StringFieldUpdateOperationsInput | string
@@ -714,6 +742,7 @@ export type StepRunUncheckedUpdateManyWithoutRunInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nodeId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   input?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   output?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   logs?: Prisma.StringFieldUpdateOperationsInput | string
@@ -732,6 +761,7 @@ export type StepRunSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   runId?: boolean
   nodeId?: boolean
   status?: boolean
+  approvalStatus?: boolean
   input?: boolean
   output?: boolean
   logs?: boolean
@@ -749,6 +779,7 @@ export type StepRunSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   runId?: boolean
   nodeId?: boolean
   status?: boolean
+  approvalStatus?: boolean
   input?: boolean
   output?: boolean
   logs?: boolean
@@ -766,6 +797,7 @@ export type StepRunSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   runId?: boolean
   nodeId?: boolean
   status?: boolean
+  approvalStatus?: boolean
   input?: boolean
   output?: boolean
   logs?: boolean
@@ -783,6 +815,7 @@ export type StepRunSelectScalar = {
   runId?: boolean
   nodeId?: boolean
   status?: boolean
+  approvalStatus?: boolean
   input?: boolean
   output?: boolean
   logs?: boolean
@@ -794,7 +827,7 @@ export type StepRunSelectScalar = {
   updatedAt?: boolean
 }
 
-export type StepRunOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "runId" | "nodeId" | "status" | "input" | "output" | "logs" | "tokenUsage" | "cost" | "startedAt" | "completedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["stepRun"]>
+export type StepRunOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "runId" | "nodeId" | "status" | "approvalStatus" | "input" | "output" | "logs" | "tokenUsage" | "cost" | "startedAt" | "completedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["stepRun"]>
 export type StepRunInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   run?: boolean | Prisma.WorkflowRunDefaultArgs<ExtArgs>
 }
@@ -815,6 +848,7 @@ export type $StepRunPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     runId: string
     nodeId: string
     status: string
+    approvalStatus: string | null
     input: string | null
     output: string | null
     logs: string
@@ -1252,6 +1286,7 @@ export interface StepRunFieldRefs {
   readonly runId: Prisma.FieldRef<"StepRun", 'String'>
   readonly nodeId: Prisma.FieldRef<"StepRun", 'String'>
   readonly status: Prisma.FieldRef<"StepRun", 'String'>
+  readonly approvalStatus: Prisma.FieldRef<"StepRun", 'String'>
   readonly input: Prisma.FieldRef<"StepRun", 'String'>
   readonly output: Prisma.FieldRef<"StepRun", 'String'>
   readonly logs: Prisma.FieldRef<"StepRun", 'String'>

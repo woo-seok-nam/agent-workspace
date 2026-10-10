@@ -3,6 +3,7 @@ import {
 } from "../../lib/prisma.js";
 
 import type {
+  ApprovalStatus,
   CreateWorkflowRunInput,
   ExecutionLog,
   StepRun,
@@ -34,7 +35,9 @@ function parseLogs(
 ): ExecutionLog[] {
   try {
     const parsed =
-      JSON.parse(value);
+      JSON.parse(
+        value,
+      );
 
     if (!Array.isArray(parsed)) {
       return [];
@@ -52,6 +55,7 @@ function mapStepRun(
     runId: string;
     nodeId: string;
     status: string;
+    approvalStatus: string | null;
     input: string | null;
     output: string | null;
     logs: string;
@@ -73,6 +77,11 @@ function mapStepRun(
 
     status:
       stepRun.status as StepRunStatus,
+
+    approvalStatus:
+      stepRun.approvalStatus
+        ? stepRun.approvalStatus as ApprovalStatus
+        : undefined,
 
     startedAt:
       stepRun.startedAt?.toISOString(),
@@ -116,11 +125,13 @@ function mapRun(
     completedAt: Date | null;
     createdAt: Date;
     updatedAt: Date;
+
     stepRuns: Array<{
       id: string;
       runId: string;
       nodeId: string;
       status: string;
+      approvalStatus: string | null;
       input: string | null;
       output: string | null;
       logs: string;
@@ -181,13 +192,15 @@ export async function findAllRuns(): Promise<
       include: {
         stepRuns: {
           orderBy: {
-            createdAt: "asc",
+            createdAt:
+              "asc",
           },
         },
       },
 
       orderBy: {
-        createdAt: "desc",
+        createdAt:
+          "desc",
       },
     });
 
@@ -210,7 +223,8 @@ export async function findRunById(
       include: {
         stepRuns: {
           orderBy: {
-            createdAt: "asc",
+            createdAt:
+              "asc",
           },
         },
       },
@@ -248,8 +262,10 @@ export async function createRun(
   const executableNodes =
     workflow.nodes.filter(
       (node) =>
-        node.type !== "input" &&
-        node.type !== "output",
+        node.type !==
+          "input" &&
+        node.type !==
+          "output",
     );
 
   await prisma.workflowRun.create({
@@ -282,6 +298,9 @@ export async function createRun(
 
               status:
                 "PENDING",
+
+              approvalStatus:
+                null,
 
               logs:
                 "[]",
@@ -338,18 +357,22 @@ export async function updateRun(
         input.status,
 
       startedAt:
-        input.startedAt === undefined
+        input.startedAt ===
+        undefined
           ? undefined
-          : input.startedAt === null
+          : input.startedAt ===
+              null
             ? null
             : new Date(
                 input.startedAt,
               ),
 
       completedAt:
-        input.completedAt === undefined
+        input.completedAt ===
+        undefined
           ? undefined
-          : input.completedAt === null
+          : input.completedAt ===
+              null
             ? null
             : new Date(
                 input.completedAt,
@@ -402,6 +425,9 @@ export async function updateStepRun(
         status:
           input.status,
 
+        approvalStatus:
+          input.approvalStatus,
+
         input:
           input.input === undefined
             ? undefined
@@ -430,18 +456,22 @@ export async function updateStepRun(
           input.cost,
 
         startedAt:
-          input.startedAt === undefined
+          input.startedAt ===
+          undefined
             ? undefined
-            : input.startedAt === null
+            : input.startedAt ===
+                null
               ? null
               : new Date(
                   input.startedAt,
                 ),
 
         completedAt:
-          input.completedAt === undefined
+          input.completedAt ===
+          undefined
             ? undefined
-            : input.completedAt === null
+            : input.completedAt ===
+                null
               ? null
               : new Date(
                   input.completedAt,

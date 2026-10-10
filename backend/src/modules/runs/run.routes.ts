@@ -3,9 +3,11 @@ import {
 } from "express";
 
 import {
+  approveStepController,
   createRunController,
   listRuns,
   readRun,
+  rejectStepController,
   startRunController,
   updateRunController,
   updateStepRunController,
@@ -32,6 +34,16 @@ runRouter.post(
 runRouter.post(
   "/:runId/start",
   startRunController,
+);
+
+runRouter.post(
+  "/:runId/steps/:nodeId/approve",
+  approveStepController,
+);
+
+runRouter.post(
+  "/:runId/steps/:nodeId/reject",
+  rejectStepController,
 );
 
 runRouter.patch(
