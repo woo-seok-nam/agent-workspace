@@ -46,3 +46,13 @@ export { Prisma }
  * 
  */
 export type Agent = Prisma.AgentModel
+/**
+ * Model Tool
+ * 
+ */
+export type Tool = Prisma.ToolModel
+/**
+ * Model Provider
+ * 
+ */
+export type Provider = Prisma.ProviderModel

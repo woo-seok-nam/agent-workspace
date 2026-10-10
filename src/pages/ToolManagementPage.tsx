@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useMemo,
   useState,
 } from "react";
 
@@ -15,11 +16,14 @@ import type {
 } from "../features/tools/types";
 
 import {
-  getProviders,
-  getTools,
-  saveProviders,
-  saveTools,
-} from "../data/catalogRepository";
+  fetchTools,
+  updateTool,
+} from "../api/tools";
+
+import {
+  fetchProviders,
+  updateProvider,
+} from "../api/providers";
 
 import {
   ProviderCard,
@@ -39,51 +43,96 @@ export function ToolManagementPage() {
   const [
     providers,
     setProviders,
-  ] =
-    useState<
-      ProviderConfig[]
-    >(
-      getProviders,
-    );
+  ] = useState<
+    ProviderConfig[]
+  >([]);
 
   const [
     tools,
     setTools,
-  ] =
-    useState<Tool[]>(
-      getTools,
-    );
+  ] = useState<Tool[]>([]);
 
   const [
     selectedToolId,
     setSelectedToolId,
-  ] =
-    useState<
-      string | null
-    >(
-      tools[0]?.id ??
-        null,
-    );
+  ] = useState<
+    string | null
+  >(null);
 
   const [
     draftTool,
     setDraftTool,
-  ] =
-    useState<
-      Tool | undefined
-    >(
-      tools[0]
-        ? structuredClone(
-            tools[0],
-          )
-        : undefined,
-    );
+  ] = useState<
+    Tool | undefined
+  >();
 
   const [
     search,
     setSearch,
-  ] =
-    useState("");
+  ] = useState("");
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
+
+  const [
+    error,
+    setError,
+  ] = useState<
+    string | null
+  >(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const [
+          providerData,
+          toolData,
+        ] =
+          await Promise.all([
+            fetchProviders(),
+            fetchTools(),
+          ]);
+
+        setProviders(
+          providerData,
+        );
+
+        setTools(
+          toolData,
+        );
+
+        const firstTool =
+          toolData[0];
+
+        if (firstTool) {
+          setSelectedToolId(
+            firstTool.id,
+          );
+
+          setDraftTool(
+            structuredClone(
+              firstTool,
+            ),
+          );
+        }
+      } catch (loadError) {
+        setError(
+          loadError instanceof Error
+            ? loadError.message
+            : "Tools & Providers 정보를 불러오지 못했습니다.",
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    void load();
+  }, []);
 
   useEffect(() => {
     const selected =
@@ -106,18 +155,18 @@ export function ToolManagementPage() {
   ]);
 
   const filteredTools =
-    tools.filter(
-      (tool) => {
-        const keyword =
-          search
-            .trim()
-            .toLowerCase();
+    useMemo(() => {
+      const keyword =
+        search
+          .trim()
+          .toLowerCase();
 
-        if (!keyword) {
-          return true;
-        }
+      if (!keyword) {
+        return tools;
+      }
 
-        return (
+      return tools.filter(
+        (tool) =>
           tool.name
             .toLowerCase()
             .includes(
@@ -130,87 +179,146 @@ export function ToolManagementPage() {
             .toLowerCase()
             .includes(
               keyword,
-            )
+            ),
+      );
+    }, [
+      tools,
+      search,
+    ]);
+
+  const handleProviderToggle =
+    async (
+      providerId:
+        ProviderConfig["id"],
+    ) => {
+      const provider =
+        providers.find(
+          (item) =>
+            item.id ===
+            providerId,
         );
-      },
-    );
 
-  const handleProviderToggle = (
-    providerId:
-      ProviderConfig["id"],
-  ) => {
-    const nextProviders =
-      providers.map(
-        (provider) =>
-          provider.id ===
-          providerId
-            ? {
-                ...provider,
+      if (!provider) {
+        return;
+      }
 
-                enabled:
-                  !provider.enabled,
-              }
-            : provider,
-      );
+      try {
+        const savedProvider =
+          await updateProvider(
+            providerId,
+            {
+              enabled:
+                !provider.enabled,
+            },
+          );
 
-    setProviders(
-      nextProviders,
-    );
-
-    saveProviders(
-      nextProviders,
-    );
-  };
-
-  const handleSaveTool = () => {
-    if (!draftTool) {
-      return;
-    }
-
-    if (
-      !draftTool.name.trim()
-    ) {
-      window.alert(
-        "Tool 이름을 입력하세요.",
-      );
-
-      return;
-    }
-
-    const nextTool: Tool = {
-      ...draftTool,
-
-      name:
-        draftTool.name.trim(),
+        setProviders(
+          (current) =>
+            current.map(
+              (item) =>
+                item.id ===
+                savedProvider.id
+                  ? savedProvider
+                  : item,
+            ),
+        );
+      } catch (updateError) {
+        window.alert(
+          updateError instanceof Error
+            ? updateError.message
+            : "Provider 수정에 실패했습니다.",
+        );
+      }
     };
 
-    const nextTools =
-      tools.map(
-        (tool) =>
-          tool.id ===
-          nextTool.id
-            ? nextTool
-            : tool,
-      );
+  const handleSaveTool =
+    async () => {
+      if (!draftTool) {
+        return;
+      }
 
-    setTools(
-      nextTools,
-    );
+      if (
+        !draftTool.name.trim()
+      ) {
+        window.alert(
+          "Tool 이름을 입력하세요.",
+        );
 
-    setDraftTool(
-      structuredClone(
-        nextTool,
-      ),
-    );
+        return;
+      }
 
-    saveTools(
-      nextTools,
-    );
+      try {
+        const savedTool =
+          await updateTool(
+            draftTool.id,
+            {
+              name:
+                draftTool.name.trim(),
 
-    window.alert(
-      "Tool 설정이 저장되었습니다.",
+              description:
+                draftTool.description,
+
+              enabled:
+                draftTool.enabled,
+            },
+          );
+
+        setTools(
+          (current) =>
+            current.map(
+              (tool) =>
+                tool.id ===
+                savedTool.id
+                  ? savedTool
+                  : tool,
+            ),
+        );
+
+        setDraftTool(
+          structuredClone(
+            savedTool,
+          ),
+        );
+
+        window.alert(
+          "Tool 설정이 저장되었습니다.",
+        );
+      } catch (saveError) {
+        window.alert(
+          saveError instanceof Error
+            ? saveError.message
+            : "Tool 설정 저장에 실패했습니다.",
+        );
+      }
+    };
+
+  if (loading) {
+    return (
+      <div className="tool-management-page">
+        Tools & Providers 정보를 불러오는 중입니다...
+      </div>
     );
-  };
+  }
+
+  if (error) {
+    return (
+      <div className="tool-management-page">
+        <h1>
+          Tools & Providers
+        </h1>
+
+        <p>
+          {error}
+        </p>
+
+        <p>
+          Backend 서버가
+          http://localhost:4000 에서
+          실행 중인지 확인하세요.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="tool-management-page">
@@ -359,9 +467,9 @@ export function ToolManagementPage() {
             onChange={
               setDraftTool
             }
-            onSave={
-              handleSaveTool
-            }
+            onSave={() => {
+              void handleSaveTool();
+            }}
           />
         </div>
       </section>

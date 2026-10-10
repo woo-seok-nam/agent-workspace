@@ -7,6 +7,14 @@ import {
 } from "../modules/agents/agent.routes.js";
 
 import {
+  providerRouter,
+} from "../modules/providers/provider.routes.js";
+
+import {
+  toolRouter,
+} from "../modules/tools/tool.routes.js";
+
+import {
   healthRouter,
 } from "./health.routes.js";
 
@@ -21,4 +29,14 @@ apiRouter.use(
 apiRouter.use(
   "/agents",
   agentRouter,
+);
+
+apiRouter.use(
+  "/tools",
+  toolRouter,
+);
+
+apiRouter.use(
+  "/providers",
+  providerRouter,
 );

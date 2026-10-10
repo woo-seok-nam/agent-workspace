@@ -68,9 +68,9 @@ export function AgentManagementPage() {
   const [
     error,
     setError,
-  ] = useState<
-    string | null
-  >(null);
+  ] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     async function load() {
@@ -81,7 +81,9 @@ export function AgentManagementPage() {
         const data =
           await fetchAgents();
 
-        setAgents(data);
+        setAgents(
+          data,
+        );
 
         const firstAgent =
           data[0];
