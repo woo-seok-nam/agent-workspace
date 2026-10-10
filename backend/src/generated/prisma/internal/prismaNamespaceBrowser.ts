@@ -56,7 +56,9 @@ export const ModelName = {
   Provider: 'Provider',
   Workflow: 'Workflow',
   WorkflowNode: 'WorkflowNode',
-  WorkflowEdge: 'WorkflowEdge'
+  WorkflowEdge: 'WorkflowEdge',
+  WorkflowRun: 'WorkflowRun',
+  StepRun: 'StepRun'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -153,6 +155,42 @@ export const WorkflowEdgeScalarFieldEnum = {
 } as const
 
 export type WorkflowEdgeScalarFieldEnum = (typeof WorkflowEdgeScalarFieldEnum)[keyof typeof WorkflowEdgeScalarFieldEnum]
+
+
+export const WorkflowRunScalarFieldEnum = {
+  id: 'id',
+  workflowId: 'workflowId',
+  name: 'name',
+  prompt: 'prompt',
+  status: 'status',
+  tokenUsage: 'tokenUsage',
+  cost: 'cost',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WorkflowRunScalarFieldEnum = (typeof WorkflowRunScalarFieldEnum)[keyof typeof WorkflowRunScalarFieldEnum]
+
+
+export const StepRunScalarFieldEnum = {
+  id: 'id',
+  runId: 'runId',
+  nodeId: 'nodeId',
+  status: 'status',
+  input: 'input',
+  output: 'output',
+  logs: 'logs',
+  tokenUsage: 'tokenUsage',
+  cost: 'cost',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type StepRunScalarFieldEnum = (typeof StepRunScalarFieldEnum)[keyof typeof StepRunScalarFieldEnum]
 
 
 export const SortOrder = {

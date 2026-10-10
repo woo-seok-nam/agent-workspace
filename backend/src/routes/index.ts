@@ -11,6 +11,10 @@ import {
 } from "../modules/providers/provider.routes.js";
 
 import {
+  runRouter,
+} from "../modules/runs/run.routes.js";
+
+import {
   toolRouter,
 } from "../modules/tools/tool.routes.js";
 
@@ -48,4 +52,9 @@ apiRouter.use(
 apiRouter.use(
   "/workflows",
   workflowRouter,
+);
+
+apiRouter.use(
+  "/runs",
+  runRouter,
 );

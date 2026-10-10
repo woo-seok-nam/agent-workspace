@@ -402,7 +402,9 @@ export const ModelName = {
   Provider: 'Provider',
   Workflow: 'Workflow',
   WorkflowNode: 'WorkflowNode',
-  WorkflowEdge: 'WorkflowEdge'
+  WorkflowEdge: 'WorkflowEdge',
+  WorkflowRun: 'WorkflowRun',
+  StepRun: 'StepRun'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -418,7 +420,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "agent" | "tool" | "provider" | "workflow" | "workflowNode" | "workflowEdge"
+    modelProps: "agent" | "tool" | "provider" | "workflow" | "workflowNode" | "workflowEdge" | "workflowRun" | "stepRun"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -866,6 +868,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    WorkflowRun: {
+      payload: Prisma.$WorkflowRunPayload<ExtArgs>
+      fields: Prisma.WorkflowRunFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.WorkflowRunFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkflowRunPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.WorkflowRunFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkflowRunPayload>
+        }
+        findFirst: {
+          args: Prisma.WorkflowRunFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkflowRunPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.WorkflowRunFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkflowRunPayload>
+        }
+        findMany: {
+          args: Prisma.WorkflowRunFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkflowRunPayload>[]
+        }
+        create: {
+          args: Prisma.WorkflowRunCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkflowRunPayload>
+        }
+        createMany: {
+          args: Prisma.WorkflowRunCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.WorkflowRunCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkflowRunPayload>[]
+        }
+        delete: {
+          args: Prisma.WorkflowRunDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkflowRunPayload>
+        }
+        update: {
+          args: Prisma.WorkflowRunUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkflowRunPayload>
+        }
+        deleteMany: {
+          args: Prisma.WorkflowRunDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.WorkflowRunUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.WorkflowRunUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkflowRunPayload>[]
+        }
+        upsert: {
+          args: Prisma.WorkflowRunUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkflowRunPayload>
+        }
+        aggregate: {
+          args: Prisma.WorkflowRunAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateWorkflowRun>
+        }
+        groupBy: {
+          args: Prisma.WorkflowRunGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WorkflowRunGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.WorkflowRunCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WorkflowRunCountAggregateOutputType> | number
+        }
+      }
+    }
+    StepRun: {
+      payload: Prisma.$StepRunPayload<ExtArgs>
+      fields: Prisma.StepRunFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.StepRunFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StepRunPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.StepRunFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StepRunPayload>
+        }
+        findFirst: {
+          args: Prisma.StepRunFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StepRunPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.StepRunFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StepRunPayload>
+        }
+        findMany: {
+          args: Prisma.StepRunFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StepRunPayload>[]
+        }
+        create: {
+          args: Prisma.StepRunCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StepRunPayload>
+        }
+        createMany: {
+          args: Prisma.StepRunCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.StepRunCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StepRunPayload>[]
+        }
+        delete: {
+          args: Prisma.StepRunDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StepRunPayload>
+        }
+        update: {
+          args: Prisma.StepRunUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StepRunPayload>
+        }
+        deleteMany: {
+          args: Prisma.StepRunDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.StepRunUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.StepRunUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StepRunPayload>[]
+        }
+        upsert: {
+          args: Prisma.StepRunUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StepRunPayload>
+        }
+        aggregate: {
+          args: Prisma.StepRunAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateStepRun>
+        }
+        groupBy: {
+          args: Prisma.StepRunGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StepRunGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.StepRunCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StepRunCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -983,6 +1133,42 @@ export const WorkflowEdgeScalarFieldEnum = {
 } as const
 
 export type WorkflowEdgeScalarFieldEnum = (typeof WorkflowEdgeScalarFieldEnum)[keyof typeof WorkflowEdgeScalarFieldEnum]
+
+
+export const WorkflowRunScalarFieldEnum = {
+  id: 'id',
+  workflowId: 'workflowId',
+  name: 'name',
+  prompt: 'prompt',
+  status: 'status',
+  tokenUsage: 'tokenUsage',
+  cost: 'cost',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WorkflowRunScalarFieldEnum = (typeof WorkflowRunScalarFieldEnum)[keyof typeof WorkflowRunScalarFieldEnum]
+
+
+export const StepRunScalarFieldEnum = {
+  id: 'id',
+  runId: 'runId',
+  nodeId: 'nodeId',
+  status: 'status',
+  input: 'input',
+  output: 'output',
+  logs: 'logs',
+  tokenUsage: 'tokenUsage',
+  cost: 'cost',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type StepRunScalarFieldEnum = (typeof StepRunScalarFieldEnum)[keyof typeof StepRunScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1198,6 +1384,8 @@ export type GlobalOmitConfig = {
   workflow?: Prisma.WorkflowOmit
   workflowNode?: Prisma.WorkflowNodeOmit
   workflowEdge?: Prisma.WorkflowEdgeOmit
+  workflowRun?: Prisma.WorkflowRunOmit
+  stepRun?: Prisma.StepRunOmit
 }
 
 /* Types for Logging */

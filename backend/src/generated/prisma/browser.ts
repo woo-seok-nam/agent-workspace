@@ -47,3 +47,13 @@ export type WorkflowNode = Prisma.WorkflowNodeModel
  * 
  */
 export type WorkflowEdge = Prisma.WorkflowEdgeModel
+/**
+ * Model WorkflowRun
+ * 
+ */
+export type WorkflowRun = Prisma.WorkflowRunModel
+/**
+ * Model StepRun
+ * 
+ */
+export type StepRun = Prisma.StepRunModel
