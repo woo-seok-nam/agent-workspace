@@ -7,9 +7,17 @@ import type {
   Workflow,
 } from "../features/workflow/types";
 
+import type {
+  WorkflowRun,
+} from "../features/runs/types";
+
 import {
   fetchWorkflows,
 } from "../api/workflows";
+
+import {
+  fetchRuns,
+} from "../api/runs";
 
 import {
   GoalInput,
@@ -35,6 +43,14 @@ export function HomePage() {
     >([]);
 
   const [
+    runs,
+    setRuns,
+  ] =
+    useState<
+      WorkflowRun[]
+    >([]);
+
+  const [
     loading,
     setLoading,
   ] =
@@ -49,29 +65,39 @@ export function HomePage() {
     >(null);
 
   useEffect(() => {
-    async function loadWorkflows() {
+    async function loadHomeData() {
       try {
         setLoading(true);
         setError(null);
 
-        const data =
-          await fetchWorkflows();
+        const [
+          workflowData,
+          runData,
+        ] =
+          await Promise.all([
+            fetchWorkflows(),
+            fetchRuns(),
+          ]);
 
         setWorkflows(
-          data,
+          workflowData,
+        );
+
+        setRuns(
+          runData,
         );
       } catch (loadError) {
         setError(
           loadError instanceof Error
             ? loadError.message
-            : "Workflow 목록을 불러오지 못했습니다.",
+            : "Home 데이터를 불러오지 못했습니다.",
         );
       } finally {
         setLoading(false);
       }
     }
 
-    void loadWorkflows();
+    void loadHomeData();
   }, []);
 
   return (
@@ -98,8 +124,7 @@ export function HomePage() {
 
       {loading ? (
         <section className="home-section">
-          Workflow를 불러오는
-          중입니다...
+          데이터를 불러오는 중입니다...
         </section>
       ) : error ? (
         <section className="home-section">
@@ -109,19 +134,25 @@ export function HomePage() {
 
           <p>
             Backend 서버가
-            http://localhost:4000 에서
-            실행 중인지 확인하세요.
+            http://localhost:4000
+            에서 실행 중인지 확인하세요.
           </p>
         </section>
       ) : (
-        <RecommendedWorkflows
-          workflows={
-            workflows
-          }
-        />
-      )}
+        <>
+          <RecommendedWorkflows
+            workflows={
+              workflows
+            }
+          />
 
-      <RecentRuns />
+          <RecentRuns
+            runs={
+              runs
+            }
+          />
+        </>
+      )}
     </div>
   );
 }

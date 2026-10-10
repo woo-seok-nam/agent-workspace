@@ -1,97 +1,184 @@
-import { useNavigate } from "react-router-dom";
+import {
+  ArrowUpRight,
+} from "lucide-react";
 
-import { mockRuns } from "../../../mocks/runs";
-import { mockWorkflows } from "../../../mocks/workflows";
+import {
+  useNavigate,
+} from "react-router-dom";
 
-export function RecentRuns() {
-  const navigate = useNavigate();
+import type {
+  WorkflowRun,
+} from "../../runs/types";
 
-  const getWorkflowName = (workflowId: string) => {
-    return (
-      mockWorkflows.find((workflow) => workflow.id === workflowId)?.name ??
-      "Unknown Workflow"
+interface RecentRunsProps {
+  runs: WorkflowRun[];
+}
+
+export function RecentRuns({
+  runs,
+}: RecentRunsProps) {
+  const navigate =
+    useNavigate();
+
+  const recentRuns =
+    runs.slice(
+      0,
+      5,
     );
-  };
 
   return (
     <section className="home-section">
       <div className="home-section__header">
-        <h2>최근 실행</h2>
+        <div>
+          <h2>
+            Recent Runs
+          </h2>
+
+          <p>
+            최근 실행한 Workflow를
+            확인합니다.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          className="home-section__link"
+          onClick={() => {
+            navigate(
+              "/runs",
+            );
+          }}
+        >
+          전체 보기
+        </button>
       </div>
 
-      <div className="recent-runs">
-        <table className="recent-runs__table">
-          <thead>
-            <tr>
-              <th>이름</th>
-              <th>워크플로우</th>
-              <th>상태</th>
-              <th>실행 시간</th>
-              <th></th>
-            </tr>
-          </thead>
+      {recentRuns.length === 0 ? (
+        <div className="home-empty-state">
+          아직 실행 기록이 없습니다.
+        </div>
+      ) : (
+        <div className="recent-runs-table-wrapper">
+          <table className="recent-runs-table">
+            <thead>
+              <tr>
+                <th>
+                  Run
+                </th>
 
-          <tbody>
-            {mockRuns.map((run) => (
-              <tr
-                key={run.id}
-                onClick={() => navigate(`/runs/${run.id}`)}
-              >
-                <td>{run.name}</td>
+                <th>
+                  Status
+                </th>
 
-                <td>
-                  {getWorkflowName(run.workflowId)}
-                </td>
+                <th>
+                  Tokens
+                </th>
 
-                <td>
-                  <RunStatus status={run.status} />
-                </td>
+                <th>
+                  Cost
+                </th>
 
-                <td>
-                  {run.startedAt
-                    ? new Date(run.startedAt).toLocaleString("ko-KR")
-                    : "-"}
-                </td>
-
-                <td>
-                  <button
-                    type="button"
-                    className="table-action"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      navigate(`/runs/${run.id}`);
-                    }}
-                  >
-                    결과 보기
-                  </button>
-                </td>
+                <th />
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+
+            <tbody>
+              {recentRuns.map(
+                (run) => (
+                  <tr
+                    key={
+                      run.id
+                    }
+                  >
+                    <td>
+                      <div className="recent-run-name">
+                        <strong>
+                          {
+                            run.name
+                          }
+                        </strong>
+
+                        <span>
+                          {
+                            run.id
+                          }
+                        </span>
+                      </div>
+                    </td>
+
+                    <td>
+                      <span
+                        className={[
+                          "recent-run-status",
+                          `recent-run-status--${run.status.toLowerCase()}`,
+                        ].join(
+                          " ",
+                        )}
+                      >
+                        {
+                          getStatusLabel(
+                            run.status,
+                          )
+                        }
+                      </span>
+                    </td>
+
+                    <td>
+                      {run.tokenUsage.toLocaleString()}
+                    </td>
+
+                    <td>
+                      $
+                      {run.cost.toFixed(
+                        2,
+                      )}
+                    </td>
+
+                    <td>
+                      <button
+                        type="button"
+                        className="recent-run-action"
+                        aria-label={`${run.name} 실행 상세 보기`}
+                        onClick={() => {
+                          navigate(
+                            `/runs/${run.id}`,
+                          );
+                        }}
+                      >
+                        <ArrowUpRight
+                          size={14}
+                        />
+                      </button>
+                    </td>
+                  </tr>
+                ),
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
     </section>
   );
 }
 
-interface RunStatusProps {
-  status: string;
-}
-
-function RunStatus({ status }: RunStatusProps) {
-  return (
-    <span
-      className={`run-status run-status--${status.toLowerCase()}`}
-    >
-      {getStatusLabel(status)}
-    </span>
-  );
-}
-
-function getStatusLabel(status: string) {
+function getStatusLabel(
+  status: WorkflowRun["status"],
+) {
   switch (status) {
+    case "IDLE":
+      return "대기";
+
+    case "QUEUED":
+      return "실행 대기";
+
     case "RUNNING":
       return "실행 중";
+
+    case "PAUSED":
+      return "일시정지";
+
+    case "WAITING_APPROVAL":
+      return "승인 대기";
 
     case "COMPLETED":
       return "완료";
@@ -99,13 +186,7 @@ function getStatusLabel(status: string) {
     case "FAILED":
       return "실패";
 
-    case "WAITING_APPROVAL":
-      return "승인 대기";
-
-    case "PAUSED":
-      return "일시 정지";
-
-    default:
-      return status;
+    case "CANCELLED":
+      return "취소됨";
   }
 }

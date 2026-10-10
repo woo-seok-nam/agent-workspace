@@ -11,14 +11,20 @@ interface BuilderHeaderProps {
 
   saving: boolean;
 
+  running: boolean;
+
   onSave: () => void;
+
+  onRun: () => void;
 }
 
 export function BuilderHeader({
   workflowName,
   isDirty,
   saving,
+  running,
   onSave,
+  onRun,
 }: BuilderHeaderProps) {
   return (
     <header className="builder-header">
@@ -85,7 +91,9 @@ export function BuilderHeader({
             !isDirty
           }
         >
-          <Save size={14} />
+          <Save
+            size={14}
+          />
 
           {saving
             ? "저장 중..."
@@ -105,9 +113,20 @@ export function BuilderHeader({
         <button
           type="button"
           className="primary-button"
+          onClick={
+            onRun
+          }
+          disabled={
+            running
+          }
         >
-          <Play size={14} />
-          Run
+          <Play
+            size={14}
+          />
+
+          {running
+            ? "Starting..."
+            : "Run"}
         </button>
       </div>
     </header>

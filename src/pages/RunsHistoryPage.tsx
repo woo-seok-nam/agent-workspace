@@ -1,4 +1,5 @@
 import {
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -13,10 +14,11 @@ import {
 } from "react-router-dom";
 
 import {
-  mockRuns,
-} from "../mocks/runs";
+  fetchRuns,
+} from "../api/runs";
 
 import type {
+  WorkflowRun,
   WorkflowRunStatus,
 } from "../features/runs/types";
 
@@ -35,6 +37,14 @@ export function RunsHistoryPage() {
     useNavigate();
 
   const [
+    runs,
+    setRuns,
+  ] =
+    useState<
+      WorkflowRun[]
+    >([]);
+
+  const [
     search,
     setSearch,
   ] =
@@ -48,6 +58,46 @@ export function RunsHistoryPage() {
       "ALL",
     );
 
+  const [
+    loading,
+    setLoading,
+  ] =
+    useState(true);
+
+  const [
+    error,
+    setError,
+  ] =
+    useState<
+      string | null
+    >(null);
+
+  useEffect(() => {
+    async function loadRuns() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const data =
+          await fetchRuns();
+
+        setRuns(
+          data,
+        );
+      } catch (loadError) {
+        setError(
+          loadError instanceof Error
+            ? loadError.message
+            : "Run 목록을 불러오지 못했습니다.",
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    void loadRuns();
+  }, []);
+
   const filteredRuns =
     useMemo(() => {
       const keyword =
@@ -55,7 +105,7 @@ export function RunsHistoryPage() {
           .trim()
           .toLowerCase();
 
-      return mockRuns.filter(
+      return runs.filter(
         (run) => {
           const matchesSearch =
             !keyword ||
@@ -83,33 +133,34 @@ export function RunsHistoryPage() {
         },
       );
     }, [
+      runs,
       search,
       statusFilter,
     ]);
 
   const completedCount =
-    mockRuns.filter(
+    runs.filter(
       (run) =>
         run.status ===
         "COMPLETED",
     ).length;
 
   const runningCount =
-    mockRuns.filter(
+    runs.filter(
       (run) =>
         run.status ===
         "RUNNING",
     ).length;
 
   const failedCount =
-    mockRuns.filter(
+    runs.filter(
       (run) =>
         run.status ===
         "FAILED",
     ).length;
 
   const totalTokens =
-    mockRuns.reduce(
+    runs.reduce(
       (
         sum,
         run,
@@ -120,7 +171,7 @@ export function RunsHistoryPage() {
     );
 
   const totalCost =
-    mockRuns.reduce(
+    runs.reduce(
       (
         sum,
         run,
@@ -129,6 +180,34 @@ export function RunsHistoryPage() {
         run.cost,
       0,
     );
+
+  if (loading) {
+    return (
+      <div className="runs-history-page">
+        실행 기록을 불러오는 중입니다...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="runs-history-page">
+        <h1>
+          Execution History
+        </h1>
+
+        <p>
+          {error}
+        </p>
+
+        <p>
+          Backend 서버가
+          http://localhost:4000
+          에서 실행 중인지 확인하세요.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="runs-history-page">
@@ -154,7 +233,7 @@ export function RunsHistoryPage() {
         <SummaryCard
           label="Total Runs"
           value={
-            mockRuns.length.toString()
+            runs.length.toString()
           }
         />
 
@@ -240,6 +319,10 @@ export function RunsHistoryPage() {
                 전체 상태
               </option>
 
+              <option value="QUEUED">
+                실행 대기
+              </option>
+
               <option value="RUNNING">
                 실행 중
               </option>
@@ -293,7 +376,6 @@ export function RunsHistoryPage() {
 
 interface SummaryCardProps {
   label: string;
-
   value: string;
 }
 

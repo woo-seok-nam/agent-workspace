@@ -5,8 +5,13 @@ import {
 } from "react";
 
 import {
+  useNavigate,
   useParams,
 } from "react-router-dom";
+
+import {
+  createRun,
+} from "../api/runs";
 
 import {
   fetchWorkflow,
@@ -40,6 +45,9 @@ export function WorkflowBuilderPage() {
     workflowId,
   } = useParams();
 
+  const navigate =
+    useNavigate();
+
   const [
     description,
     setDescription,
@@ -50,19 +58,28 @@ export function WorkflowBuilderPage() {
   const [
     loading,
     setLoading,
-  ] = useState(true);
+  ] =
+    useState(true);
 
   const [
     error,
     setError,
-  ] = useState<
-    string | null
-  >(null);
+  ] =
+    useState<
+      string | null
+    >(null);
 
   const [
     saving,
     setSaving,
-  ] = useState(false);
+  ] =
+    useState(false);
+
+  const [
+    running,
+    setRunning,
+  ] =
+    useState(false);
 
   const {
     name,
@@ -160,11 +177,8 @@ export function WorkflowBuilderPage() {
           currentWorkflowId,
           {
             name,
-
             description,
-
             nodes,
-
             edges,
           },
         );
@@ -182,6 +196,51 @@ export function WorkflowBuilderPage() {
         );
       } finally {
         setSaving(false);
+      }
+    };
+
+  const handleRun =
+    async () => {
+      if (
+        !workflowId ||
+        running
+      ) {
+        return;
+      }
+
+      if (isDirty) {
+        const confirmed =
+          window.confirm(
+            "저장되지 않은 변경사항이 있습니다. 현재 저장된 Workflow 기준으로 실행하시겠습니까?",
+          );
+
+        if (!confirmed) {
+          return;
+        }
+      }
+
+      try {
+        setRunning(true);
+
+        const run =
+          await createRun({
+            workflowId,
+
+            name:
+              `${name} Run`,
+          });
+
+        navigate(
+          `/runs/${run.id}`,
+        );
+      } catch (runError) {
+        window.alert(
+          runError instanceof Error
+            ? runError.message
+            : "Workflow Run 생성에 실패했습니다.",
+        );
+      } finally {
+        setRunning(false);
       }
     };
 
@@ -239,8 +298,14 @@ export function WorkflowBuilderPage() {
         saving={
           saving
         }
+        running={
+          running
+        }
         onSave={() => {
           void handleSave();
+        }}
+        onRun={() => {
+          void handleRun();
         }}
       />
 
