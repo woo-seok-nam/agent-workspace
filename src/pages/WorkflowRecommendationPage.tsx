@@ -17,6 +17,10 @@ import {
 } from "../api/workflows";
 
 import {
+  createRun,
+} from "../api/runs";
+
+import {
   RecommendedWorkflowCard,
 } from "../features/recommendation/components/RecommendedWorkflowCard";
 
@@ -72,6 +76,12 @@ export function WorkflowRecommendationPage() {
       string | null
     >(null);
 
+  const [
+    running,
+    setRunning,
+  ] =
+    useState(false);
+
   useEffect(() => {
     async function loadWorkflows() {
       try {
@@ -101,8 +111,7 @@ export function WorkflowRecommendationPage() {
   if (loading) {
     return (
       <div className="recommendation-page">
-        추천 Workflow를 불러오는
-        중입니다...
+        추천 Workflow를 불러오는 중입니다...
       </div>
     );
   }
@@ -127,8 +136,7 @@ export function WorkflowRecommendationPage() {
   if (!recommendedWorkflow) {
     return (
       <div className="recommendation-page">
-        추천 가능한 Workflow가
-        없습니다.
+        추천 가능한 Workflow가 없습니다.
       </div>
     );
   }
@@ -141,18 +149,42 @@ export function WorkflowRecommendationPage() {
     };
 
   const handleRun =
-    () => {
-      navigate(
-        "/runs/run-preview",
-        {
-          state: {
+    async () => {
+      if (running) {
+        return;
+      }
+
+      try {
+        setRunning(true);
+
+        const run =
+          await createRun({
             workflowId:
               recommendedWorkflow.id,
 
+            name:
+              prompt.length > 40
+                ? `${prompt.slice(
+                    0,
+                    40,
+                  )}...`
+                : prompt,
+
             prompt,
-          },
-        },
-      );
+          });
+
+        navigate(
+          `/runs/${run.id}`,
+        );
+      } catch (runError) {
+        window.alert(
+          runError instanceof Error
+            ? runError.message
+            : "Workflow 실행 준비에 실패했습니다.",
+        );
+      } finally {
+        setRunning(false);
+      }
     };
 
   return (
@@ -187,13 +219,19 @@ export function WorkflowRecommendationPage() {
         workflow={
           recommendedWorkflow
         }
-        onRun={
-          handleRun
-        }
+        onRun={() => {
+          void handleRun();
+        }}
         onCustomize={
           handleCustomize
         }
       />
+
+      {running && (
+        <p>
+          Workflow Run을 생성하고 있습니다...
+        </p>
+      )}
 
       <RecommendationStepList
         workflow={
