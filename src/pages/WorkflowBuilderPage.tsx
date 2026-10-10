@@ -1,15 +1,17 @@
 import {
   useEffect,
+  useMemo,
+  useState,
 } from "react";
 
 import {
-  useNavigate,
   useParams,
 } from "react-router-dom";
 
 import {
-  mockWorkflows,
-} from "../mocks/workflows";
+  fetchWorkflow,
+  updateWorkflow,
+} from "../api/workflows";
 
 import {
   BuilderHeader,
@@ -31,14 +33,6 @@ import {
   useWorkflowBuilderStore,
 } from "../features/workflow/store/workflowBuilderStore";
 
-import {
-  validateWorkflow,
-} from "../features/workflow/utils/workflowValidation";
-
-import type {
-  Workflow,
-} from "../features/workflow/types";
-
 import "../features/workflow/WorkflowBuilder.css";
 
 export function WorkflowBuilderPage() {
@@ -46,234 +40,178 @@ export function WorkflowBuilderPage() {
     workflowId,
   } = useParams();
 
-  const navigate =
-    useNavigate();
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
 
-  const workflow =
-    mockWorkflows.find(
-      (item) =>
-        item.id ===
-        workflowId,
-    );
+  const [
+    error,
+    setError,
+  ] = useState<
+    string | null
+  >(null);
+
+  const [
+    saving,
+    setSaving,
+  ] = useState(false);
 
   const {
-    workflowId:
-      builderWorkflowId,
-
     name,
-
+    description,
     nodes,
     edges,
-
     selectedNodeId,
-
     isDirty,
 
     initializeWorkflow,
-
     selectNode,
-
-    addNode,
-
     updateNode,
-
     updateNodePosition,
-
+    addNode,
     removeNode,
-
     addEdge,
-
-    removeEdge,
-
     markSaved,
   } =
     useWorkflowBuilderStore();
 
   useEffect(() => {
-    if (!workflow) {
-      return;
-    }
-
-    if (
-      builderWorkflowId ===
-      workflow.id
-    ) {
-      return;
-    }
-
-    const storageKey =
-      `agent-workspace-workflow-${workflow.id}`;
-
-    const saved =
-      localStorage.getItem(
-        storageKey,
+    if (!workflowId) {
+      setError(
+        "Workflow ID가 없습니다.",
       );
 
-    if (saved) {
+      setLoading(false);
+
+      return;
+    }
+
+    async function loadWorkflow() {
       try {
-        const parsed =
-          JSON.parse(
-            saved,
-          ) as Workflow;
+        setLoading(true);
+        setError(null);
+
+        const workflow =
+          await fetchWorkflow(
+            workflowId,
+          );
 
         initializeWorkflow(
-          parsed,
+          workflow,
         );
-
-        return;
-      } catch {
-        localStorage.removeItem(
-          storageKey,
+      } catch (loadError) {
+        setError(
+          loadError instanceof Error
+            ? loadError.message
+            : "Workflow를 불러오지 못했습니다.",
         );
+      } finally {
+        setLoading(false);
       }
     }
 
-    initializeWorkflow(
-      workflow,
-    );
+    void loadWorkflow();
   }, [
-    workflow,
-    builderWorkflowId,
+    workflowId,
     initializeWorkflow,
   ]);
 
-  if (!workflow) {
+  const selectedNode =
+    useMemo(
+      () =>
+        nodes.find(
+          (node) =>
+            node.id ===
+            selectedNodeId,
+        ),
+      [
+        nodes,
+        selectedNodeId,
+      ],
+    );
+
+  const handleSave =
+    async () => {
+      if (!workflowId) {
+        return;
+      }
+
+      try {
+        setSaving(true);
+
+        await updateWorkflow(
+          workflowId,
+          {
+            name,
+
+            description,
+
+            nodes,
+
+            edges,
+          },
+        );
+
+        markSaved();
+
+        window.alert(
+          "Workflow가 저장되었습니다.",
+        );
+      } catch (saveError) {
+        window.alert(
+          saveError instanceof Error
+            ? saveError.message
+            : "Workflow 저장에 실패했습니다.",
+        );
+      } finally {
+        setSaving(false);
+      }
+    };
+
+  if (loading) {
     return (
-      <div>
-        Workflow를 찾을
-        수 없습니다.
+      <div className="workflow-builder-page">
+        Workflow를 불러오는 중입니다...
       </div>
     );
   }
 
-  const selectedNode =
-    nodes.find(
-      (node) =>
-        node.id ===
-        selectedNodeId,
+  if (error) {
+    return (
+      <div className="workflow-builder-page">
+        <h1>
+          Workflow Builder
+        </h1>
+
+        <p>
+          {error}
+        </p>
+
+        <p>
+          Backend 서버가
+          http://localhost:4000
+          에서 실행 중인지 확인하세요.
+        </p>
+      </div>
     );
-
-  const handleEdgeCreate = (
-    source: string,
-    target: string,
-  ) => {
-    const alreadyExists =
-      edges.some(
-        (edge) =>
-          edge.source ===
-            source &&
-          edge.target ===
-            target,
-      );
-
-    if (alreadyExists) {
-      return;
-    }
-
-    addEdge({
-      id:
-        `edge-${crypto.randomUUID()}`,
-
-      source,
-      target,
-    });
-  };
-
-  const handleSave = () => {
-    const validation =
-      validateWorkflow(
-        nodes,
-        edges,
-      );
-
-    if (!validation.valid) {
-      window.alert(
-        [
-          "Workflow를 저장할 수 없습니다.",
-          "",
-          ...validation.errors,
-        ].join("\n"),
-      );
-
-      return;
-    }
-
-    const savedWorkflow: Workflow = {
-      id: workflow.id,
-
-      name:
-        name ||
-        workflow.name,
-
-      description:
-        workflow.description,
-
-      nodes,
-
-      edges,
-
-      createdAt:
-        workflow.createdAt,
-
-      updatedAt:
-        new Date().toISOString(),
-    };
-
-    localStorage.setItem(
-      `agent-workspace-workflow-${workflow.id}`,
-
-      JSON.stringify(
-        savedWorkflow,
-      ),
-    );
-
-    markSaved();
-
-    window.alert(
-      "Workflow가 저장되었습니다.",
-    );
-  };
-
-  const handleRun = () => {
-    const validation =
-      validateWorkflow(
-        nodes,
-        edges,
-      );
-
-    if (!validation.valid) {
-      window.alert(
-        [
-          "Workflow를 실행할 수 없습니다.",
-          "",
-          ...validation.errors,
-        ].join("\n"),
-      );
-
-      return;
-    }
-
-    navigate(
-      "/runs/run-preview",
-    );
-  };
+  }
 
   return (
     <div className="workflow-builder-page">
       <BuilderHeader
         workflowName={
-          name ||
-          workflow.name
+          name
         }
         isDirty={
           isDirty
         }
-        onSave={
-          handleSave
+        saving={
+          saving
         }
-        onRun={
-          handleRun
-        }
+        onSave={() => {
+          void handleSave();
+        }}
       />
 
       <div className="builder-layout">
@@ -284,27 +222,23 @@ export function WorkflowBuilderPage() {
         />
 
         <WorkflowCanvas
-          nodes={nodes}
-          edges={edges}
+          nodes={
+            nodes
+          }
+          edges={
+            edges
+          }
           selectedNodeId={
             selectedNodeId
           }
-          onNodeSelect={(
-            nodeId,
-          ) => {
-            selectNode(
-              nodeId ||
-                null,
-            );
-          }}
+          onNodeSelect={
+            selectNode
+          }
           onNodePositionChange={
             updateNodePosition
           }
           onEdgeCreate={
-            handleEdgeCreate
-          }
-          onEdgeDelete={
-            removeEdge
+            addEdge
           }
         />
 

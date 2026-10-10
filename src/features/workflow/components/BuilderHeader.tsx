@@ -1,5 +1,4 @@
 import {
-  Check,
   MoreHorizontal,
   Play,
   Save,
@@ -8,40 +7,44 @@ import {
 interface BuilderHeaderProps {
   workflowName: string;
 
-  isDirty?: boolean;
+  isDirty: boolean;
+
+  saving: boolean;
 
   onSave: () => void;
-
-  onRun: () => void;
 }
 
 export function BuilderHeader({
   workflowName,
-  isDirty = false,
+  isDirty,
+  saving,
   onSave,
-  onRun,
 }: BuilderHeaderProps) {
   return (
     <header className="builder-header">
-      <div>
+      <div className="builder-header__left">
         <div className="builder-header__breadcrumb">
-          Workflows /{" "}
-          {workflowName}
+          <span>
+            Workflows
+          </span>
+
+          <span>
+            /
+          </span>
+
+          <strong>
+            {workflowName}
+          </strong>
         </div>
 
-        <div className="builder-header__title">
+        <div className="builder-header__title-row">
           <h1>
             {workflowName}
           </h1>
 
-          {isDirty ? (
-            <span className="builder-unsaved">
+          {isDirty && (
+            <span className="builder-header__dirty">
               저장되지 않은 변경사항
-            </span>
-          ) : (
-            <span className="builder-saved">
-              <Check size={11} />
-              저장됨
             </span>
           )}
         </div>
@@ -49,21 +52,21 @@ export function BuilderHeader({
         <div className="builder-header__tabs">
           <button
             type="button"
-            className="builder-tab builder-tab--active"
+            className="builder-header__tab builder-header__tab--active"
           >
             Builder
           </button>
 
           <button
             type="button"
-            className="builder-tab"
+            className="builder-header__tab"
           >
             Settings
           </button>
 
           <button
             type="button"
-            className="builder-tab"
+            className="builder-header__tab"
           >
             Versions
           </button>
@@ -74,29 +77,37 @@ export function BuilderHeader({
         <button
           type="button"
           className="secondary-button"
-          onClick={onSave}
+          onClick={
+            onSave
+          }
+          disabled={
+            saving ||
+            !isDirty
+          }
         >
-          <Save size={15} />
-          저장
+          <Save size={14} />
+
+          {saving
+            ? "저장 중..."
+            : "Save"}
         </button>
 
         <button
           type="button"
-          className="builder-icon-button"
+          className="builder-header__icon-button"
           aria-label="더보기"
         >
           <MoreHorizontal
-            size={18}
+            size={17}
           />
         </button>
 
         <button
           type="button"
           className="primary-button"
-          onClick={onRun}
         >
-          <Play size={15} />
-          실행
+          <Play size={14} />
+          Run
         </button>
       </div>
     </header>
