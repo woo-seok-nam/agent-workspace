@@ -96,3 +96,28 @@ export async function createRun(
 
   return result.data;
 }
+
+export async function startRun(
+  runId: string,
+): Promise<WorkflowRun> {
+  const response =
+    await fetch(
+      `${API_BASE_URL}/api/runs/${runId}/start`,
+      {
+        method: "POST",
+      },
+    );
+
+  if (!response.ok) {
+    throw new Error(
+      "Workflow 실행 시작에 실패했습니다.",
+    );
+  }
+
+  const result =
+    (await response.json()) as ApiResponse<
+      WorkflowRun
+    >;
+
+  return result.data;
+}

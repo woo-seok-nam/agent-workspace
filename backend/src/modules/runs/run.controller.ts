@@ -5,6 +5,10 @@ import type {
 } from "express";
 
 import {
+  startWorkflowRun,
+} from "../../orchestrator/orchestrator.service.js";
+
+import {
   addRun,
   editRun,
   editStepRun,
@@ -118,6 +122,44 @@ export async function createRunController(
       );
 
     response.status(201).json({
+      data: run,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function startRunController(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+) {
+  try {
+    const runId =
+      getParamValue(
+        request.params.runId,
+      );
+
+    if (!runId) {
+      response.status(400).json({
+        error: {
+          code:
+            "INVALID_RUN_ID",
+
+          message:
+            "Run ID가 필요합니다.",
+        },
+      });
+
+      return;
+    }
+
+    const run =
+      await startWorkflowRun(
+        runId,
+      );
+
+    response.status(200).json({
       data: run,
     });
   } catch (error) {
@@ -246,8 +288,7 @@ export async function updateStepRunController(
     }
 
     response.status(200).json({
-      data:
-        stepRun,
+      data: stepRun,
     });
   } catch (error) {
     next(error);

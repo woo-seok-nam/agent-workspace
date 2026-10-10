@@ -18,6 +18,7 @@ import {
 
 import {
   createRun,
+  startRun,
 } from "../api/runs";
 
 import {
@@ -173,6 +174,10 @@ export function WorkflowRecommendationPage() {
             prompt,
           });
 
+        void startRun(
+          run.id,
+        );
+
         navigate(
           `/runs/${run.id}`,
         );
@@ -180,7 +185,7 @@ export function WorkflowRecommendationPage() {
         window.alert(
           runError instanceof Error
             ? runError.message
-            : "Workflow 실행 준비에 실패했습니다.",
+            : "Workflow 실행 시작에 실패했습니다.",
         );
       } finally {
         setRunning(false);
@@ -229,7 +234,7 @@ export function WorkflowRecommendationPage() {
 
       {running && (
         <p>
-          Workflow Run을 생성하고 있습니다...
+          Workflow 실행을 준비하고 있습니다...
         </p>
       )}
 

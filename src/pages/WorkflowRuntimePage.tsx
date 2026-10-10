@@ -49,7 +49,8 @@ import "../features/runs/WorkflowRuntime.css";
 export function WorkflowRuntimePage() {
   const {
     runId,
-  } = useParams();
+  } =
+    useParams();
 
   const [
     run,
@@ -109,7 +110,10 @@ export function WorkflowRuntimePage() {
     const currentRunId =
       runId;
 
-    async function loadRuntime() {
+    let cancelled =
+      false;
+
+    async function loadInitialRuntime() {
       try {
         setLoading(true);
         setError(null);
@@ -123,6 +127,10 @@ export function WorkflowRuntimePage() {
           await fetchWorkflow(
             runData.workflowId,
           );
+
+        if (cancelled) {
+          return;
+        }
 
         setRun(
           runData,
@@ -141,19 +149,88 @@ export function WorkflowRuntimePage() {
           );
         }
       } catch (loadError) {
+        if (cancelled) {
+          return;
+        }
+
         setError(
           loadError instanceof Error
             ? loadError.message
             : "Runtime 정보를 불러오지 못했습니다.",
         );
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
 
-    void loadRuntime();
+    void loadInitialRuntime();
+
+    return () => {
+      cancelled =
+        true;
+    };
   }, [
     runId,
+  ]);
+
+  useEffect(() => {
+    if (
+      !runId ||
+      !run
+    ) {
+      return;
+    }
+
+    const terminalStatuses =
+      new Set([
+        "COMPLETED",
+        "FAILED",
+        "CANCELLED",
+      ]);
+
+    if (
+      terminalStatuses.has(
+        run.status,
+      )
+    ) {
+      return;
+    }
+
+    const intervalId =
+      window.setInterval(
+        () => {
+          void fetchRun(
+            runId,
+          )
+            .then(
+              (
+                updatedRun,
+              ) => {
+                setRun(
+                  updatedRun,
+                );
+              },
+            )
+            .catch(
+              () => {
+                // 일시적인 polling 오류는
+                // 화면 전체 오류로 전환하지 않는다.
+              },
+            );
+        },
+        1000,
+      );
+
+    return () => {
+      window.clearInterval(
+        intervalId,
+      );
+    };
+  }, [
+    runId,
+    run?.status,
   ]);
 
   const selectedNode =
@@ -199,7 +276,8 @@ export function WorkflowRuntimePage() {
       (stepRun) =>
         stepRun.status ===
         "COMPLETED",
-    ).length ?? 0;
+    ).length ??
+    0;
 
   const totalSteps =
     run?.stepRuns.length ??
@@ -247,12 +325,6 @@ export function WorkflowRuntimePage() {
 
         <p>
           {error}
-        </p>
-
-        <p>
-          Backend 서버가
-          http://localhost:4000
-          에서 실행 중인지 확인하세요.
         </p>
       </div>
     );
@@ -339,9 +411,7 @@ export function WorkflowRuntimePage() {
         agentName={
           approvalNode?.agentId
         }
-        summary={
-          "이 Step은 사용자 승인이 필요합니다."
-        }
+        summary="이 Step은 사용자 승인이 필요합니다."
         onApprove={() => {
           setApprovalOpen(
             false,

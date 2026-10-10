@@ -6,6 +6,7 @@ import {
   createRunController,
   listRuns,
   readRun,
+  startRunController,
   updateRunController,
   updateStepRunController,
 } from "./run.controller.js";
@@ -26,6 +27,11 @@ runRouter.get(
 runRouter.post(
   "/",
   createRunController,
+);
+
+runRouter.post(
+  "/:runId/start",
+  startRunController,
 );
 
 runRouter.patch(
