@@ -13,6 +13,24 @@ export interface RetryDecision {
   message: string;
 }
 
+export class ExecutionTimeoutError extends Error {
+  timeoutSeconds: number;
+
+  constructor(
+    timeoutSeconds: number,
+  ) {
+    super(
+      `실행 제한 시간 ${timeoutSeconds}초를 초과했습니다.`,
+    );
+
+    this.name =
+      "ExecutionTimeoutError";
+
+    this.timeoutSeconds =
+      timeoutSeconds;
+  }
+}
+
 function errorToText(
   error: unknown,
 ): string {
@@ -24,14 +42,13 @@ function errorToText(
       error.message,
       error.stack ?? "",
     ]
-      .join(
-        " ",
-      )
+      .join(" ")
       .toLowerCase();
   }
 
   if (
-    typeof error === "string"
+    typeof error ===
+    "string"
   ) {
     return error.toLowerCase();
   }
@@ -50,6 +67,22 @@ function errorToText(
 export function classifyExecutionError(
   error: unknown,
 ): RetryDecision {
+  if (
+    error instanceof
+    ExecutionTimeoutError
+  ) {
+    return {
+      retryable:
+        true,
+
+      category:
+        "TIMEOUT",
+
+      message:
+        `Step 실행 시간이 ${error.timeoutSeconds}초를 초과했습니다.`,
+    };
+  }
+
   const text =
     errorToText(
       error,
@@ -58,8 +91,8 @@ export function classifyExecutionError(
   /*
    * Quota / Billing 부족
    *
-   * 이 오류는 몇 초 기다렸다가 다시 호출해도
-   * 해결되지 않기 때문에 자동 재시도하지 않는다.
+   * 기다렸다가 다시 호출해도 해결되지 않는
+   * 사용자 조치 필요 오류.
    */
   if (
     text.includes(
@@ -91,7 +124,7 @@ export function classifyExecutionError(
   }
 
   /*
-   * 인증 문제
+   * 인증 오류
    */
   if (
     text.includes(
@@ -120,7 +153,7 @@ export function classifyExecutionError(
   }
 
   /*
-   * 존재하지 않거나 지원되지 않는 모델
+   * 지원하지 않는 모델
    */
   if (
     text.includes(
@@ -152,7 +185,7 @@ export function classifyExecutionError(
   }
 
   /*
-   * 서버 과부하 / 일시적 Provider 장애
+   * Provider 일시 장애
    */
   if (
     text.includes(
@@ -181,10 +214,7 @@ export function classifyExecutionError(
   }
 
   /*
-   * 일반적인 Rate Limit
-   *
-   * quota exceeded 문구는 위에서 먼저 걸러졌기 때문에
-   * 여기 도달한 429는 잠시 후 해결될 가능성이 있다.
+   * Rate limit
    */
   if (
     text.includes(
@@ -210,7 +240,7 @@ export function classifyExecutionError(
   }
 
   /*
-   * Timeout
+   * 기타 timeout 오류
    */
   if (
     text.includes(
@@ -252,16 +282,6 @@ export function classifyExecutionError(
 export function getRetryDelay(
   retryAttempt: number,
 ) {
-  /*
-   * Exponential Backoff
-   *
-   * retryAttempt = 1 → 1초
-   * retryAttempt = 2 → 2초
-   * retryAttempt = 3 → 4초
-   * retryAttempt = 4 → 8초
-   *
-   * 최대 10초
-   */
   const milliseconds =
     1000 *
     2 **
@@ -288,4 +308,55 @@ export function sleep(
       );
     },
   );
+}
+
+export async function executeWithTimeout<T>(
+  operation: () => Promise<T>,
+  timeoutSeconds: number,
+): Promise<T> {
+  if (
+    timeoutSeconds <= 0
+  ) {
+    return operation();
+  }
+
+  let timeoutId:
+    | ReturnType<
+        typeof setTimeout
+      >
+    | undefined;
+
+  const timeoutPromise =
+    new Promise<never>(
+      (
+        _resolve,
+        reject,
+      ) => {
+        timeoutId =
+          setTimeout(
+            () => {
+              reject(
+                new ExecutionTimeoutError(
+                  timeoutSeconds,
+                ),
+              );
+            },
+            timeoutSeconds *
+              1000,
+          );
+      },
+    );
+
+  try {
+    return await Promise.race([
+      operation(),
+      timeoutPromise,
+    ]);
+  } finally {
+    if (timeoutId) {
+      clearTimeout(
+        timeoutId,
+      );
+    }
+  }
 }

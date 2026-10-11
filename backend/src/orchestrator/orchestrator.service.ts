@@ -27,6 +27,7 @@ import {
 
 import {
   classifyExecutionError,
+  executeWithTimeout,
   getRetryDelay,
   sleep,
 } from "./retryPolicy.js";
@@ -397,12 +398,6 @@ export async function continueWorkflowRun(
       return;
     }
 
-    /*
-     * 현재 실행 가능한 Step은 병렬 실행한다.
-     *
-     * 각각의 Step 내부에서는
-     * Retry / Backoff가 독립적으로 적용된다.
-     */
     await Promise.all(
       executableSteps.map(
         async (
@@ -688,15 +683,6 @@ async function executeWorkflowNode(
     return;
   }
 
-  /*
-   * retryCount는 "최초 실행 이후 추가 재시도 횟수"다.
-   *
-   * retryCount = 2이면:
-   *
-   * 최초 1회
-   * + 재시도 2회
-   * = 최대 총 3회 실행
-   */
   const retryCount =
     Math.max(
       0,
@@ -704,6 +690,16 @@ async function executeWorkflowNode(
         ?.retryCount ??
         2,
     );
+
+  /*
+   * 설정이 없으면 기본 60초.
+   *
+   * 0 이하를 명시하면 Timeout을 사용하지 않는다.
+   */
+  const timeoutSeconds =
+    node.config
+      ?.timeoutSeconds ??
+    60;
 
   const maximumAttempts =
     retryCount +
@@ -727,7 +723,11 @@ async function executeWorkflowNode(
         ...initialStepRun.logs,
 
         createLog(
-          `${node.name} 실행을 시작했습니다.`,
+          `${node.name} 실행을 시작했습니다. 제한 시간: ${
+            timeoutSeconds > 0
+              ? `${timeoutSeconds}초`
+              : "없음"
+          }`,
         ),
       ],
     },
@@ -798,17 +798,29 @@ async function executeWorkflowNode(
           latestRun.stepRuns,
         );
 
+      /*
+       * 핵심:
+       * Node 전체 실행을 timeout으로 감싼다.
+       *
+       * Agent API뿐 아니라 현재 Node에서 실행하는
+       * Web Search Tool도 같은 제한 시간 안에 포함된다.
+       */
       const result =
-        await executeNode({
-          workflow,
+        await executeWithTimeout(
+          () =>
+            executeNode({
+              workflow,
 
-          run:
-            latestRun,
+              run:
+                latestRun,
 
-          node,
+              node,
 
-          dependencyOutputs,
-        });
+              dependencyOutputs,
+            }),
+
+          timeoutSeconds,
+        );
 
       const afterExecutionRun =
         await getRun(
@@ -816,11 +828,12 @@ async function executeWorkflowNode(
         );
 
       const afterExecutionStep =
-        afterExecutionRun?.stepRuns.find(
-          (step) =>
-            step.nodeId ===
-            node.id,
-        );
+        afterExecutionRun
+          ?.stepRuns.find(
+            (step) =>
+              step.nodeId ===
+              node.id,
+          );
 
       await editStepRun(
         runId,
@@ -885,10 +898,6 @@ async function executeWorkflowNode(
         attempt <
         maximumAttempts;
 
-      /*
-       * 재시도 가능한 오류이면서
-       * 아직 retry 횟수가 남아 있다.
-       */
       if (
         decision.retryable &&
         retriesRemaining
@@ -923,12 +932,6 @@ async function executeWorkflowNode(
         continue;
       }
 
-      /*
-       * 여기까지 왔다면
-       *
-       * 1. 재시도 불가능한 오류이거나
-       * 2. 모든 retry가 소진된 상태다.
-       */
       const finalMessage =
         decision.retryable
           ? `${decision.message} 재시도 횟수를 모두 사용했습니다.`
