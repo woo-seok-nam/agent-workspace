@@ -30,6 +30,24 @@ interface StepExecutionPanelProps {
   stepRun?: StepRun;
 }
 
+interface StepExecutionOutput {
+  text?: string;
+
+  agentId?: string;
+
+  agentName?: string;
+
+  provider?: string;
+
+  modelId?: string;
+
+  inputTokens?: number;
+
+  outputTokens?: number;
+
+  totalTokens?: number;
+}
+
 export function StepExecutionPanel({
   node,
   stepRun,
@@ -44,14 +62,34 @@ export function StepExecutionPanel({
     );
   }
 
+  const executionOutput =
+    getStepExecutionOutput(
+      stepRun?.output,
+    );
+
   const agent =
     getAgentById(
       node.agentId,
     );
 
+  /*
+   * Model 표시 우선순위
+   *
+   * 1. 실제 실행 결과에 저장된 modelId
+   * 2. 현재 Agent 설정의 modelId
+   * 3. Workflow Node에 저장된 modelId
+   *
+   * 이렇게 해야 실행 전에도 Agent Management에서
+   * 설정한 최신 모델이 표시된다.
+   */
+  const displayModelId =
+    executionOutput?.modelId ??
+    agent?.modelId ??
+    node.modelId;
+
   const model =
     getModelById(
-      node.modelId,
+      displayModelId,
     );
 
   const tools =
@@ -70,6 +108,12 @@ export function StepExecutionPanel({
         > =>
           Boolean(tool),
       );
+
+  const modelDisplayName =
+    model?.displayName ??
+    formatModelId(
+      displayModelId,
+    );
 
   return (
     <section className="step-execution-panel">
@@ -108,6 +152,8 @@ export function StepExecutionPanel({
           icon={Bot}
           label="Agent"
           value={
+            executionOutput
+              ?.agentName ??
             agent?.name ??
             "없음"
           }
@@ -117,8 +163,7 @@ export function StepExecutionPanel({
           icon={Cpu}
           label="Model"
           value={
-            model?.displayName ??
-            "없음"
+            modelDisplayName
           }
         />
 
@@ -258,6 +303,55 @@ function RuntimeInfo({
       </div>
     </article>
   );
+}
+
+function getStepExecutionOutput(
+  output: unknown,
+): StepExecutionOutput | undefined {
+  if (
+    !output ||
+    typeof output !==
+      "object" ||
+    Array.isArray(
+      output,
+    )
+  ) {
+    return undefined;
+  }
+
+  return output as StepExecutionOutput;
+}
+
+function formatModelId(
+  modelId:
+    | string
+    | undefined,
+) {
+  if (!modelId) {
+    return "없음";
+  }
+
+  return modelId
+    .split("-")
+    .map(
+      (part) => {
+        if (
+          /^\d+(\.\d+)*$/.test(
+            part,
+          )
+        ) {
+          return part;
+        }
+
+        return (
+          part
+            .charAt(0)
+            .toUpperCase() +
+          part.slice(1)
+        );
+      },
+    )
+    .join(" ");
 }
 
 function getDuration(

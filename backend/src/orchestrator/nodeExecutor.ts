@@ -1,20 +1,19 @@
+import {
+  executeAgent,
+} from "../ai/agentExecutor.js";
+
+import {
+  buildAgentPrompt,
+} from "../ai/promptBuilder.js";
+
+import {
+  getAgent,
+} from "../modules/agents/agent.service.js";
+
 import type {
   NodeExecutionContext,
   NodeExecutionResult,
 } from "./orchestrator.types.js";
-
-function delay(
-  milliseconds: number,
-) {
-  return new Promise<void>(
-    (resolve) => {
-      setTimeout(
-        resolve,
-        milliseconds,
-      );
-    },
-  );
-}
 
 export async function executeNode(
   context: NodeExecutionContext,
@@ -27,47 +26,137 @@ export async function executeNode(
     context;
 
   /*
-   * STEP 24에서는 실제 LLM API 대신
-   * 간단한 실행 결과를 생성한다.
+   * 현재 STEP 26에서는
+   * Agent Node에 대해서만 실제 LLM을 호출한다.
    *
-   * 다음 STEP에서 Agent Executor로
-   * 교체할 예정.
+   * Tool Node 등의 실제 실행은
+   * STEP 27에서 추가한다.
    */
+  if (
+    node.type !==
+    "agent"
+  ) {
+    return {
+      output: {
+        nodeId:
+          node.id,
 
-  await delay(
-    700,
-  );
+        nodeName:
+          node.name,
 
-  const output = {
-    nodeId:
-      node.id,
+        message:
+          `${node.name} Node가 완료되었습니다.`,
+      },
 
-    nodeName:
-      node.name,
+      tokenUsage:
+        0,
 
-    agentId:
-      node.agentId ??
-      null,
+      cost:
+        0,
+    };
+  }
 
-    modelId:
-      node.modelId ??
-      null,
+  if (!node.agentId) {
+    throw new Error(
+      `${node.name} Node에 Agent가 연결되어 있지 않습니다.`,
+    );
+  }
 
-    prompt:
-      run.prompt ??
-      null,
+  const agent =
+    await getAgent(
+      node.agentId,
+    );
 
-    dependencyOutputs,
+  if (!agent) {
+    throw new Error(
+      `Agent를 찾을 수 없습니다: ${node.agentId}`,
+    );
+  }
 
-    message:
-      `${node.name} 실행이 완료되었습니다.`,
-  };
+  if (!agent.enabled) {
+    throw new Error(
+      `${agent.name} Agent가 비활성화되어 있습니다.`,
+    );
+  }
+
+  /*
+   * STEP 26에서는 Agent Management에서
+   * 설정한 modelId를 우선 사용한다.
+   *
+   * 기존 Workflow Seed의 Research Node 등에
+   * claude modelId가 남아 있어도,
+   * Agent의 modelId를 Gemini로 변경하면
+   * Gemini Provider를 사용할 수 있다.
+   */
+  const modelId =
+    agent.modelId ||
+    node.modelId;
+
+  if (!modelId) {
+    throw new Error(
+      `${agent.name} Agent에 Model이 설정되어 있지 않습니다.`,
+    );
+  }
+
+  const {
+    systemPrompt,
+    userPrompt,
+  } =
+    buildAgentPrompt({
+      node,
+
+      workflowPrompt:
+        run.prompt,
+
+      dependencyOutputs,
+
+      agentName:
+        agent.name,
+
+      agentDescription:
+        agent.description,
+    });
+
+  const aiResult =
+    await executeAgent({
+      modelId,
+
+      systemPrompt,
+
+      userPrompt,
+    });
 
   return {
-    output,
+    output: {
+      text:
+        aiResult.text,
 
-    tokenUsage: 0,
+      agentId:
+        agent.id,
 
-    cost: 0,
+      agentName:
+        agent.name,
+
+      provider:
+        aiResult.provider,
+
+      modelId:
+        aiResult.modelId,
+
+      inputTokens:
+        aiResult.inputTokens,
+
+      outputTokens:
+        aiResult.outputTokens,
+
+      totalTokens:
+        aiResult.tokenUsage,
+    },
+
+    tokenUsage:
+      aiResult.tokenUsage,
+
+    cost:
+      aiResult.cost,
   };
 }
