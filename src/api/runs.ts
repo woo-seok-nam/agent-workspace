@@ -10,6 +10,14 @@ interface ApiResponse<T> {
   data: T;
 }
 
+interface ApiErrorResponse {
+  error?: {
+    code?: string;
+
+    message?: string;
+  };
+}
+
 export interface CreateRunInput {
   workflowId: string;
 
@@ -28,6 +36,23 @@ export interface DeleteRunResult {
   failedArtifactFiles: string[];
 }
 
+async function getApiErrorMessage(
+  response: Response,
+  fallbackMessage: string,
+) {
+  try {
+    const result =
+      (await response.json()) as ApiErrorResponse;
+
+    return (
+      result.error?.message ??
+      fallbackMessage
+    );
+  } catch {
+    return fallbackMessage;
+  }
+}
+
 export async function fetchRuns(): Promise<
   WorkflowRun[]
 > {
@@ -38,7 +63,10 @@ export async function fetchRuns(): Promise<
 
   if (!response.ok) {
     throw new Error(
-      "Run 목록을 불러오지 못했습니다.",
+      await getApiErrorMessage(
+        response,
+        "Run 목록을 불러오지 못했습니다.",
+      ),
     );
   }
 
@@ -60,7 +88,10 @@ export async function fetchRun(
 
   if (!response.ok) {
     throw new Error(
-      "Run 정보를 불러오지 못했습니다.",
+      await getApiErrorMessage(
+        response,
+        "Run 정보를 불러오지 못했습니다.",
+      ),
     );
   }
 
@@ -96,7 +127,10 @@ export async function createRun(
 
   if (!response.ok) {
     throw new Error(
-      "Workflow Run 생성에 실패했습니다.",
+      await getApiErrorMessage(
+        response,
+        "Workflow Run 생성에 실패했습니다.",
+      ),
     );
   }
 
@@ -122,7 +156,97 @@ export async function startRun(
 
   if (!response.ok) {
     throw new Error(
-      "Workflow 실행 시작에 실패했습니다.",
+      await getApiErrorMessage(
+        response,
+        "Workflow 실행 시작에 실패했습니다.",
+      ),
+    );
+  }
+
+  const result =
+    (await response.json()) as ApiResponse<
+      WorkflowRun
+    >;
+
+  return result.data;
+}
+
+export async function pauseRun(
+  runId: string,
+): Promise<WorkflowRun> {
+  const response =
+    await fetch(
+      `${API_BASE_URL}/api/runs/${runId}/pause`,
+      {
+        method:
+          "POST",
+      },
+    );
+
+  if (!response.ok) {
+    throw new Error(
+      await getApiErrorMessage(
+        response,
+        "Workflow Run 일시정지에 실패했습니다.",
+      ),
+    );
+  }
+
+  const result =
+    (await response.json()) as ApiResponse<
+      WorkflowRun
+    >;
+
+  return result.data;
+}
+
+export async function resumeRun(
+  runId: string,
+): Promise<WorkflowRun> {
+  const response =
+    await fetch(
+      `${API_BASE_URL}/api/runs/${runId}/resume`,
+      {
+        method:
+          "POST",
+      },
+    );
+
+  if (!response.ok) {
+    throw new Error(
+      await getApiErrorMessage(
+        response,
+        "Workflow Run 재개에 실패했습니다.",
+      ),
+    );
+  }
+
+  const result =
+    (await response.json()) as ApiResponse<
+      WorkflowRun
+    >;
+
+  return result.data;
+}
+
+export async function cancelRun(
+  runId: string,
+): Promise<WorkflowRun> {
+  const response =
+    await fetch(
+      `${API_BASE_URL}/api/runs/${runId}/cancel`,
+      {
+        method:
+          "POST",
+      },
+    );
+
+  if (!response.ok) {
+    throw new Error(
+      await getApiErrorMessage(
+        response,
+        "Workflow Run 취소에 실패했습니다.",
+      ),
     );
   }
 
@@ -149,7 +273,10 @@ export async function approveRunStep(
 
   if (!response.ok) {
     throw new Error(
-      "Step 승인에 실패했습니다.",
+      await getApiErrorMessage(
+        response,
+        "Step 승인에 실패했습니다.",
+      ),
     );
   }
 
@@ -176,7 +303,10 @@ export async function rejectRunStep(
 
   if (!response.ok) {
     throw new Error(
-      "Step 거절에 실패했습니다.",
+      await getApiErrorMessage(
+        response,
+        "Step 거절에 실패했습니다.",
+      ),
     );
   }
 
@@ -201,30 +331,11 @@ export async function deleteRun(
     );
 
   if (!response.ok) {
-    let message =
-      "Run 삭제에 실패했습니다.";
-
-    try {
-      const result =
-        (await response.json()) as {
-          error?: {
-            message?: string;
-          };
-        };
-
-      if (
-        result.error
-          ?.message
-      ) {
-        message =
-          result.error.message;
-      }
-    } catch {
-      // JSON 응답이 아니어도 기본 메시지를 사용한다.
-    }
-
     throw new Error(
-      message,
+      await getApiErrorMessage(
+        response,
+        "Run 삭제에 실패했습니다.",
+      ),
     );
   }
 
