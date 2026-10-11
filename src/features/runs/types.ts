@@ -18,12 +18,20 @@ export type StepRunStatus =
   | "SKIPPED"
   | "CANCELLED";
 
+export type ApprovalStatus =
+  | "PENDING"
+  | "APPROVED"
+  | "REJECTED";
+
 export interface ExecutionLog {
   id: string;
 
   timestamp: string;
 
-  level: "info" | "warning" | "error";
+  level:
+    | "info"
+    | "warning"
+    | "error";
 
   message: string;
 }
@@ -36,6 +44,8 @@ export interface StepRun {
   nodeId: string;
 
   status: StepRunStatus;
+
+  approvalStatus?: ApprovalStatus;
 
   startedAt?: string;
 
@@ -59,6 +69,14 @@ export interface WorkflowRun {
 
   name: string;
 
+  /*
+   * 사용자가 Run을 생성할 때 입력한 원본 Prompt.
+   *
+   * Workspace Result에서 사용자 요청을 다시
+   * 보여주기 위해 사용한다.
+   */
+  prompt?: string;
+
   status: WorkflowRunStatus;
 
   startedAt?: string;
@@ -70,13 +88,11 @@ export interface WorkflowRun {
   tokenUsage: number;
 
   cost: number;
+
+  createdAt?: string;
+
+  updatedAt?: string;
 }
-
-
-export type ApprovalStatus =
-  | "PENDING"
-  | "APPROVED"
-  | "REJECTED";
 
 export interface Approval {
   id: string;
