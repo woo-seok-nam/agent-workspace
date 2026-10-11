@@ -10,6 +10,14 @@ import {
   getAgent,
 } from "../modules/agents/agent.service.js";
 
+import {
+  executeTool,
+} from "../tools/toolExecutor.js";
+
+import type {
+  ToolExecutionResult,
+} from "../tools/tool.types.js";
+
 import type {
   NodeExecutionContext,
   NodeExecutionResult,
@@ -25,13 +33,6 @@ export async function executeNode(
   } =
     context;
 
-  /*
-   * 현재 STEP 26에서는
-   * Agent Node에 대해서만 실제 LLM을 호출한다.
-   *
-   * Tool Node 등의 실제 실행은
-   * STEP 27에서 추가한다.
-   */
   if (
     node.type !==
     "agent"
@@ -79,15 +80,6 @@ export async function executeNode(
     );
   }
 
-  /*
-   * STEP 26에서는 Agent Management에서
-   * 설정한 modelId를 우선 사용한다.
-   *
-   * 기존 Workflow Seed의 Research Node 등에
-   * claude modelId가 남아 있어도,
-   * Agent의 modelId를 Gemini로 변경하면
-   * Gemini Provider를 사용할 수 있다.
-   */
   const modelId =
     agent.modelId ||
     node.modelId;
@@ -95,6 +87,64 @@ export async function executeNode(
   if (!modelId) {
     throw new Error(
       `${agent.name} Agent에 Model이 설정되어 있지 않습니다.`,
+    );
+  }
+
+  /*
+   * Agent에 설정된 Tool과
+   * Workflow Node에 설정된 Tool을 합친다.
+   *
+   * 중복 Tool ID는 제거한다.
+   */
+  const assignedToolIds =
+    Array.from(
+      new Set([
+        ...(agent.toolIds ??
+          []),
+
+        ...(node.toolIds ??
+          []),
+      ]),
+    );
+
+  const toolResults:
+    ToolExecutionResult[] =
+      [];
+
+  /*
+   * STEP 27에서는 Web Search만 실제 실행한다.
+   *
+   * 아직 구현하지 않은 Tool은
+   * 실행하지 않고 건너뛴다.
+   */
+  for (
+    const toolId
+    of assignedToolIds
+  ) {
+    if (
+      toolId !==
+      "web-search"
+    ) {
+      continue;
+    }
+
+    const searchQuery =
+      buildSearchQuery(
+        run.prompt,
+        node.name,
+        node.description,
+      );
+
+    const toolResult =
+      await executeTool({
+        toolId,
+
+        query:
+          searchQuery,
+      });
+
+    toolResults.push(
+      toolResult,
     );
   }
 
@@ -109,6 +159,8 @@ export async function executeNode(
         run.prompt,
 
       dependencyOutputs,
+
+      toolResults,
 
       agentName:
         agent.name,
@@ -151,6 +203,9 @@ export async function executeNode(
 
       totalTokens:
         aiResult.tokenUsage,
+
+      tools:
+        toolResults,
     },
 
     tokenUsage:
@@ -159,4 +214,31 @@ export async function executeNode(
     cost:
       aiResult.cost,
   };
+}
+
+function buildSearchQuery(
+  workflowPrompt:
+    | string
+    | undefined,
+  nodeName: string,
+  nodeDescription:
+    | string
+    | undefined,
+) {
+  return [
+    workflowPrompt ??
+      "",
+
+    nodeName,
+
+    nodeDescription ??
+      "",
+  ]
+    .filter(
+      Boolean,
+    )
+    .join(
+      " ",
+    )
+    .trim();
 }
