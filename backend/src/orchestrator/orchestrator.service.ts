@@ -9,6 +9,10 @@ import {
 } from "../modules/workflows/workflow.service.js";
 
 import type {
+  ExecutionLog,
+} from "../modules/runs/run.types.js";
+
+import type {
   WorkflowNode,
 } from "../modules/workflows/workflow.types.js";
 
@@ -21,9 +25,20 @@ import {
   executeNode,
 } from "./nodeExecutor.js";
 
+import {
+  classifyExecutionError,
+  getRetryDelay,
+  sleep,
+} from "./retryPolicy.js";
+
 function createLog(
   message: string,
-) {
+  level:
+    | "info"
+    | "warning"
+    | "error" =
+    "info",
+): ExecutionLog {
   return {
     id:
       `log-${crypto.randomUUID()}`,
@@ -31,11 +46,35 @@ function createLog(
     timestamp:
       new Date().toISOString(),
 
-    level:
-      "info" as const,
+    level,
 
     message,
   };
+}
+
+function getErrorMessage(
+  error: unknown,
+) {
+  if (
+    error instanceof Error
+  ) {
+    return error.message;
+  }
+
+  if (
+    typeof error ===
+    "string"
+  ) {
+    return error;
+  }
+
+  try {
+    return JSON.stringify(
+      error,
+    );
+  } catch {
+    return "알 수 없는 오류가 발생했습니다.";
+  }
 }
 
 export async function startWorkflowRun(
@@ -90,6 +129,9 @@ export async function startWorkflowRun(
       startedAt:
         existingRun.startedAt ??
         new Date().toISOString(),
+
+      completedAt:
+        null,
     },
   );
 
@@ -184,46 +226,69 @@ export async function continueWorkflowRun(
               new Date().toISOString(),
           },
         );
-      } else {
-        const totalTokenUsage =
-          run.stepRuns.reduce(
-            (
-              sum,
-              stepRun,
-            ) =>
-              sum +
-              stepRun.tokenUsage,
-            0,
-          );
 
-        const totalCost =
-          run.stepRuns.reduce(
-            (
-              sum,
-              stepRun,
-            ) =>
-              sum +
-              stepRun.cost,
-            0,
-          );
+        return;
+      }
 
+      const hasWaitingApproval =
+        run.stepRuns.some(
+          (stepRun) =>
+            stepRun.status ===
+            "WAITING_APPROVAL",
+        );
+
+      if (
+        hasWaitingApproval
+      ) {
         await editRun(
           runId,
           {
             status:
-              "COMPLETED",
-
-            completedAt:
-              new Date().toISOString(),
-
-            tokenUsage:
-              totalTokenUsage,
-
-            cost:
-              totalCost,
+              "WAITING_APPROVAL",
           },
         );
+
+        return;
       }
+
+      const totalTokenUsage =
+        run.stepRuns.reduce(
+          (
+            sum,
+            stepRun,
+          ) =>
+            sum +
+            stepRun.tokenUsage,
+          0,
+        );
+
+      const totalCost =
+        run.stepRuns.reduce(
+          (
+            sum,
+            stepRun,
+          ) =>
+            sum +
+            stepRun.cost,
+          0,
+        );
+
+      await editRun(
+        runId,
+        {
+          status:
+            "COMPLETED",
+
+          completedAt:
+            new Date().toISOString(),
+
+          tokenUsage:
+            totalTokenUsage,
+
+          cost:
+            totalCost,
+        },
+      );
 
       return;
     }
@@ -242,6 +307,19 @@ export async function continueWorkflowRun(
       executableSteps.length ===
       0
     ) {
+      const hasRunningStep =
+        run.stepRuns.some(
+          (stepRun) =>
+            stepRun.status ===
+            "RUNNING",
+        );
+
+      if (
+        hasRunningStep
+      ) {
+        return;
+      }
+
       await editRun(
         runId,
         {
@@ -261,7 +339,9 @@ export async function continueWorkflowRun(
         (stepRun) => {
           const node =
             workflow.nodes.find(
-              (workflowNode) =>
+              (
+                workflowNode,
+              ) =>
                 workflowNode.id ===
                 stepRun.nodeId,
             );
@@ -276,7 +356,9 @@ export async function continueWorkflowRun(
         },
       );
 
-    if (approvalStep) {
+    if (
+      approvalStep
+    ) {
       const approvalNode =
         workflow.nodes.find(
           (node) =>
@@ -315,6 +397,12 @@ export async function continueWorkflowRun(
       return;
     }
 
+    /*
+     * 현재 실행 가능한 Step은 병렬 실행한다.
+     *
+     * 각각의 Step 내부에서는
+     * Retry / Backoff가 독립적으로 적용된다.
+     */
     await Promise.all(
       executableSteps.map(
         async (
@@ -322,7 +410,9 @@ export async function continueWorkflowRun(
         ) => {
           const node =
             workflow.nodes.find(
-              (workflowNode) =>
+              (
+                workflowNode,
+              ) =>
                 workflowNode.id ===
                 stepRun.nodeId,
             );
@@ -343,6 +433,7 @@ export async function continueWorkflowRun(
 
                   createLog(
                     "Workflow Node를 찾지 못했습니다.",
+                    "error",
                   ),
                 ],
               },
@@ -353,7 +444,6 @@ export async function continueWorkflowRun(
 
           await executeWorkflowNode(
             runId,
-            run,
             workflow,
             node,
           );
@@ -366,7 +456,9 @@ export async function continueWorkflowRun(
         runId,
       );
 
-    if (!afterExecution) {
+    if (
+      !afterExecution
+    ) {
       return;
     }
 
@@ -377,7 +469,9 @@ export async function continueWorkflowRun(
           "FAILED",
       );
 
-    if (failed) {
+    if (
+      failed
+    ) {
       await editRun(
         runId,
         {
@@ -532,6 +626,7 @@ export async function rejectWorkflowStep(
 
         createLog(
           "사용자가 실행을 거절했습니다.",
+          "warning",
         ),
       ],
     },
@@ -564,13 +659,6 @@ export async function rejectWorkflowStep(
 
 async function executeWorkflowNode(
   runId: string,
-  run: NonNullable<
-    Awaited<
-      ReturnType<
-        typeof getRun
-      >
-    >
-  >,
   workflow: NonNullable<
     Awaited<
       ReturnType<
@@ -580,16 +668,46 @@ async function executeWorkflowNode(
   >,
   node: WorkflowNode,
 ) {
-  const stepRun =
-    run.stepRuns.find(
+  const initialRun =
+    await getRun(
+      runId,
+    );
+
+  if (!initialRun) {
+    return;
+  }
+
+  const initialStepRun =
+    initialRun.stepRuns.find(
       (step) =>
         step.nodeId ===
         node.id,
     );
 
-  if (!stepRun) {
+  if (!initialStepRun) {
     return;
   }
+
+  /*
+   * retryCount는 "최초 실행 이후 추가 재시도 횟수"다.
+   *
+   * retryCount = 2이면:
+   *
+   * 최초 1회
+   * + 재시도 2회
+   * = 최대 총 3회 실행
+   */
+  const retryCount =
+    Math.max(
+      0,
+      node.config
+        ?.retryCount ??
+        2,
+    );
+
+  const maximumAttempts =
+    retryCount +
+    1;
 
   await editStepRun(
     runId,
@@ -599,10 +717,14 @@ async function executeWorkflowNode(
         "RUNNING",
 
       startedAt:
+        initialStepRun.startedAt ??
         new Date().toISOString(),
 
+      completedAt:
+        null,
+
       logs: [
-        ...stepRun.logs,
+        ...initialStepRun.logs,
 
         createLog(
           `${node.name} 실행을 시작했습니다.`,
@@ -611,109 +733,234 @@ async function executeWorkflowNode(
     },
   );
 
-  try {
-    const dependencyOutputs =
-      getDependencyOutputs(
-        workflow,
-        node.id,
-        run.stepRuns,
-      );
-
-    const result =
-      await executeNode({
-        workflow,
-        run,
-        node,
-        dependencyOutputs,
-      });
-
-    const latestRun =
+  for (
+    let attempt =
+      1;
+    attempt <=
+    maximumAttempts;
+    attempt +=
+      1
+  ) {
+    const currentRun =
       await getRun(
         runId,
       );
 
-    const latestStep =
-      latestRun?.stepRuns.find(
+    if (!currentRun) {
+      return;
+    }
+
+    const currentStepRun =
+      currentRun.stepRuns.find(
         (step) =>
           step.nodeId ===
           node.id,
       );
 
-    await editStepRun(
-      runId,
-      node.id,
-      {
-        status:
-          "COMPLETED",
+    if (!currentStepRun) {
+      return;
+    }
 
-        output:
-          result.output,
-
-        tokenUsage:
-          result.tokenUsage,
-
-        cost:
-          result.cost,
-
-        completedAt:
-          new Date().toISOString(),
-
-        logs: [
-          ...(latestStep?.logs ??
-            stepRun.logs),
-
-          createLog(
-            `${node.name} 실행이 완료되었습니다.`,
-          ),
-        ],
-      },
-    );
-  } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Node 실행 중 알 수 없는 오류가 발생했습니다.";
-
-    const latestRun =
-      await getRun(
-        runId,
-      );
-
-    const latestStep =
-      latestRun?.stepRuns.find(
-        (step) =>
-          step.nodeId ===
+    try {
+      if (
+        attempt >
+        1
+      ) {
+        await editStepRun(
+          runId,
           node.id,
-      );
-
-    await editStepRun(
-      runId,
-      node.id,
-      {
-        status:
-          "FAILED",
-
-        completedAt:
-          new Date().toISOString(),
-
-        logs: [
-          ...(latestStep?.logs ??
-            stepRun.logs),
-
           {
-            id:
-              `log-${crypto.randomUUID()}`,
+            logs: [
+              ...currentStepRun.logs,
 
-            timestamp:
-              new Date().toISOString(),
-
-            level:
-              "error",
-
-            message,
+              createLog(
+                `${node.name} 실행을 다시 시도합니다. (${attempt}/${maximumAttempts})`,
+                "warning",
+              ),
+            ],
           },
-        ],
-      },
-    );
+        );
+      }
+
+      const latestRun =
+        await getRun(
+          runId,
+        );
+
+      if (!latestRun) {
+        return;
+      }
+
+      const dependencyOutputs =
+        getDependencyOutputs(
+          workflow,
+          node.id,
+          latestRun.stepRuns,
+        );
+
+      const result =
+        await executeNode({
+          workflow,
+
+          run:
+            latestRun,
+
+          node,
+
+          dependencyOutputs,
+        });
+
+      const afterExecutionRun =
+        await getRun(
+          runId,
+        );
+
+      const afterExecutionStep =
+        afterExecutionRun?.stepRuns.find(
+          (step) =>
+            step.nodeId ===
+            node.id,
+        );
+
+      await editStepRun(
+        runId,
+        node.id,
+        {
+          status:
+            "COMPLETED",
+
+          output:
+            result.output,
+
+          tokenUsage:
+            result.tokenUsage,
+
+          cost:
+            result.cost,
+
+          completedAt:
+            new Date().toISOString(),
+
+          logs: [
+            ...(afterExecutionStep
+              ?.logs ??
+              currentStepRun.logs),
+
+            createLog(
+              `${node.name} 실행이 완료되었습니다.`,
+            ),
+          ],
+        },
+      );
+
+      return;
+    } catch (error) {
+      const decision =
+        classifyExecutionError(
+          error,
+        );
+
+      const rawErrorMessage =
+        getErrorMessage(
+          error,
+        );
+
+      const latestRun =
+        await getRun(
+          runId,
+        );
+
+      const latestStepRun =
+        latestRun?.stepRuns.find(
+          (step) =>
+            step.nodeId ===
+            node.id,
+        );
+
+      const currentLogs =
+        latestStepRun?.logs ??
+        currentStepRun.logs;
+
+      const retriesRemaining =
+        attempt <
+        maximumAttempts;
+
+      /*
+       * 재시도 가능한 오류이면서
+       * 아직 retry 횟수가 남아 있다.
+       */
+      if (
+        decision.retryable &&
+        retriesRemaining
+      ) {
+        const retryNumber =
+          attempt;
+
+        const delay =
+          getRetryDelay(
+            retryNumber,
+          );
+
+        await editStepRun(
+          runId,
+          node.id,
+          {
+            logs: [
+              ...currentLogs,
+
+              createLog(
+                `${decision.message} ${delay / 1000}초 후 재시도합니다. (${retryNumber}/${retryCount})`,
+                "warning",
+              ),
+            ],
+          },
+        );
+
+        await sleep(
+          delay,
+        );
+
+        continue;
+      }
+
+      /*
+       * 여기까지 왔다면
+       *
+       * 1. 재시도 불가능한 오류이거나
+       * 2. 모든 retry가 소진된 상태다.
+       */
+      const finalMessage =
+        decision.retryable
+          ? `${decision.message} 재시도 횟수를 모두 사용했습니다.`
+          : decision.message;
+
+      await editStepRun(
+        runId,
+        node.id,
+        {
+          status:
+            "FAILED",
+
+          completedAt:
+            new Date().toISOString(),
+
+          logs: [
+            ...currentLogs,
+
+            createLog(
+              finalMessage,
+              "error",
+            ),
+
+            createLog(
+              rawErrorMessage,
+              "error",
+            ),
+          ],
+        },
+      );
+
+      return;
+    }
   }
 }
