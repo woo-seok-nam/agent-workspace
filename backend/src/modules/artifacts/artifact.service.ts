@@ -1,5 +1,6 @@
 import {
   createArtifact,
+  findArtifactById,
   findArtifactsByRunId,
 } from "./artifact.repository.js";
 
@@ -12,6 +13,14 @@ export async function getRunArtifacts(
 ) {
   return findArtifactsByRunId(
     runId,
+  );
+}
+
+export async function getArtifact(
+  artifactId: string,
+) {
+  return findArtifactById(
+    artifactId,
   );
 }
 

@@ -268,6 +268,127 @@
   white-space: pre-wrap;
 }
 
+.workspace-artifact-count {
+  display: flex;
+  min-width: 26px;
+  height: 26px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.workspace-artifact-list {
+  display: grid;
+}
+
+.workspace-artifact-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.workspace-artifact-item:last-child {
+  border-bottom: 0;
+}
+
+.workspace-artifact-item__main {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+}
+
+.workspace-artifact-item__icon {
+  display: flex;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.workspace-artifact-item__content {
+  min-width: 0;
+}
+
+.workspace-artifact-item__content strong {
+  display: block;
+  overflow: hidden;
+  color: #0f172a;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workspace-artifact-item__content span {
+  display: block;
+  margin-top: 4px;
+  color: #64748b;
+  font-size: 11px;
+}
+
+.workspace-artifact-item__content time {
+  display: block;
+  margin-top: 3px;
+  color: #94a3b8;
+  font-size: 10px;
+}
+
+.workspace-artifact-download {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 11px;
+  border: 1px solid #dbe4f0;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.workspace-artifact-download:hover {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.workspace-artifact-empty {
+  display: flex;
+  min-height: 150px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  color: #94a3b8;
+  text-align: center;
+}
+
+.workspace-artifact-empty strong {
+  margin-top: 10px;
+  color: #475569;
+  font-size: 13px;
+}
+
+.workspace-artifact-empty p {
+  max-width: 340px;
+  margin: 5px 0 0;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
 .workspace-result-sidebar {
   position: sticky;
   top: 20px;
@@ -402,5 +523,15 @@
   .workspace-result-stats {
     grid-template-columns:
       1fr;
+  }
+
+  .workspace-artifact-item {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .workspace-artifact-download {
+    width: 100%;
+    justify-content: center;
   }
 }

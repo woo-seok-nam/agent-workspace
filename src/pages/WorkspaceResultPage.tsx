@@ -11,7 +11,9 @@ import {
   Clock3,
   Coins,
   Copy,
+  Download,
   FileText,
+  Package,
   Workflow as WorkflowIcon,
 } from "lucide-react";
 
@@ -19,6 +21,15 @@ import {
   useNavigate,
   useParams,
 } from "react-router-dom";
+
+import {
+  fetchRunArtifacts,
+  getArtifactDownloadUrl,
+} from "../api/artifacts";
+
+import type {
+  Artifact,
+} from "../api/artifacts";
 
 import {
   fetchRun,
@@ -86,6 +97,14 @@ export function WorkspaceResultPage() {
     >(null);
 
   const [
+    artifacts,
+    setArtifacts,
+  ] =
+    useState<
+      Artifact[]
+    >([]);
+
+  const [
     loading,
     setLoading,
   ] =
@@ -111,7 +130,9 @@ export function WorkspaceResultPage() {
         "Run ID가 없습니다.",
       );
 
-      setLoading(false);
+      setLoading(
+        false,
+      );
 
       return;
     }
@@ -132,10 +153,19 @@ export function WorkspaceResultPage() {
           null,
         );
 
-        const runData =
-          await fetchRun(
-            currentRunId,
-          );
+        const [
+          runData,
+          artifactData,
+        ] =
+          await Promise.all([
+            fetchRun(
+              currentRunId,
+            ),
+
+            fetchRunArtifacts(
+              currentRunId,
+            ),
+          ]);
 
         const workflowData =
           await fetchWorkflow(
@@ -152,6 +182,10 @@ export function WorkspaceResultPage() {
 
         setWorkflow(
           workflowData,
+        );
+
+        setArtifacts(
+          artifactData,
         );
       } catch (loadError) {
         if (cancelled) {
@@ -231,7 +265,8 @@ export function WorkspaceResultPage() {
 
               node,
             };
-          })
+          },
+        )
         .filter(
           (
             item,
@@ -519,6 +554,60 @@ export function WorkspaceResultPage() {
             <div className="workspace-result-card__header">
               <div>
                 <span className="workspace-result-eyebrow">
+                  Artifacts
+                </span>
+
+                <h2>
+                  결과 파일
+                </h2>
+              </div>
+
+              <span className="workspace-artifact-count">
+                {artifacts.length}
+              </span>
+            </div>
+
+            {artifacts.length >
+            0 ? (
+              <div className="workspace-artifact-list">
+                {artifacts.map(
+                  (
+                    artifact,
+                  ) => (
+                    <ArtifactItem
+                      key={
+                        artifact.id
+                      }
+                      artifact={
+                        artifact
+                      }
+                    />
+                  ),
+                )}
+              </div>
+            ) : (
+              <div className="workspace-artifact-empty">
+                <Package
+                  size={27}
+                />
+
+                <strong>
+                  생성된 Artifact가 없습니다.
+                </strong>
+
+                <p>
+                  새로 완료되는 Workflow부터
+                  최종 결과가 report.md로
+                  저장됩니다.
+                </p>
+              </div>
+            )}
+          </section>
+
+          <section className="workspace-result-card">
+            <div className="workspace-result-card__header">
+              <div>
+                <span className="workspace-result-eyebrow">
                   Original Prompt
                 </span>
 
@@ -594,6 +683,7 @@ export function WorkspaceResultPage() {
                           {
                             output.agentName
                           }
+
                           {output.modelId
                             ? ` · ${output.modelId}`
                             : ""}
@@ -618,6 +708,63 @@ export function WorkspaceResultPage() {
         </aside>
       </div>
     </div>
+  );
+}
+
+interface ArtifactItemProps {
+  artifact: Artifact;
+}
+
+function ArtifactItem({
+  artifact,
+}: ArtifactItemProps) {
+  return (
+    <article className="workspace-artifact-item">
+      <div className="workspace-artifact-item__main">
+        <div className="workspace-artifact-item__icon">
+          <FileText
+            size={18}
+          />
+        </div>
+
+        <div className="workspace-artifact-item__content">
+          <strong>
+            {artifact.name}
+          </strong>
+
+          <span>
+            {getArtifactTypeLabel(
+              artifact,
+            )}
+            {" · "}
+            {formatFileSize(
+              artifact.size,
+            )}
+          </span>
+
+          <time>
+            {new Date(
+              artifact.createdAt,
+            ).toLocaleString(
+              "ko-KR",
+            )}
+          </time>
+        </div>
+      </div>
+
+      <a
+        className="workspace-artifact-download"
+        href={getArtifactDownloadUrl(
+          artifact.id,
+        )}
+      >
+        <Download
+          size={15}
+        />
+
+        다운로드
+      </a>
+    </article>
   );
 }
 
@@ -735,10 +882,6 @@ function findFinalResult(
     }
   }
 
-  /*
-   * Output Node 연결을 찾을 수 없는 Workflow도
-   * 최대한 결과를 보여줄 수 있도록 fallback한다.
-   */
   for (
     let index =
       stepRuns.length -
@@ -764,7 +907,9 @@ function findFinalResult(
         stepRun.output,
       );
 
-    if (!output?.text) {
+    if (
+      !output?.text
+    ) {
       continue;
     }
 
@@ -843,6 +988,67 @@ function getOutputPreview(
   )}...`;
 }
 
+function getArtifactTypeLabel(
+  artifact: Artifact,
+) {
+  if (
+    artifact.type ===
+      "markdown" ||
+    artifact.mimeType ===
+      "text/markdown"
+  ) {
+    return "Markdown";
+  }
+
+  if (
+    artifact.mimeType ===
+    "application/pdf"
+  ) {
+    return "PDF";
+  }
+
+  if (
+    artifact.mimeType ===
+    "application/json"
+  ) {
+    return "JSON";
+  }
+
+  return artifact.type;
+}
+
+function formatFileSize(
+  bytes: number,
+) {
+  if (
+    bytes <
+    1024
+  ) {
+    return `${bytes} B`;
+  }
+
+  const kilobytes =
+    bytes /
+    1024;
+
+  if (
+    kilobytes <
+    1024
+  ) {
+    return `${kilobytes.toFixed(
+      1,
+    )} KB`;
+  }
+
+  const megabytes =
+    kilobytes /
+    1024;
+
+  return `${megabytes.toFixed(
+    1,
+  )} MB`;
+}
+
 function getRunDuration(
   startedAt:
     | string
@@ -887,7 +1093,8 @@ function getRunDuration(
 
   const minutes =
     Math.floor(
-      seconds / 60,
+      seconds /
+      60,
     );
 
   const remainingSeconds =
@@ -903,7 +1110,8 @@ function getRunDuration(
 
   const hours =
     Math.floor(
-      minutes / 60,
+      minutes /
+      60,
     );
 
   return `${hours}시간 ${minutes % 60}분`;

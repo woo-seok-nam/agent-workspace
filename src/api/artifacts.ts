@@ -7,8 +7,6 @@ export interface Artifact {
 
   type: string;
 
-  path: string;
-
   mimeType: string;
 
   size: number;
@@ -44,4 +42,10 @@ export async function fetchRunArtifacts(
     >;
 
   return result.data;
+}
+
+export function getArtifactDownloadUrl(
+  artifactId: string,
+) {
+  return `${API_BASE_URL}/api/artifacts/${artifactId}/download`;
 }

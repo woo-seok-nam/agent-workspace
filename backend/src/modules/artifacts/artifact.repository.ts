@@ -7,17 +7,19 @@ import type {
   CreateArtifactInput,
 } from "./artifact.types.js";
 
+interface PrismaArtifact {
+  id: string;
+  runId: string;
+  name: string;
+  type: string;
+  path: string;
+  mimeType: string;
+  size: number;
+  createdAt: Date;
+}
+
 function mapArtifact(
-  artifact: {
-    id: string;
-    runId: string;
-    name: string;
-    type: string;
-    path: string;
-    mimeType: string;
-    size: number;
-    createdAt: Date;
-  },
+  artifact: PrismaArtifact,
 ): Artifact {
   return {
     id:
@@ -63,6 +65,26 @@ export async function findArtifactsByRunId(
 
   return artifacts.map(
     mapArtifact,
+  );
+}
+
+export async function findArtifactById(
+  artifactId: string,
+): Promise<Artifact | null> {
+  const artifact =
+    await prisma.artifact.findUnique({
+      where: {
+        id:
+          artifactId,
+      },
+    });
+
+  if (!artifact) {
+    return null;
+  }
+
+  return mapArtifact(
+    artifact,
   );
 }
 

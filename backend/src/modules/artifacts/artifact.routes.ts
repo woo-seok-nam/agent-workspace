@@ -3,6 +3,7 @@ import {
 } from "express";
 
 import {
+  downloadArtifact,
   listRunArtifacts,
 } from "./artifact.controller.js";
 
@@ -12,4 +13,9 @@ export const artifactRouter =
 artifactRouter.get(
   "/runs/:runId/artifacts",
   listRunArtifacts,
+);
+
+artifactRouter.get(
+  "/artifacts/:artifactId/download",
+  downloadArtifact,
 );
