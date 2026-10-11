@@ -12,7 +12,15 @@ import type {
 interface RunHistoryTableProps {
   runs: WorkflowRun[];
 
-  deletingRunId?: string | null;
+  selectedRunIds: Set<string>;
+
+  deletingRunIds: Set<string>;
+
+  onToggleRun: (
+    runId: string,
+  ) => void;
+
+  onToggleAll: () => void;
 
   onOpenRun: (
     runId: string,
@@ -29,7 +37,10 @@ interface RunHistoryTableProps {
 
 export function RunHistoryTable({
   runs,
-  deletingRunId,
+  selectedRunIds,
+  deletingRunIds,
+  onToggleRun,
+  onToggleAll,
   onOpenRun,
   onOpenResult,
   onDeleteRun,
@@ -42,11 +53,52 @@ export function RunHistoryTable({
     );
   }
 
+  const allVisibleSelected =
+    runs.length > 0 &&
+    runs.every(
+      (run) =>
+        selectedRunIds.has(
+          run.id,
+        ),
+    );
+
+  const someVisibleSelected =
+    runs.some(
+      (run) =>
+        selectedRunIds.has(
+          run.id,
+        ),
+    );
+
   return (
     <div className="run-history-table-wrapper">
       <table className="run-history-table">
         <thead>
           <tr>
+            <th className="run-history-checkbox-cell">
+              <input
+                type="checkbox"
+                aria-label="현재 목록 전체 선택"
+                checked={
+                  allVisibleSelected
+                }
+                ref={(
+                  element,
+                ) => {
+                  if (
+                    element
+                  ) {
+                    element.indeterminate =
+                      !allVisibleSelected &&
+                      someVisibleSelected;
+                  }
+                }}
+                onChange={
+                  onToggleAll
+                }
+              />
+            </th>
+
             <th>Run</th>
             <th>Status</th>
             <th>Duration</th>
@@ -61,20 +113,53 @@ export function RunHistoryTable({
           {runs.map(
             (run) => {
               const deleting =
-                deletingRunId ===
-                run.id;
+                deletingRunIds.has(
+                  run.id,
+                );
+
+              const selected =
+                selectedRunIds.has(
+                  run.id,
+                );
 
               return (
                 <tr
                   key={
                     run.id
                   }
-                  className={
+                  className={[
+                    selected
+                      ? "run-history-row--selected"
+                      : "",
                     deleting
                       ? "run-history-row--deleting"
-                      : undefined
-                  }
+                      : "",
+                  ]
+                    .filter(
+                      Boolean,
+                    )
+                    .join(
+                      " ",
+                    )}
                 >
+                  <td className="run-history-checkbox-cell">
+                    <input
+                      type="checkbox"
+                      aria-label={`${run.name} 선택`}
+                      checked={
+                        selected
+                      }
+                      disabled={
+                        deleting
+                      }
+                      onChange={() => {
+                        onToggleRun(
+                          run.id,
+                        );
+                      }}
+                    />
+                  </td>
+
                   <td>
                     <div className="run-history-name">
                       <strong>

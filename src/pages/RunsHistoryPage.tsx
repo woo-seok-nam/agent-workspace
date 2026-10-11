@@ -36,6 +36,10 @@ type StatusFilter =
   | "ALL"
   | WorkflowRunStatus;
 
+type DeleteMode =
+  | "SINGLE"
+  | "BULK";
+
 export function RunsHistoryPage() {
   const navigate =
     useNavigate();
@@ -77,6 +81,26 @@ export function RunsHistoryPage() {
     >(null);
 
   const [
+    selectedRunIds,
+    setSelectedRunIds,
+  ] =
+    useState<
+      Set<string>
+    >(
+      new Set(),
+    );
+
+  const [
+    deletingRunIds,
+    setDeletingRunIds,
+  ] =
+    useState<
+      Set<string>
+    >(
+      new Set(),
+    );
+
+  const [
     runPendingDeletion,
     setRunPendingDeletion,
   ] =
@@ -85,11 +109,11 @@ export function RunsHistoryPage() {
     >(null);
 
   const [
-    deletingRunId,
-    setDeletingRunId,
+    deleteMode,
+    setDeleteMode,
   ] =
     useState<
-      string | null
+      DeleteMode | null
     >(null);
 
   const [
@@ -173,6 +197,21 @@ export function RunsHistoryPage() {
       statusFilter,
     ]);
 
+  const selectedRuns =
+    useMemo(
+      () =>
+        runs.filter(
+          (run) =>
+            selectedRunIds.has(
+              run.id,
+            ),
+        ),
+      [
+        runs,
+        selectedRunIds,
+      ],
+    );
+
   const completedCount =
     runs.filter(
       (run) =>
@@ -216,11 +255,115 @@ export function RunsHistoryPage() {
       0,
     );
 
-  function openDeleteModal(
+  const deleting =
+    deletingRunIds.size >
+    0;
+
+  function toggleRun(
+    runId: string,
+  ) {
+    setSelectedRunIds(
+      (
+        current,
+      ) => {
+        const next =
+          new Set(
+            current,
+          );
+
+        if (
+          next.has(
+            runId,
+          )
+        ) {
+          next.delete(
+            runId,
+          );
+        } else {
+          next.add(
+            runId,
+          );
+        }
+
+        return next;
+      },
+    );
+  }
+
+  function toggleAllVisible() {
+    const visibleIds =
+      filteredRuns.map(
+        (run) =>
+          run.id,
+      );
+
+    const allSelected =
+      visibleIds.length >
+        0 &&
+      visibleIds.every(
+        (runId) =>
+          selectedRunIds.has(
+            runId,
+          ),
+      );
+
+    setSelectedRunIds(
+      (
+        current,
+      ) => {
+        const next =
+          new Set(
+            current,
+          );
+
+        if (
+          allSelected
+        ) {
+          for (
+            const runId
+            of visibleIds
+          ) {
+            next.delete(
+              runId,
+            );
+          }
+        } else {
+          for (
+            const runId
+            of visibleIds
+          ) {
+            next.add(
+              runId,
+            );
+          }
+        }
+
+        return next;
+      },
+    );
+  }
+
+  function clearSelection() {
+    if (
+      deleting
+    ) {
+      return;
+    }
+
+    setSelectedRunIds(
+      new Set(),
+    );
+  }
+
+  function openSingleDeleteModal(
     run: WorkflowRun,
   ) {
     setDeleteError(
       null,
+    );
+
+    setDeleteMode(
+      "SINGLE",
     );
 
     setRunPendingDeletion(
@@ -228,9 +371,10 @@ export function RunsHistoryPage() {
     );
   }
 
-  function closeDeleteModal() {
+  function openBulkDeleteModal() {
     if (
-      deletingRunId
+      selectedRunIds.size ===
+      0
     ) {
       return;
     }
@@ -239,12 +383,36 @@ export function RunsHistoryPage() {
       null,
     );
 
+    setDeleteMode(
+      "BULK",
+    );
+
     setRunPendingDeletion(
       null,
     );
   }
 
-  async function handleDeleteRun() {
+  function closeDeleteModal() {
+    if (
+      deleting
+    ) {
+      return;
+    }
+
+    setDeleteError(
+      null,
+    );
+
+    setDeleteMode(
+      null,
+    );
+
+    setRunPendingDeletion(
+      null,
+    );
+  }
+
+  async function handleSingleDelete() {
     if (
       !runPendingDeletion
     ) {
@@ -255,8 +423,10 @@ export function RunsHistoryPage() {
       runPendingDeletion.id;
 
     try {
-      setDeletingRunId(
-        runId,
+      setDeletingRunIds(
+        new Set([
+          runId,
+        ]),
       );
 
       setDeleteError(
@@ -267,13 +437,6 @@ export function RunsHistoryPage() {
         runId,
       );
 
-      /*
-       * 서버에서 삭제가 성공했으므로
-       * 로컬 상태에서도 즉시 제거한다.
-       *
-       * Summary 값 역시 runs를 기반으로 계산하므로
-       * 자동으로 함께 갱신된다.
-       */
       setRuns(
         (
           currentRuns,
@@ -285,7 +448,28 @@ export function RunsHistoryPage() {
           ),
       );
 
+      setSelectedRunIds(
+        (
+          current,
+        ) => {
+          const next =
+            new Set(
+              current,
+            );
+
+          next.delete(
+            runId,
+          );
+
+          return next;
+        },
+      );
+
       setRunPendingDeletion(
+        null,
+      );
+
+      setDeleteMode(
         null,
       );
     } catch (deleteRunError) {
@@ -295,9 +479,163 @@ export function RunsHistoryPage() {
           : "Run 삭제 중 오류가 발생했습니다.",
       );
     } finally {
-      setDeletingRunId(
+      setDeletingRunIds(
+        new Set(),
+      );
+    }
+  }
+
+  async function handleBulkDelete() {
+    const runIds =
+      Array.from(
+        selectedRunIds,
+      );
+
+    if (
+      runIds.length ===
+      0
+    ) {
+      return;
+    }
+
+    const successfullyDeleted =
+      new Set<string>();
+
+    const failedRuns: {
+      runId: string;
+      message: string;
+    }[] = [];
+
+    try {
+      setDeletingRunIds(
+        new Set(
+          runIds,
+        ),
+      );
+
+      setDeleteError(
         null,
       );
+
+      /*
+       * 지금은 기존 DELETE API를 재사용한다.
+       *
+       * 한 Run 삭제가 실패해도 다른 Run 삭제는
+       * 계속 진행되도록 Promise.allSettled을 사용한다.
+       */
+      const results =
+        await Promise.allSettled(
+          runIds.map(
+            async (
+              runId,
+            ) => {
+              await deleteRun(
+                runId,
+              );
+
+              return runId;
+            },
+          ),
+        );
+
+      results.forEach(
+        (
+          result,
+          index,
+        ) => {
+          const runId =
+            runIds[
+              index
+            ];
+
+          if (!runId) {
+            return;
+          }
+
+          if (
+            result.status ===
+            "fulfilled"
+          ) {
+            successfullyDeleted.add(
+              runId,
+            );
+
+            return;
+          }
+
+          failedRuns.push({
+            runId,
+
+            message:
+              result.reason instanceof Error
+                ? result.reason.message
+                : "삭제에 실패했습니다.",
+          });
+        },
+      );
+
+      if (
+        successfullyDeleted.size >
+        0
+      ) {
+        setRuns(
+          (
+            currentRuns,
+          ) =>
+            currentRuns.filter(
+              (run) =>
+                !successfullyDeleted.has(
+                  run.id,
+                ),
+            ),
+        );
+      }
+
+      setSelectedRunIds(
+        new Set(
+          failedRuns.map(
+            (item) =>
+              item.runId,
+          ),
+        ),
+      );
+
+      if (
+        failedRuns.length ===
+        0
+      ) {
+        setDeleteMode(
+          null,
+        );
+
+        return;
+      }
+
+      setDeleteError(
+        `${successfullyDeleted.size}개는 삭제되었고 ${failedRuns.length}개는 삭제하지 못했습니다. 실패한 항목만 다시 선택해두었습니다.`,
+      );
+    } finally {
+      setDeletingRunIds(
+        new Set(),
+      );
+    }
+  }
+
+  async function handleConfirmDelete() {
+    if (
+      deleteMode ===
+      "SINGLE"
+    ) {
+      await handleSingleDelete();
+
+      return;
+    }
+
+    if (
+      deleteMode ===
+      "BULK"
+    ) {
+      await handleBulkDelete();
     }
   }
 
@@ -474,12 +812,74 @@ export function RunsHistoryPage() {
           </div>
         </div>
 
+        {selectedRunIds.size >
+          0 && (
+          <div className="run-history-selection-bar">
+            <div>
+              <strong>
+                {
+                  selectedRunIds.size
+                }
+                개 선택됨
+              </strong>
+
+              <span>
+                선택한 실행 기록을
+                한 번에 관리할 수 있습니다.
+              </span>
+            </div>
+
+            <div className="run-history-selection-actions">
+              <button
+                type="button"
+                className="run-history-selection-clear"
+                disabled={
+                  deleting
+                }
+                onClick={
+                  clearSelection
+                }
+              >
+                선택 해제
+              </button>
+
+              <button
+                type="button"
+                className="run-history-selection-delete"
+                disabled={
+                  deleting
+                }
+                onClick={
+                  openBulkDeleteModal
+                }
+              >
+                <Trash2
+                  size={
+                    14
+                  }
+                />
+
+                선택 삭제
+              </button>
+            </div>
+          </div>
+        )}
+
         <RunHistoryTable
           runs={
             filteredRuns
           }
-          deletingRunId={
-            deletingRunId
+          selectedRunIds={
+            selectedRunIds
+          }
+          deletingRunIds={
+            deletingRunIds
+          }
+          onToggleRun={
+            toggleRun
+          }
+          onToggleAll={
+            toggleAllVisible
           }
           onOpenRun={(
             runId,
@@ -496,12 +896,12 @@ export function RunsHistoryPage() {
             );
           }}
           onDeleteRun={
-            openDeleteModal
+            openSingleDeleteModal
           }
         />
       </section>
 
-      {runPendingDeletion && (
+      {deleteMode && (
         <div
           className="run-delete-modal-backdrop"
           role="presentation"
@@ -527,9 +927,7 @@ export function RunsHistoryPage() {
               className="run-delete-modal-close"
               aria-label="닫기"
               disabled={
-                Boolean(
-                  deletingRunId,
-                )
+                deleting
               }
               onClick={
                 closeDeleteModal
@@ -558,7 +956,10 @@ export function RunsHistoryPage() {
               <h2
                 id="run-delete-modal-title"
               >
-                실행 기록을 삭제하시겠습니까?
+                {deleteMode ===
+                "BULK"
+                  ? `${selectedRunIds.size}개의 실행 기록을 삭제하시겠습니까?`
+                  : "실행 기록을 삭제하시겠습니까?"}
               </h2>
 
               <p>
@@ -566,26 +967,73 @@ export function RunsHistoryPage() {
                 함께 삭제되며 이 작업은 되돌릴 수 없습니다.
               </p>
 
-              <div className="run-delete-target">
-                <strong>
-                  {
-                    runPendingDeletion.name
-                  }
-                </strong>
+              {deleteMode ===
+                "SINGLE" &&
+                runPendingDeletion && (
+                  <div className="run-delete-target">
+                    <strong>
+                      {
+                        runPendingDeletion.name
+                      }
+                    </strong>
 
-                <span>
-                  {
-                    runPendingDeletion.id
-                  }
-                </span>
+                    <span>
+                      {
+                        runPendingDeletion.id
+                      }
+                    </span>
 
-                <span>
-                  상태:{" "}
-                  {getStatusLabel(
-                    runPendingDeletion.status,
+                    <span>
+                      상태:{" "}
+                      {getStatusLabel(
+                        runPendingDeletion.status,
+                      )}
+                    </span>
+                  </div>
+                )}
+
+              {deleteMode ===
+                "BULK" && (
+                <div className="run-delete-bulk-list">
+                  {selectedRuns
+                    .slice(
+                      0,
+                      5,
+                    )
+                    .map(
+                      (run) => (
+                        <div
+                          key={
+                            run.id
+                          }
+                          className="run-delete-bulk-item"
+                        >
+                          <strong>
+                            {
+                              run.name
+                            }
+                          </strong>
+
+                          <span>
+                            {
+                              run.id
+                            }
+                          </span>
+                        </div>
+                      ),
+                    )}
+
+                  {selectedRuns.length >
+                    5 && (
+                    <div className="run-delete-bulk-more">
+                      외{" "}
+                      {selectedRuns.length -
+                        5}
+                      개
+                    </div>
                   )}
-                </span>
-              </div>
+                </div>
+              )}
 
               {deleteError && (
                 <div className="run-delete-error">
@@ -601,9 +1049,7 @@ export function RunsHistoryPage() {
                 type="button"
                 className="run-delete-cancel-button"
                 disabled={
-                  Boolean(
-                    deletingRunId,
-                  )
+                  deleting
                 }
                 onClick={
                   closeDeleteModal
@@ -616,12 +1062,10 @@ export function RunsHistoryPage() {
                 type="button"
                 className="run-delete-confirm-button"
                 disabled={
-                  Boolean(
-                    deletingRunId,
-                  )
+                  deleting
                 }
                 onClick={() => {
-                  void handleDeleteRun();
+                  void handleConfirmDelete();
                 }}
               >
                 <Trash2
@@ -630,9 +1074,12 @@ export function RunsHistoryPage() {
                   }
                 />
 
-                {deletingRunId
+                {deleting
                   ? "삭제 중..."
-                  : "삭제"}
+                  : deleteMode ===
+                      "BULK"
+                    ? `${selectedRunIds.size}개 삭제`
+                    : "삭제"}
               </button>
             </footer>
           </section>
