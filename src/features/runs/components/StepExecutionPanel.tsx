@@ -1,9 +1,13 @@
 import {
   Bot,
+  CheckCircle2,
   Clock3,
   Coins,
   Cpu,
+  ExternalLink,
+  Search,
   Wrench,
+  XCircle,
 } from "lucide-react";
 
 import type {
@@ -30,6 +34,34 @@ interface StepExecutionPanelProps {
   stepRun?: StepRun;
 }
 
+interface ToolSource {
+  title?: string;
+
+  url?: string;
+}
+
+interface WebSearchOutput {
+  query?: string;
+
+  text?: string;
+
+  sources?: ToolSource[];
+}
+
+interface ExecutedToolResult {
+  toolId?: string;
+
+  toolName?: string;
+
+  status?: "SUCCESS" | "FAILED";
+
+  output?: unknown;
+
+  startedAt?: string;
+
+  completedAt?: string;
+}
+
 interface StepExecutionOutput {
   text?: string;
 
@@ -46,6 +78,8 @@ interface StepExecutionOutput {
   outputTokens?: number;
 
   totalTokens?: number;
+
+  tools?: ExecutedToolResult[];
 }
 
 export function StepExecutionPanel({
@@ -72,16 +106,6 @@ export function StepExecutionPanel({
       node.agentId,
     );
 
-  /*
-   * Model 표시 우선순위
-   *
-   * 1. 실제 실행 결과에 저장된 modelId
-   * 2. 현재 Agent 설정의 modelId
-   * 3. Workflow Node에 저장된 modelId
-   *
-   * 이렇게 해야 실행 전에도 Agent Management에서
-   * 설정한 최신 모델이 표시된다.
-   */
   const displayModelId =
     executionOutput?.modelId ??
     agent?.modelId ??
@@ -92,7 +116,7 @@ export function StepExecutionPanel({
       displayModelId,
     );
 
-  const tools =
+  const configuredTools =
     (node.toolIds ?? [])
       .map(
         (toolId) =>
@@ -108,6 +132,10 @@ export function StepExecutionPanel({
         > =>
           Boolean(tool),
       );
+
+  const executedTools =
+    executionOutput?.tools ??
+    [];
 
   const modelDisplayName =
     model?.displayName ??
@@ -197,22 +225,49 @@ export function StepExecutionPanel({
           Tools
         </h3>
 
-        {tools.length > 0 ? (
-          <div className="runtime-tools">
-            {tools.map(
-              (tool) => (
-                <span
+        {executedTools.length >
+        0 ? (
+          <div className="runtime-tool-results">
+            {executedTools.map(
+              (
+                toolResult,
+                index,
+              ) => (
+                <ExecutedToolCard
                   key={
-                    tool.id
+                    toolResult.toolId ??
+                    `${toolResult.toolName}-${index}`
                   }
-                >
-                  {
-                    tool.name
+                  toolResult={
+                    toolResult
                   }
-                </span>
+                />
               ),
             )}
           </div>
+        ) : configuredTools.length >
+          0 ? (
+          <>
+            <p className="runtime-muted">
+              이 Step에 설정된 Tool
+            </p>
+
+            <div className="runtime-tools">
+              {configuredTools.map(
+                (tool) => (
+                  <span
+                    key={
+                      tool.id
+                    }
+                  >
+                    {
+                      tool.name
+                    }
+                  </span>
+                ),
+              )}
+            </div>
+          </>
         ) : (
           <p className="runtime-muted">
             사용 중인 Tool이 없습니다.
@@ -246,7 +301,8 @@ export function StepExecutionPanel({
                     ).toLocaleTimeString(
                       "ko-KR",
                       {
-                        hour12: false,
+                        hour12:
+                          false,
                       },
                     )}
                   </time>
@@ -267,6 +323,191 @@ export function StepExecutionPanel({
         </div>
       </div>
     </section>
+  );
+}
+
+interface ExecutedToolCardProps {
+  toolResult: ExecutedToolResult;
+}
+
+function ExecutedToolCard({
+  toolResult,
+}: ExecutedToolCardProps) {
+  const searchOutput =
+    getWebSearchOutput(
+      toolResult.output,
+    );
+
+  const success =
+    toolResult.status ===
+    "SUCCESS";
+
+  return (
+    <article className="runtime-tool-card">
+      <div className="runtime-tool-card__header">
+        <div className="runtime-tool-card__title">
+          <div className="runtime-tool-card__icon">
+            {toolResult.toolId ===
+            "web-search" ? (
+              <Search size={15} />
+            ) : (
+              <Wrench size={15} />
+            )}
+          </div>
+
+          <div>
+            <strong>
+              {toolResult.toolName ??
+                toolResult.toolId ??
+                "Tool"}
+            </strong>
+
+            <span>
+              실제 실행 Tool
+            </span>
+          </div>
+        </div>
+
+        <span
+          className={[
+            "runtime-tool-status",
+            success
+              ? "runtime-tool-status--success"
+              : "runtime-tool-status--failed",
+          ].join(" ")}
+        >
+          {success ? (
+            <CheckCircle2
+              size={13}
+            />
+          ) : (
+            <XCircle
+              size={13}
+            />
+          )}
+
+          {success
+            ? "SUCCESS"
+            : "FAILED"}
+        </span>
+      </div>
+
+      {searchOutput?.query && (
+        <div className="runtime-tool-card__section">
+          <span className="runtime-tool-card__label">
+            검색어
+          </span>
+
+          <p>
+            {
+              searchOutput.query
+            }
+          </p>
+        </div>
+      )}
+
+      {searchOutput?.text && (
+        <div className="runtime-tool-card__section">
+          <span className="runtime-tool-card__label">
+            검색 결과 요약
+          </span>
+
+          <p className="runtime-tool-card__summary">
+            {
+              searchOutput.text
+            }
+          </p>
+        </div>
+      )}
+
+      {searchOutput?.sources &&
+        searchOutput.sources
+          .length > 0 && (
+          <div className="runtime-tool-card__section">
+            <span className="runtime-tool-card__label">
+              Sources (
+              {
+                searchOutput
+                  .sources
+                  .length
+              }
+              )
+            </span>
+
+            <div className="runtime-tool-sources">
+              {searchOutput.sources.map(
+                (
+                  source,
+                  index,
+                ) => (
+                  <SourceItem
+                    key={`${source.url ?? source.title ?? "source"}-${index}`}
+                    source={
+                      source
+                    }
+                    index={
+                      index
+                    }
+                  />
+                ),
+              )}
+            </div>
+          </div>
+        )}
+    </article>
+  );
+}
+
+interface SourceItemProps {
+  source: ToolSource;
+
+  index: number;
+}
+
+function SourceItem({
+  source,
+  index,
+}: SourceItemProps) {
+  const label =
+    source.title?.trim() ||
+    source.url?.trim() ||
+    `Source ${index + 1}`;
+
+  if (!source.url) {
+    return (
+      <div className="runtime-tool-source">
+        <span>
+          {index + 1}
+        </span>
+
+        <p>
+          {label}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <a
+      className="runtime-tool-source runtime-tool-source--link"
+      href={
+        source.url
+      }
+      target="_blank"
+      rel="noreferrer"
+    >
+      <span>
+        {index + 1}
+      </span>
+
+      <p>
+        {label}
+      </p>
+
+      <ExternalLink
+        size={13}
+      />
+    </a>
   );
 }
 
@@ -320,6 +561,23 @@ function getStepExecutionOutput(
   }
 
   return output as StepExecutionOutput;
+}
+
+function getWebSearchOutput(
+  output: unknown,
+): WebSearchOutput | undefined {
+  if (
+    !output ||
+    typeof output !==
+      "object" ||
+    Array.isArray(
+      output,
+    )
+  ) {
+    return undefined;
+  }
+
+  return output as WebSearchOutput;
 }
 
 function formatModelId(

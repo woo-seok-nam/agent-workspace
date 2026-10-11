@@ -860,3 +860,148 @@
       1px solid var(--color-border);
   }
 }
+
+.runtime-tool-results {
+  display: grid;
+  gap: 12px;
+}
+
+.runtime-tool-card {
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.runtime-tool-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.runtime-tool-card__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.runtime-tool-card__title strong {
+  display: block;
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.runtime-tool-card__title span {
+  display: block;
+  margin-top: 2px;
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+.runtime-tool-card__icon {
+  display: flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.runtime-tool-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.runtime-tool-status--success {
+  background: #ecfdf3;
+  color: #15803d;
+}
+
+.runtime-tool-status--failed {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.runtime-tool-card__section {
+  padding: 14px 16px;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.runtime-tool-card__section:last-child {
+  border-bottom: 0;
+}
+
+.runtime-tool-card__label {
+  display: block;
+  margin-bottom: 7px;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.runtime-tool-card__section p {
+  margin: 0;
+  color: #334155;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.runtime-tool-card__summary {
+  white-space: pre-wrap;
+}
+
+.runtime-tool-sources {
+  display: grid;
+  gap: 7px;
+}
+
+.runtime-tool-source {
+  display: flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 9px;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #334155;
+  text-decoration: none;
+}
+
+.runtime-tool-source > span {
+  display: flex;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: #e2e8f0;
+  color: #475569;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.runtime-tool-source p {
+  flex: 1;
+  overflow: hidden;
+  margin: 0;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.runtime-tool-source--link:hover {
+  background: #eff6ff;
+  color: #2563eb;
+}
