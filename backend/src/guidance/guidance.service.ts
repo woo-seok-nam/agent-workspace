@@ -3,7 +3,13 @@ import {
   recommendPlaybook,
 } from "./playbook.service.js";
 
+import {
+  createWorkflowFromGuidance,
+} from "./workflowFactory.service.js";
+
 import type {
+  CreateGuidedWorkflowInput,
+  CreateGuidedWorkflowResult,
   RecommendWorkflowInput,
   RecommendWorkflowResult,
 } from "./guidance.types.js";
@@ -53,4 +59,12 @@ export function recommendWorkflowFromGoal(
 
     availablePlaybooks,
   };
+}
+
+export async function createGuidedWorkflow(
+  input: CreateGuidedWorkflowInput,
+): Promise<CreateGuidedWorkflowResult> {
+  return createWorkflowFromGuidance(
+    input,
+  );
 }

@@ -3,6 +3,10 @@ import {
 } from "express";
 
 import {
+  guidanceRouter,
+} from "../guidance/guidance.routes.js";
+
+import {
   agentRouter,
 } from "../modules/agents/agent.routes.js";
 
@@ -43,6 +47,11 @@ apiRouter.use(
 );
 
 apiRouter.use(
+  "/guidance",
+  guidanceRouter,
+);
+
+apiRouter.use(
   "/agents",
   agentRouter,
 );
@@ -67,26 +76,11 @@ apiRouter.use(
   runRouter,
 );
 
-/*
- * runDeleteRouter 내부에:
- *
- * DELETE /runs/:runId
- *
- * 가 정의되어 있으므로 "/"에 연결한다.
- */
 apiRouter.use(
   "/",
   runDeleteRouter,
 );
 
-/*
- * artifactRouter 내부에:
- *
- * GET /runs/:runId/artifacts
- * GET /artifacts/:artifactId/download
- *
- * 가 정의되어 있다.
- */
 apiRouter.use(
   "/",
   artifactRouter,
