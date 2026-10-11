@@ -11,6 +11,10 @@ import {
   Search,
 } from "lucide-react";
 
+import {
+  useBlocker,
+} from "react-router-dom";
+
 import type {
   Agent,
 } from "../features/agents/types";
@@ -49,13 +53,7 @@ export function AgentManagementPage() {
     >([]);
 
   /*
-   * 화면에서 사용자가 수정 중인 전체 Agent Draft.
-   *
-   * 기존에는 선택된 Agent 하나만 draftAgent로
-   * 관리했기 때문에 다른 Agent를 선택하면
-   * 수정 내용이 사라질 수 있었다.
-   *
-   * 이제 모든 Agent의 Draft를 유지한다.
+   * 사용자가 수정 중인 전체 Agent Draft.
    */
   const [
     draftAgents,
@@ -85,7 +83,9 @@ export function AgentManagementPage() {
     loading,
     setLoading,
   ] =
-    useState(true);
+    useState(
+      true,
+    );
 
   const [
     error,
@@ -101,7 +101,9 @@ export function AgentManagementPage() {
     saving,
     setSaving,
   ] =
-    useState(false);
+    useState(
+      false,
+    );
 
   const [
     saveError,
@@ -158,8 +160,8 @@ export function AgentManagementPage() {
   }, []);
 
   /*
-   * 저장된 원본과 Draft를 비교해서
-   * 실제 변경된 Agent ID만 계산한다.
+   * 서버 원본과 현재 Draft를 비교해서
+   * 실제로 변경된 Agent를 계산한다.
    */
   const dirtyAgentIds =
     useMemo(() => {
@@ -204,10 +206,43 @@ export function AgentManagementPage() {
     0;
 
   /*
-   * 브라우저 새로고침 / 탭 닫기 경고.
+   * React Router 내부 페이지 이동 Guard.
    *
-   * 저장되지 않은 변경사항이 없으면
-   * 아무 경고도 발생하지 않는다.
+   * createBrowserRouter를 사용하고 있기 때문에
+   * useBlocker를 사용할 수 있다.
+   */
+  const blocker =
+    useBlocker(
+      hasUnsavedChanges &&
+        !saving,
+    );
+
+  useEffect(() => {
+    if (
+      blocker.state !==
+      "blocked"
+    ) {
+      return;
+    }
+
+    const confirmed =
+      window.confirm(
+        "저장하지 않은 변경사항이 있습니다.\n페이지를 이동하시겠습니까?",
+      );
+
+    if (confirmed) {
+      blocker.proceed();
+
+      return;
+    }
+
+    blocker.reset();
+  }, [
+    blocker,
+  ]);
+
+  /*
+   * 브라우저 새로고침 / 탭 닫기 Guard.
    */
   useEffect(() => {
     if (
@@ -408,13 +443,6 @@ export function AgentManagementPage() {
           null,
         );
 
-        /*
-         * 여러 Agent를 동시에 저장한다.
-         *
-         * 한 Agent의 저장 실패 때문에
-         * 다른 Agent 저장 결과까지 잃지 않도록
-         * Promise.allSettled을 사용한다.
-         */
         const results =
           await Promise.allSettled(
             changedAgents.map(
@@ -486,9 +514,6 @@ export function AgentManagementPage() {
           },
         );
 
-        /*
-         * 성공한 Agent만 서버 원본 상태에 반영.
-         */
         if (
           savedAgents.size >
           0
@@ -504,10 +529,6 @@ export function AgentManagementPage() {
               ),
           );
 
-          /*
-           * 서버가 정규화해서 반환한 값을
-           * Draft에도 반영한다.
-           */
           setDraftAgents(
             (current) =>
               current.map(
