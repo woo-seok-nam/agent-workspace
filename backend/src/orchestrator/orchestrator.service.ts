@@ -27,8 +27,14 @@ import type {
 } from "../modules/workflows/workflow.types.js";
 
 import {
+  buildConditionContext,
+  selectConditionEdges,
+} from "./conditionEvaluator.js";
+
+import {
   canExecuteNode,
   getDependencyOutputs,
+  shouldSkipNode,
 } from "./graph.js";
 
 import {
@@ -47,18 +53,13 @@ function createLog(
   level:
     | "info"
     | "warning"
-    | "error" =
-    "info",
+    | "error" = "info",
 ): ExecutionLog {
   return {
-    id:
-      `log-${crypto.randomUUID()}`,
-
+    id: `log-${crypto.randomUUID()}`,
     timestamp:
       new Date().toISOString(),
-
     level,
-
     message,
   };
 }
@@ -284,23 +285,12 @@ export async function continueWorkflowRun(
           0,
         );
 
-      /*
-       * Run이 COMPLETED 되기 직전에
-       * Workflow의 최종 텍스트 결과를 찾는다.
-       */
       const finalText =
         findFinalOutputText(
           workflow,
           run.stepRuns,
         );
 
-      /*
-       * 최종 텍스트가 존재한다면
-       * report.md Artifact를 생성한다.
-       *
-       * 같은 Run에 report.md가 이미 존재하면
-       * 중복 생성하지 않는다.
-       */
       if (finalText) {
         await ensureMarkdownArtifact(
           runId,
@@ -326,6 +316,71 @@ export async function continueWorkflowRun(
       );
 
       return;
+    }
+
+    /*
+     * Condition 분기 결과 때문에 더 이상
+     * 도달할 수 없는 Pending Step은 SKIPPED로 만든다.
+     *
+     * 한 번의 loop에서 상위 Branch Node를 SKIP하면
+     * 다음 loop에서 그 아래 Node도 연쇄적으로 SKIP될 수 있다.
+     */
+    const skippableSteps =
+      pendingSteps.filter(
+        (stepRun) =>
+          shouldSkipNode(
+            workflow,
+            stepRun.nodeId,
+            run.stepRuns,
+          ),
+      );
+
+    if (
+      skippableSteps.length >
+      0
+    ) {
+      await Promise.all(
+        skippableSteps.map(
+          async (
+            stepRun,
+          ) => {
+            const node =
+              workflow.nodes.find(
+                (
+                  workflowNode,
+                ) =>
+                  workflowNode.id ===
+                  stepRun.nodeId,
+              );
+
+            await editStepRun(
+              runId,
+              stepRun.nodeId,
+              {
+                status:
+                  "SKIPPED",
+
+                completedAt:
+                  new Date().toISOString(),
+
+                logs: [
+                  ...stepRun.logs,
+
+                  createLog(
+                    `${
+                      node?.name ??
+                      stepRun.nodeId
+                    } Step은 Condition 분기에서 선택되지 않아 건너뜁니다.`,
+                    "warning",
+                  ),
+                ],
+              },
+            );
+          },
+        ),
+      );
+
+      continue;
     }
 
     const executableSteps =
@@ -415,7 +470,10 @@ export async function continueWorkflowRun(
             ...approvalStep.logs,
 
             createLog(
-              `${approvalNode?.name ?? approvalStep.nodeId} Step이 사용자 승인을 기다리고 있습니다.`,
+              `${
+                approvalNode?.name ??
+                approvalStep.nodeId
+              } Step이 사용자 승인을 기다리고 있습니다.`,
             ),
           ],
         },
@@ -498,9 +556,7 @@ export async function continueWorkflowRun(
           "FAILED",
       );
 
-    if (
-      failed
-    ) {
+    if (failed) {
       await editRun(
         runId,
         {
@@ -711,18 +767,21 @@ async function executeWorkflowNode(
     return;
   }
 
-  const retryCount =
-    Math.max(
-      0,
-      node.config
-        ?.retryCount ??
-        2,
-    );
-
   /*
-   * 설정이 없으면 기본 60초.
-   * 0 이하이면 Timeout을 사용하지 않는다.
+   * Condition은 외부 API 호출이 아닌 결정적 평가이므로
+   * 실패 시 같은 조건을 반복 평가해도 의미가 없다.
    */
+  const retryCount =
+    node.type ===
+    "condition"
+      ? 0
+      : Math.max(
+          0,
+          node.config
+            ?.retryCount ??
+            2,
+        );
+
   const timeoutSeconds =
     node.config
       ?.timeoutSeconds ??
@@ -751,7 +810,8 @@ async function executeWorkflowNode(
 
         createLog(
           `${node.name} 실행을 시작했습니다. 제한 시간: ${
-            timeoutSeconds > 0
+            timeoutSeconds >
+            0
               ? `${timeoutSeconds}초`
               : "없음"
           }`,
@@ -784,7 +844,9 @@ async function executeWorkflowNode(
           node.id,
       );
 
-    if (!currentStepRun) {
+    if (
+      !currentStepRun
+    ) {
       return;
     }
 
@@ -827,17 +889,27 @@ async function executeWorkflowNode(
 
       const result =
         await executeWithTimeout(
-          () =>
-            executeNode({
-              workflow,
+          async () => {
+            if (
+              node.type ===
+              "condition"
+            ) {
+              return executeConditionNode(
+                workflow,
+                node,
+                dependencyOutputs,
+                latestRun.prompt,
+              );
+            }
 
+            return executeNode({
+              workflow,
               run:
                 latestRun,
-
               node,
-
               dependencyOutputs,
-            }),
+            });
+          },
 
           timeoutSeconds,
         );
@@ -875,12 +947,17 @@ async function executeWorkflowNode(
             new Date().toISOString(),
 
           logs: [
-            ...(afterExecutionStep
-              ?.logs ??
-              currentStepRun.logs),
+            ...(
+              afterExecutionStep
+                ?.logs ??
+              currentStepRun.logs
+            ),
 
             createLog(
-              `${node.name} 실행이 완료되었습니다.`,
+              getCompletionLogMessage(
+                node,
+                result.output,
+              ),
             ),
           ],
         },
@@ -904,14 +981,16 @@ async function executeWorkflowNode(
         );
 
       const latestStepRun =
-        latestRun?.stepRuns.find(
-          (step) =>
-            step.nodeId ===
-            node.id,
-        );
+        latestRun
+          ?.stepRuns.find(
+            (step) =>
+              step.nodeId ===
+              node.id,
+          );
 
       const currentLogs =
-        latestStepRun?.logs ??
+        latestStepRun
+          ?.logs ??
         currentStepRun.logs;
 
       const retriesRemaining =
@@ -988,19 +1067,120 @@ async function executeWorkflowNode(
   }
 }
 
-/*
- * Workflow의 실제 Output Node로 들어가는
- * 마지막 실행 Step의 text를 찾는다.
- *
- * 예:
- *
- * Reviewer
- *    ↓
- * Output
- *
- * 이 경우 Reviewer StepRun.output.text가
- * 최종 Artifact 내용이 된다.
- */
+async function executeConditionNode(
+  workflow: Workflow,
+  node: WorkflowNode,
+  dependencyOutputs: Record<
+    string,
+    unknown
+  >,
+  prompt?: string,
+) {
+  const outgoingEdges =
+    workflow.edges.filter(
+      (edge) =>
+        edge.source ===
+        node.id,
+    );
+
+  const context =
+    buildConditionContext(
+      dependencyOutputs,
+    );
+
+  if (prompt) {
+    context.prompt =
+      prompt;
+  }
+
+  const selection =
+    selectConditionEdges(
+      outgoingEdges,
+      context,
+    );
+
+  return {
+    output: {
+      type:
+        "condition",
+
+      selectedEdgeIds:
+        selection.selectedEdgeIds,
+
+      selectedTargetIds:
+        selection.selectedTargetIds,
+
+      evaluations:
+        selection.evaluations,
+    },
+
+    tokenUsage:
+      0,
+
+    cost:
+      0,
+  };
+}
+
+function getCompletionLogMessage(
+  node: WorkflowNode,
+  output: unknown,
+) {
+  if (
+    node.type !==
+      "condition" ||
+    !output ||
+    typeof output !==
+      "object" ||
+    Array.isArray(
+      output,
+    )
+  ) {
+    return `${node.name} 실행이 완료되었습니다.`;
+  }
+
+  const selectedTargetIds =
+    (
+      output as Record<
+        string,
+        unknown
+      >
+    ).selectedTargetIds;
+
+  if (
+    !Array.isArray(
+      selectedTargetIds,
+    )
+  ) {
+    return `${node.name} Condition 평가가 완료되었습니다.`;
+  }
+
+  const targetNames =
+    selectedTargetIds
+      .filter(
+        (
+          value,
+        ): value is string =>
+          typeof value ===
+          "string",
+      )
+      .map(
+        (
+          targetId,
+        ) =>
+          targetId,
+      );
+
+  return `${node.name} Condition 평가가 완료되었습니다. 선택된 분기: ${
+    targetNames.length >
+    0
+      ? targetNames.join(
+          ", ",
+        )
+      : "없음"
+  }`;
+}
+
 function findFinalOutputText(
   workflow: Workflow,
   stepRuns: StepRun[],
@@ -1055,19 +1235,14 @@ function findFinalOutputText(
     }
   }
 
-  /*
-   * Output Node가 없는 커스텀 Workflow도
-   * 결과 파일을 생성할 수 있도록 fallback.
-   *
-   * 완료된 Step 중 마지막으로 텍스트를
-   * 가지고 있는 Step을 사용한다.
-   */
   for (
     let index =
       stepRuns.length -
       1;
-    index >= 0;
-    index -= 1
+    index >=
+    0;
+    index -=
+      1
   ) {
     const stepRun =
       stepRuns[
@@ -1120,7 +1295,7 @@ function getOutputText(
 
   if (
     typeof text !==
-      "string"
+    "string"
   ) {
     return undefined;
   }
@@ -1128,14 +1303,12 @@ function getOutputText(
   const trimmed =
     text.trim();
 
-  return trimmed ||
-    undefined;
+  return (
+    trimmed ||
+    undefined
+  );
 }
 
-/*
- * Run 완료 로직이 중복 실행되는 상황에서도
- * report.md Artifact를 중복 생성하지 않는다.
- */
 async function ensureMarkdownArtifact(
   runId: string,
   content: string,
@@ -1154,7 +1327,9 @@ async function ensureMarkdownArtifact(
           "markdown",
     );
 
-  if (reportExists) {
+  if (
+    reportExists
+  ) {
     return;
   }
 

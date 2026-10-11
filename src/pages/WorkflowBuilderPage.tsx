@@ -51,7 +51,6 @@ import "../features/workflow/WorkflowBuilder.css";
 
 interface ValidationAgent {
   id: string;
-
   enabled: boolean;
 }
 
@@ -130,6 +129,7 @@ export function WorkflowBuilderPage() {
     addNode,
     removeNode,
     addEdge,
+    updateEdge,
     markSaved,
   } =
     useWorkflowBuilderStore();
@@ -162,11 +162,6 @@ export function WorkflowBuilderPage() {
           null,
         );
 
-        /*
-         * Workflow Validation을 위해
-         * Workflow와 현재 Agent 목록을
-         * 함께 불러온다.
-         */
         const [
           workflow,
           agents,
@@ -185,7 +180,9 @@ export function WorkflowBuilderPage() {
 
         setValidationAgents(
           agents.map(
-            (agent) => ({
+            (
+              agent,
+            ) => ({
               id:
                 agent.id,
 
@@ -198,7 +195,9 @@ export function WorkflowBuilderPage() {
         initializeWorkflow(
           workflow,
         );
-      } catch (loadError) {
+      } catch (
+        loadError
+      ) {
         setError(
           loadError instanceof Error
             ? loadError.message
@@ -221,7 +220,9 @@ export function WorkflowBuilderPage() {
     useMemo(
       () =>
         nodes.find(
-          (node) =>
+          (
+            node,
+          ) =>
             node.id ===
             selectedNodeId,
         ),
@@ -231,10 +232,6 @@ export function WorkflowBuilderPage() {
       ],
     );
 
-  /*
-   * 현재 Builder에 표시되고 있는
-   * Workflow 구조를 실시간으로 검증한다.
-   */
   const validationResult =
     useMemo(
       () =>
@@ -261,10 +258,6 @@ export function WorkflowBuilderPage() {
         return;
       }
 
-      /*
-       * Validation ERROR가 있으면
-       * 서버 저장 자체를 차단한다.
-       */
       if (
         !validationResult.isValid
       ) {
@@ -283,10 +276,6 @@ export function WorkflowBuilderPage() {
         return;
       }
 
-      /*
-       * WARNING만 존재한다면
-       * 사용자에게 알려준 뒤 저장 여부를 묻는다.
-       */
       if (
         validationResult
           .warnings.length >
@@ -337,7 +326,9 @@ export function WorkflowBuilderPage() {
         window.alert(
           "Workflow가 저장되었습니다.",
         );
-      } catch (saveError) {
+      } catch (
+        saveError
+      ) {
         window.alert(
           saveError instanceof Error
             ? saveError.message
@@ -359,15 +350,6 @@ export function WorkflowBuilderPage() {
         return;
       }
 
-      /*
-       * 저장되지 않은 변경사항이 있으면
-       * 실제 실행 대상은 현재 Builder Draft가 아니라
-       * 서버에 저장된 Workflow이다.
-       *
-       * 따라서 기존 동작을 유지하면서
-       * 서버 Workflow를 다시 가져와서
-       * 그 구조를 검증한다.
-       */
       if (
         isDirty
       ) {
@@ -442,7 +424,9 @@ export function WorkflowBuilderPage() {
               return;
             }
           }
-        } catch (validationError) {
+        } catch (
+          validationError
+        ) {
           window.alert(
             validationError instanceof Error
               ? validationError.message
@@ -452,11 +436,6 @@ export function WorkflowBuilderPage() {
           return;
         }
       } else {
-        /*
-         * Dirty 상태가 아니라면
-         * 화면의 Workflow와 서버 Workflow가 동일하므로
-         * 현재 Validation 결과를 그대로 사용한다.
-         */
         if (
           !validationResult.isValid
         ) {
@@ -519,7 +498,9 @@ export function WorkflowBuilderPage() {
         navigate(
           `/runs/${run.id}`,
         );
-      } catch (runError) {
+      } catch (
+        runError
+      ) {
         window.alert(
           runError instanceof Error
             ? runError.message
@@ -541,7 +522,6 @@ export function WorkflowBuilderPage() {
         `edge-${crypto.randomUUID()}`,
 
       source,
-
       target,
     });
   };
@@ -792,8 +772,14 @@ export function WorkflowBuilderPage() {
           node={
             selectedNode
           }
+          edges={
+            edges
+          }
           onNodeChange={
             updateNode
+          }
+          onEdgeChange={
+            updateEdge
           }
           onDeleteNode={
             removeNode

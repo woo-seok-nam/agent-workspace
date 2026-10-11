@@ -52,6 +52,11 @@ interface WorkflowBuilderState {
     edge: WorkflowEdge,
   ) => void;
 
+  updateEdge: (
+    edgeId: string,
+    updates: Partial<WorkflowEdge>,
+  ) => void;
+
   removeEdge: (
     edgeId: string,
   ) => void;
@@ -71,135 +76,242 @@ const initialState = {
 };
 
 export const useWorkflowBuilderStore =
-  create<WorkflowBuilderState>((set) => ({
-    ...initialState,
+  create<WorkflowBuilderState>(
+    (set) => ({
+      ...initialState,
 
-    initializeWorkflow: (workflow) => {
-      set({
-        workflowId: workflow.id,
-        name: workflow.name,
+      initializeWorkflow: (
+        workflow,
+      ) => {
+        set({
+          workflowId:
+            workflow.id,
 
-        nodes: structuredClone(
-          workflow.nodes,
-        ),
+          name:
+            workflow.name,
 
-        edges: structuredClone(
-          workflow.edges,
-        ),
+          nodes:
+            structuredClone(
+              workflow.nodes,
+            ),
 
-        selectedNodeId: null,
-        isDirty: false,
-      });
-    },
+          edges:
+            structuredClone(
+              workflow.edges,
+            ),
 
-    selectNode: (nodeId) => {
-      set({
-        selectedNodeId: nodeId,
-      });
-    },
+          selectedNodeId:
+            null,
 
-    addNode: (node) => {
-      set((state) => ({
-        nodes: [
-          ...state.nodes,
-          node,
-        ],
+          isDirty:
+            false,
+        });
+      },
 
-        selectedNodeId: node.id,
+      selectNode: (
+        nodeId,
+      ) => {
+        set({
+          selectedNodeId:
+            nodeId,
+        });
+      },
 
-        isDirty: true,
-      }));
-    },
+      addNode: (
+        node,
+      ) => {
+        set(
+          (
+            state,
+          ) => ({
+            nodes: [
+              ...state.nodes,
+              node,
+            ],
 
-    updateNode: (
-      nodeId,
-      updates,
-    ) => {
-      set((state) => ({
-        nodes: state.nodes.map(
-          (node) =>
-            node.id === nodeId
-              ? {
-                  ...node,
-                  ...updates,
-                }
-              : node,
-        ),
+            selectedNodeId:
+              node.id,
 
-        isDirty: true,
-      }));
-    },
+            isDirty:
+              true,
+          }),
+        );
+      },
 
-    updateNodePosition: (
-      nodeId,
-      position,
-    ) => {
-      set((state) => ({
-        nodes: state.nodes.map(
-          (node) =>
-            node.id === nodeId
-              ? {
-                  ...node,
-                  position,
-                }
-              : node,
-        ),
+      updateNode: (
+        nodeId,
+        updates,
+      ) => {
+        set(
+          (
+            state,
+          ) => ({
+            nodes:
+              state.nodes.map(
+                (
+                  node,
+                ) =>
+                  node.id ===
+                  nodeId
+                    ? {
+                        ...node,
+                        ...updates,
+                      }
+                    : node,
+              ),
 
-        isDirty: true,
-      }));
-    },
+            isDirty:
+              true,
+          }),
+        );
+      },
 
-    removeNode: (nodeId) => {
-      set((state) => ({
-        nodes: state.nodes.filter(
-          (node) =>
-            node.id !== nodeId,
-        ),
+      updateNodePosition: (
+        nodeId,
+        position,
+      ) => {
+        set(
+          (
+            state,
+          ) => ({
+            nodes:
+              state.nodes.map(
+                (
+                  node,
+                ) =>
+                  node.id ===
+                  nodeId
+                    ? {
+                        ...node,
+                        position,
+                      }
+                    : node,
+              ),
 
-        edges: state.edges.filter(
-          (edge) =>
-            edge.source !== nodeId &&
-            edge.target !== nodeId,
-        ),
+            isDirty:
+              true,
+          }),
+        );
+      },
 
-        selectedNodeId:
-          state.selectedNodeId === nodeId
-            ? null
-            : state.selectedNodeId,
+      removeNode: (
+        nodeId,
+      ) => {
+        set(
+          (
+            state,
+          ) => ({
+            nodes:
+              state.nodes.filter(
+                (
+                  node,
+                ) =>
+                  node.id !==
+                  nodeId,
+              ),
 
-        isDirty: true,
-      }));
-    },
+            edges:
+              state.edges.filter(
+                (
+                  edge,
+                ) =>
+                  edge.source !==
+                    nodeId &&
+                  edge.target !==
+                    nodeId,
+              ),
 
-    addEdge: (edge) => {
-      set((state) => ({
-        edges: [
-          ...state.edges,
-          edge,
-        ],
+            selectedNodeId:
+              state.selectedNodeId ===
+              nodeId
+                ? null
+                : state.selectedNodeId,
 
-        isDirty: true,
-      }));
-    },
+            isDirty:
+              true,
+          }),
+        );
+      },
 
-    removeEdge: (edgeId) => {
-      set((state) => ({
-        edges: state.edges.filter(
-          (edge) =>
-            edge.id !== edgeId,
-        ),
+      addEdge: (
+        edge,
+      ) => {
+        set(
+          (
+            state,
+          ) => ({
+            edges: [
+              ...state.edges,
+              edge,
+            ],
 
-        isDirty: true,
-      }));
-    },
+            isDirty:
+              true,
+          }),
+        );
+      },
 
-    markSaved: () => {
-      set({
-        isDirty: false,
-      });
-    },
+      updateEdge: (
+        edgeId,
+        updates,
+      ) => {
+        set(
+          (
+            state,
+          ) => ({
+            edges:
+              state.edges.map(
+                (
+                  edge,
+                ) =>
+                  edge.id ===
+                  edgeId
+                    ? {
+                        ...edge,
+                        ...updates,
+                      }
+                    : edge,
+              ),
 
-    reset: () => {
-      set(initialState);
-    },
-  }));
+            isDirty:
+              true,
+          }),
+        );
+      },
+
+      removeEdge: (
+        edgeId,
+      ) => {
+        set(
+          (
+            state,
+          ) => ({
+            edges:
+              state.edges.filter(
+                (
+                  edge,
+                ) =>
+                  edge.id !==
+                  edgeId,
+              ),
+
+            isDirty:
+              true,
+          }),
+        );
+      },
+
+      markSaved: () => {
+        set({
+          isDirty:
+            false,
+        });
+      },
+
+      reset: () => {
+        set(
+          initialState,
+        );
+      },
+    }),
+  );
