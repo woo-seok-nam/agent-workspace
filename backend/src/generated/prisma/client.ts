@@ -81,3 +81,8 @@ export type WorkflowRun = Prisma.WorkflowRunModel
  * 
  */
 export type StepRun = Prisma.StepRunModel
+/**
+ * Model Artifact
+ * 
+ */
+export type Artifact = Prisma.ArtifactModel

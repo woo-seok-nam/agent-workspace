@@ -7,6 +7,10 @@ import {
 } from "../modules/agents/agent.routes.js";
 
 import {
+  artifactRouter,
+} from "../modules/artifacts/artifact.routes.js";
+
+import {
   providerRouter,
 } from "../modules/providers/provider.routes.js";
 
@@ -57,4 +61,9 @@ apiRouter.use(
 apiRouter.use(
   "/runs",
   runRouter,
+);
+
+apiRouter.use(
+  "/",
+  artifactRouter,
 );

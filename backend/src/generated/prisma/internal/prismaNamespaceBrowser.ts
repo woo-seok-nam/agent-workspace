@@ -58,7 +58,8 @@ export const ModelName = {
   WorkflowNode: 'WorkflowNode',
   WorkflowEdge: 'WorkflowEdge',
   WorkflowRun: 'WorkflowRun',
-  StepRun: 'StepRun'
+  StepRun: 'StepRun',
+  Artifact: 'Artifact'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -192,6 +193,20 @@ export const StepRunScalarFieldEnum = {
 } as const
 
 export type StepRunScalarFieldEnum = (typeof StepRunScalarFieldEnum)[keyof typeof StepRunScalarFieldEnum]
+
+
+export const ArtifactScalarFieldEnum = {
+  id: 'id',
+  runId: 'runId',
+  name: 'name',
+  type: 'type',
+  path: 'path',
+  mimeType: 'mimeType',
+  size: 'size',
+  createdAt: 'createdAt'
+} as const
+
+export type ArtifactScalarFieldEnum = (typeof ArtifactScalarFieldEnum)[keyof typeof ArtifactScalarFieldEnum]
 
 
 export const SortOrder = {

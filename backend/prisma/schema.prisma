@@ -98,8 +98,9 @@ model WorkflowRun {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  workflow Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
-  stepRuns StepRun[]
+  workflow  Workflow   @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  stepRuns  StepRun[]
+  artifacts Artifact[]
 
   @@index([workflowId])
   @@index([status])
@@ -127,4 +128,19 @@ model StepRun {
   @@unique([runId, nodeId])
   @@index([runId])
   @@index([status])
+}
+
+model Artifact {
+  id        String   @id
+  runId     String
+  name      String
+  type      String
+  path      String
+  mimeType  String
+  size      Int
+  createdAt DateTime @default(now())
+
+  run WorkflowRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
 }

@@ -270,6 +270,7 @@ export type WorkflowRunWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"WorkflowRun"> | Date | string
   workflow?: Prisma.XOR<Prisma.WorkflowScalarRelationFilter, Prisma.WorkflowWhereInput>
   stepRuns?: Prisma.StepRunListRelationFilter
+  artifacts?: Prisma.ArtifactListRelationFilter
 }
 
 export type WorkflowRunOrderByWithRelationInput = {
@@ -286,6 +287,7 @@ export type WorkflowRunOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   workflow?: Prisma.WorkflowOrderByWithRelationInput
   stepRuns?: Prisma.StepRunOrderByRelationAggregateInput
+  artifacts?: Prisma.ArtifactOrderByRelationAggregateInput
 }
 
 export type WorkflowRunWhereUniqueInput = Prisma.AtLeast<{
@@ -305,6 +307,7 @@ export type WorkflowRunWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"WorkflowRun"> | Date | string
   workflow?: Prisma.XOR<Prisma.WorkflowScalarRelationFilter, Prisma.WorkflowWhereInput>
   stepRuns?: Prisma.StepRunListRelationFilter
+  artifacts?: Prisma.ArtifactListRelationFilter
 }, "id">
 
 export type WorkflowRunOrderByWithAggregationInput = {
@@ -356,6 +359,7 @@ export type WorkflowRunCreateInput = {
   updatedAt?: Date | string
   workflow: Prisma.WorkflowCreateNestedOneWithoutRunsInput
   stepRuns?: Prisma.StepRunCreateNestedManyWithoutRunInput
+  artifacts?: Prisma.ArtifactCreateNestedManyWithoutRunInput
 }
 
 export type WorkflowRunUncheckedCreateInput = {
@@ -371,6 +375,7 @@ export type WorkflowRunUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   stepRuns?: Prisma.StepRunUncheckedCreateNestedManyWithoutRunInput
+  artifacts?: Prisma.ArtifactUncheckedCreateNestedManyWithoutRunInput
 }
 
 export type WorkflowRunUpdateInput = {
@@ -386,6 +391,7 @@ export type WorkflowRunUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workflow?: Prisma.WorkflowUpdateOneRequiredWithoutRunsNestedInput
   stepRuns?: Prisma.StepRunUpdateManyWithoutRunNestedInput
+  artifacts?: Prisma.ArtifactUpdateManyWithoutRunNestedInput
 }
 
 export type WorkflowRunUncheckedUpdateInput = {
@@ -401,6 +407,7 @@ export type WorkflowRunUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   stepRuns?: Prisma.StepRunUncheckedUpdateManyWithoutRunNestedInput
+  artifacts?: Prisma.ArtifactUncheckedUpdateManyWithoutRunNestedInput
 }
 
 export type WorkflowRunCreateManyInput = {
@@ -579,6 +586,20 @@ export type WorkflowRunUpdateOneRequiredWithoutStepRunsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.WorkflowRunUpdateToOneWithWhereWithoutStepRunsInput, Prisma.WorkflowRunUpdateWithoutStepRunsInput>, Prisma.WorkflowRunUncheckedUpdateWithoutStepRunsInput>
 }
 
+export type WorkflowRunCreateNestedOneWithoutArtifactsInput = {
+  create?: Prisma.XOR<Prisma.WorkflowRunCreateWithoutArtifactsInput, Prisma.WorkflowRunUncheckedCreateWithoutArtifactsInput>
+  connectOrCreate?: Prisma.WorkflowRunCreateOrConnectWithoutArtifactsInput
+  connect?: Prisma.WorkflowRunWhereUniqueInput
+}
+
+export type WorkflowRunUpdateOneRequiredWithoutArtifactsNestedInput = {
+  create?: Prisma.XOR<Prisma.WorkflowRunCreateWithoutArtifactsInput, Prisma.WorkflowRunUncheckedCreateWithoutArtifactsInput>
+  connectOrCreate?: Prisma.WorkflowRunCreateOrConnectWithoutArtifactsInput
+  upsert?: Prisma.WorkflowRunUpsertWithoutArtifactsInput
+  connect?: Prisma.WorkflowRunWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.WorkflowRunUpdateToOneWithWhereWithoutArtifactsInput, Prisma.WorkflowRunUpdateWithoutArtifactsInput>, Prisma.WorkflowRunUncheckedUpdateWithoutArtifactsInput>
+}
+
 export type WorkflowRunCreateWithoutWorkflowInput = {
   id: string
   name: string
@@ -591,6 +612,7 @@ export type WorkflowRunCreateWithoutWorkflowInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   stepRuns?: Prisma.StepRunCreateNestedManyWithoutRunInput
+  artifacts?: Prisma.ArtifactCreateNestedManyWithoutRunInput
 }
 
 export type WorkflowRunUncheckedCreateWithoutWorkflowInput = {
@@ -605,6 +627,7 @@ export type WorkflowRunUncheckedCreateWithoutWorkflowInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   stepRuns?: Prisma.StepRunUncheckedCreateNestedManyWithoutRunInput
+  artifacts?: Prisma.ArtifactUncheckedCreateNestedManyWithoutRunInput
 }
 
 export type WorkflowRunCreateOrConnectWithoutWorkflowInput = {
@@ -661,6 +684,7 @@ export type WorkflowRunCreateWithoutStepRunsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   workflow: Prisma.WorkflowCreateNestedOneWithoutRunsInput
+  artifacts?: Prisma.ArtifactCreateNestedManyWithoutRunInput
 }
 
 export type WorkflowRunUncheckedCreateWithoutStepRunsInput = {
@@ -675,6 +699,7 @@ export type WorkflowRunUncheckedCreateWithoutStepRunsInput = {
   completedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  artifacts?: Prisma.ArtifactUncheckedCreateNestedManyWithoutRunInput
 }
 
 export type WorkflowRunCreateOrConnectWithoutStepRunsInput = {
@@ -705,6 +730,7 @@ export type WorkflowRunUpdateWithoutStepRunsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workflow?: Prisma.WorkflowUpdateOneRequiredWithoutRunsNestedInput
+  artifacts?: Prisma.ArtifactUpdateManyWithoutRunNestedInput
 }
 
 export type WorkflowRunUncheckedUpdateWithoutStepRunsInput = {
@@ -719,6 +745,83 @@ export type WorkflowRunUncheckedUpdateWithoutStepRunsInput = {
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  artifacts?: Prisma.ArtifactUncheckedUpdateManyWithoutRunNestedInput
+}
+
+export type WorkflowRunCreateWithoutArtifactsInput = {
+  id: string
+  name: string
+  prompt?: string | null
+  status?: string
+  tokenUsage?: number
+  cost?: number
+  startedAt?: Date | string | null
+  completedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  workflow: Prisma.WorkflowCreateNestedOneWithoutRunsInput
+  stepRuns?: Prisma.StepRunCreateNestedManyWithoutRunInput
+}
+
+export type WorkflowRunUncheckedCreateWithoutArtifactsInput = {
+  id: string
+  workflowId: string
+  name: string
+  prompt?: string | null
+  status?: string
+  tokenUsage?: number
+  cost?: number
+  startedAt?: Date | string | null
+  completedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  stepRuns?: Prisma.StepRunUncheckedCreateNestedManyWithoutRunInput
+}
+
+export type WorkflowRunCreateOrConnectWithoutArtifactsInput = {
+  where: Prisma.WorkflowRunWhereUniqueInput
+  create: Prisma.XOR<Prisma.WorkflowRunCreateWithoutArtifactsInput, Prisma.WorkflowRunUncheckedCreateWithoutArtifactsInput>
+}
+
+export type WorkflowRunUpsertWithoutArtifactsInput = {
+  update: Prisma.XOR<Prisma.WorkflowRunUpdateWithoutArtifactsInput, Prisma.WorkflowRunUncheckedUpdateWithoutArtifactsInput>
+  create: Prisma.XOR<Prisma.WorkflowRunCreateWithoutArtifactsInput, Prisma.WorkflowRunUncheckedCreateWithoutArtifactsInput>
+  where?: Prisma.WorkflowRunWhereInput
+}
+
+export type WorkflowRunUpdateToOneWithWhereWithoutArtifactsInput = {
+  where?: Prisma.WorkflowRunWhereInput
+  data: Prisma.XOR<Prisma.WorkflowRunUpdateWithoutArtifactsInput, Prisma.WorkflowRunUncheckedUpdateWithoutArtifactsInput>
+}
+
+export type WorkflowRunUpdateWithoutArtifactsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  prompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  tokenUsage?: Prisma.IntFieldUpdateOperationsInput | number
+  cost?: Prisma.FloatFieldUpdateOperationsInput | number
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  workflow?: Prisma.WorkflowUpdateOneRequiredWithoutRunsNestedInput
+  stepRuns?: Prisma.StepRunUpdateManyWithoutRunNestedInput
+}
+
+export type WorkflowRunUncheckedUpdateWithoutArtifactsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  workflowId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  prompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  tokenUsage?: Prisma.IntFieldUpdateOperationsInput | number
+  cost?: Prisma.FloatFieldUpdateOperationsInput | number
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  stepRuns?: Prisma.StepRunUncheckedUpdateManyWithoutRunNestedInput
 }
 
 export type WorkflowRunCreateManyWorkflowInput = {
@@ -746,6 +849,7 @@ export type WorkflowRunUpdateWithoutWorkflowInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   stepRuns?: Prisma.StepRunUpdateManyWithoutRunNestedInput
+  artifacts?: Prisma.ArtifactUpdateManyWithoutRunNestedInput
 }
 
 export type WorkflowRunUncheckedUpdateWithoutWorkflowInput = {
@@ -760,6 +864,7 @@ export type WorkflowRunUncheckedUpdateWithoutWorkflowInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   stepRuns?: Prisma.StepRunUncheckedUpdateManyWithoutRunNestedInput
+  artifacts?: Prisma.ArtifactUncheckedUpdateManyWithoutRunNestedInput
 }
 
 export type WorkflowRunUncheckedUpdateManyWithoutWorkflowInput = {
@@ -782,10 +887,12 @@ export type WorkflowRunUncheckedUpdateManyWithoutWorkflowInput = {
 
 export type WorkflowRunCountOutputType = {
   stepRuns: number
+  artifacts: number
 }
 
 export type WorkflowRunCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   stepRuns?: boolean | WorkflowRunCountOutputTypeCountStepRunsArgs
+  artifacts?: boolean | WorkflowRunCountOutputTypeCountArtifactsArgs
 }
 
 /**
@@ -805,6 +912,13 @@ export type WorkflowRunCountOutputTypeCountStepRunsArgs<ExtArgs extends runtime.
   where?: Prisma.StepRunWhereInput
 }
 
+/**
+ * WorkflowRunCountOutputType without action
+ */
+export type WorkflowRunCountOutputTypeCountArtifactsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ArtifactWhereInput
+}
+
 
 export type WorkflowRunSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -820,6 +934,7 @@ export type WorkflowRunSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   updatedAt?: boolean
   workflow?: boolean | Prisma.WorkflowDefaultArgs<ExtArgs>
   stepRuns?: boolean | Prisma.WorkflowRun$stepRunsArgs<ExtArgs>
+  artifacts?: boolean | Prisma.WorkflowRun$artifactsArgs<ExtArgs>
   _count?: boolean | Prisma.WorkflowRunCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["workflowRun"]>
 
@@ -871,6 +986,7 @@ export type WorkflowRunOmit<ExtArgs extends runtime.Types.Extensions.InternalArg
 export type WorkflowRunInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   workflow?: boolean | Prisma.WorkflowDefaultArgs<ExtArgs>
   stepRuns?: boolean | Prisma.WorkflowRun$stepRunsArgs<ExtArgs>
+  artifacts?: boolean | Prisma.WorkflowRun$artifactsArgs<ExtArgs>
   _count?: boolean | Prisma.WorkflowRunCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type WorkflowRunIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -885,6 +1001,7 @@ export type $WorkflowRunPayload<ExtArgs extends runtime.Types.Extensions.Interna
   objects: {
     workflow: Prisma.$WorkflowPayload<ExtArgs>
     stepRuns: Prisma.$StepRunPayload<ExtArgs>[]
+    artifacts: Prisma.$ArtifactPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1294,6 +1411,7 @@ export interface Prisma__WorkflowRunClient<T, Null = never, ExtArgs extends runt
   readonly [Symbol.toStringTag]: "PrismaPromise"
   workflow<T extends Prisma.WorkflowDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowDefaultArgs<ExtArgs>>): Prisma.Prisma__WorkflowClient<runtime.Types.Result.GetResult<Prisma.$WorkflowPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   stepRuns<T extends Prisma.WorkflowRun$stepRunsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowRun$stepRunsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StepRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  artifacts<T extends Prisma.WorkflowRun$artifactsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowRun$artifactsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ArtifactPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1754,6 +1872,30 @@ export type WorkflowRun$stepRunsArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   distinct?: Prisma.StepRunScalarFieldEnum | Prisma.StepRunScalarFieldEnum[]
+}
+
+/**
+ * WorkflowRun.artifacts
+ */
+export type WorkflowRun$artifactsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Artifact
+   */
+  select?: Prisma.ArtifactSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Artifact
+   */
+  omit?: Prisma.ArtifactOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ArtifactInclude<ExtArgs> | null
+  where?: Prisma.ArtifactWhereInput
+  orderBy?: Prisma.ArtifactOrderByWithRelationInput | Prisma.ArtifactOrderByWithRelationInput[]
+  cursor?: Prisma.ArtifactWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ArtifactScalarFieldEnum | Prisma.ArtifactScalarFieldEnum[]
 }
 
 /**

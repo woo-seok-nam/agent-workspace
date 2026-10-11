@@ -1,18 +1,28 @@
 import {
+  getRunArtifacts,
+} from "../modules/artifacts/artifact.service.js";
+
+import {
+  writeMarkdownArtifact,
+} from "../modules/artifacts/artifactWriter.js";
+
+import {
   editRun,
   editStepRun,
   getRun,
 } from "../modules/runs/run.service.js";
+
+import type {
+  ExecutionLog,
+  StepRun,
+} from "../modules/runs/run.types.js";
 
 import {
   getWorkflow,
 } from "../modules/workflows/workflow.service.js";
 
 import type {
-  ExecutionLog,
-} from "../modules/runs/run.types.js";
-
-import type {
+  Workflow,
   WorkflowNode,
 } from "../modules/workflows/workflow.types.js";
 
@@ -273,6 +283,30 @@ export async function continueWorkflowRun(
             stepRun.cost,
           0,
         );
+
+      /*
+       * Run이 COMPLETED 되기 직전에
+       * Workflow의 최종 텍스트 결과를 찾는다.
+       */
+      const finalText =
+        findFinalOutputText(
+          workflow,
+          run.stepRuns,
+        );
+
+      /*
+       * 최종 텍스트가 존재한다면
+       * report.md Artifact를 생성한다.
+       *
+       * 같은 Run에 report.md가 이미 존재하면
+       * 중복 생성하지 않는다.
+       */
+      if (finalText) {
+        await ensureMarkdownArtifact(
+          runId,
+          finalText,
+        );
+      }
 
       await editRun(
         runId,
@@ -654,13 +688,7 @@ export async function rejectWorkflowStep(
 
 async function executeWorkflowNode(
   runId: string,
-  workflow: NonNullable<
-    Awaited<
-      ReturnType<
-        typeof getWorkflow
-      >
-    >
-  >,
+  workflow: Workflow,
   node: WorkflowNode,
 ) {
   const initialRun =
@@ -693,8 +721,7 @@ async function executeWorkflowNode(
 
   /*
    * 설정이 없으면 기본 60초.
-   *
-   * 0 이하를 명시하면 Timeout을 사용하지 않는다.
+   * 0 이하이면 Timeout을 사용하지 않는다.
    */
   const timeoutSeconds =
     node.config
@@ -798,13 +825,6 @@ async function executeWorkflowNode(
           latestRun.stepRuns,
         );
 
-      /*
-       * 핵심:
-       * Node 전체 실행을 timeout으로 감싼다.
-       *
-       * Agent API뿐 아니라 현재 Node에서 실행하는
-       * Web Search Tool도 같은 제한 시간 안에 포함된다.
-       */
       const result =
         await executeWithTimeout(
           () =>
@@ -966,4 +986,180 @@ async function executeWorkflowNode(
       return;
     }
   }
+}
+
+/*
+ * Workflow의 실제 Output Node로 들어가는
+ * 마지막 실행 Step의 text를 찾는다.
+ *
+ * 예:
+ *
+ * Reviewer
+ *    ↓
+ * Output
+ *
+ * 이 경우 Reviewer StepRun.output.text가
+ * 최종 Artifact 내용이 된다.
+ */
+function findFinalOutputText(
+  workflow: Workflow,
+  stepRuns: StepRun[],
+): string | undefined {
+  const outputNodeIds =
+    new Set(
+      workflow.nodes
+        .filter(
+          (node) =>
+            node.type ===
+            "output",
+        )
+        .map(
+          (node) =>
+            node.id,
+        ),
+    );
+
+  const finalSourceNodeIds =
+    workflow.edges
+      .filter(
+        (edge) =>
+          outputNodeIds.has(
+            edge.target,
+          ),
+      )
+      .map(
+        (edge) =>
+          edge.source,
+      );
+
+  for (
+    const sourceNodeId
+    of finalSourceNodeIds
+  ) {
+    const stepRun =
+      stepRuns.find(
+        (step) =>
+          step.nodeId ===
+            sourceNodeId &&
+          step.status ===
+            "COMPLETED",
+      );
+
+    const text =
+      getOutputText(
+        stepRun?.output,
+      );
+
+    if (text) {
+      return text;
+    }
+  }
+
+  /*
+   * Output Node가 없는 커스텀 Workflow도
+   * 결과 파일을 생성할 수 있도록 fallback.
+   *
+   * 완료된 Step 중 마지막으로 텍스트를
+   * 가지고 있는 Step을 사용한다.
+   */
+  for (
+    let index =
+      stepRuns.length -
+      1;
+    index >= 0;
+    index -= 1
+  ) {
+    const stepRun =
+      stepRuns[
+        index
+      ];
+
+    if (
+      !stepRun ||
+      stepRun.status !==
+        "COMPLETED"
+    ) {
+      continue;
+    }
+
+    const text =
+      getOutputText(
+        stepRun.output,
+      );
+
+    if (text) {
+      return text;
+    }
+  }
+
+  return undefined;
+}
+
+function getOutputText(
+  output: unknown,
+): string | undefined {
+  if (
+    !output ||
+    typeof output !==
+      "object" ||
+    Array.isArray(
+      output,
+    )
+  ) {
+    return undefined;
+  }
+
+  const record =
+    output as Record<
+      string,
+      unknown
+    >;
+
+  const text =
+    record.text;
+
+  if (
+    typeof text !==
+      "string"
+  ) {
+    return undefined;
+  }
+
+  const trimmed =
+    text.trim();
+
+  return trimmed ||
+    undefined;
+}
+
+/*
+ * Run 완료 로직이 중복 실행되는 상황에서도
+ * report.md Artifact를 중복 생성하지 않는다.
+ */
+async function ensureMarkdownArtifact(
+  runId: string,
+  content: string,
+) {
+  const artifacts =
+    await getRunArtifacts(
+      runId,
+    );
+
+  const reportExists =
+    artifacts.some(
+      (artifact) =>
+        artifact.name ===
+          "report.md" &&
+        artifact.type ===
+          "markdown",
+    );
+
+  if (reportExists) {
+    return;
+  }
+
+  await writeMarkdownArtifact(
+    runId,
+    content,
+  );
 }
