@@ -10,6 +10,45 @@ interface ApiResponse<T> {
   data: T;
 }
 
+export interface CreateAgentInput {
+  name: string;
+
+  description?: string;
+
+  modelId: string;
+
+  toolIds: string[];
+
+  enabled: boolean;
+
+  systemPrompt?: string;
+
+  temperature?: number;
+
+  maxTokens?: number;
+
+  retryCount?: number;
+
+  timeoutSeconds?: number;
+}
+
+export type UpdateAgentInput =
+  Partial<
+    Pick<
+      Agent,
+      | "name"
+      | "description"
+      | "modelId"
+      | "toolIds"
+      | "enabled"
+      | "systemPrompt"
+      | "temperature"
+      | "maxTokens"
+      | "retryCount"
+      | "timeoutSeconds"
+    >
+  >;
+
 export async function fetchAgents(): Promise<
   Agent[]
 > {
@@ -55,23 +94,14 @@ export async function fetchAgent(
 }
 
 export async function createAgent(
-  input: {
-    name: string;
-
-    description?: string;
-
-    modelId: string;
-
-    toolIds: string[];
-
-    enabled: boolean;
-  },
+  input: CreateAgentInput,
 ): Promise<Agent> {
   const response =
     await fetch(
       `${API_BASE_URL}/api/agents`,
       {
-        method: "POST",
+        method:
+          "POST",
 
         headers: {
           "Content-Type":
@@ -101,22 +131,14 @@ export async function createAgent(
 
 export async function updateAgent(
   agentId: string,
-  input: Partial<
-    Pick<
-      Agent,
-      | "name"
-      | "description"
-      | "modelId"
-      | "toolIds"
-      | "enabled"
-    >
-  >,
+  input: UpdateAgentInput,
 ): Promise<Agent> {
   const response =
     await fetch(
       `${API_BASE_URL}/api/agents/${agentId}`,
       {
-        method: "PATCH",
+        method:
+          "PATCH",
 
         headers: {
           "Content-Type":

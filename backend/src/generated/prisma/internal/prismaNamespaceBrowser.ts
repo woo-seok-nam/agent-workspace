@@ -82,6 +82,11 @@ export const AgentScalarFieldEnum = {
   modelId: 'modelId',
   toolIds: 'toolIds',
   enabled: 'enabled',
+  systemPrompt: 'systemPrompt',
+  temperature: 'temperature',
+  maxTokens: 'maxTokens',
+  retryCount: 'retryCount',
+  timeoutSeconds: 'timeoutSeconds',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

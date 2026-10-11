@@ -8,6 +8,10 @@ export interface AIExecutionInput {
   systemPrompt: string;
 
   userPrompt: string;
+
+  temperature?: number;
+
+  maxTokens?: number;
 }
 
 export interface AIExecutionResult {

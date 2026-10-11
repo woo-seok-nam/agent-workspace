@@ -48,6 +48,16 @@ export async function executeGoogle(
       config: {
         systemInstruction:
           input.systemPrompt,
+
+        temperature:
+          normalizeTemperature(
+            input.temperature,
+          ),
+
+        maxOutputTokens:
+          normalizeMaxTokens(
+            input.maxTokens,
+          ),
       },
     });
 
@@ -94,4 +104,68 @@ export async function executeGoogle(
     cost:
       0,
   };
+}
+
+function normalizeTemperature(
+  temperature:
+    | number
+    | undefined,
+) {
+  if (
+    temperature ===
+    undefined
+  ) {
+    return undefined;
+  }
+
+  if (
+    !Number.isFinite(
+      temperature,
+    )
+  ) {
+    return undefined;
+  }
+
+  return Math.min(
+    2,
+    Math.max(
+      0,
+      temperature,
+    ),
+  );
+}
+
+function normalizeMaxTokens(
+  maxTokens:
+    | number
+    | undefined,
+) {
+  if (
+    maxTokens ===
+    undefined
+  ) {
+    return undefined;
+  }
+
+  if (
+    !Number.isFinite(
+      maxTokens,
+    )
+  ) {
+    return undefined;
+  }
+
+  const normalized =
+    Math.floor(
+      maxTokens,
+    );
+
+  if (
+    normalized <=
+    0
+  ) {
+    return undefined;
+  }
+
+  return normalized;
 }

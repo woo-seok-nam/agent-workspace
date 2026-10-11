@@ -45,6 +45,16 @@ export async function executeOpenAI(
 
       input:
         input.userPrompt,
+
+      temperature:
+        normalizeTemperature(
+          input.temperature,
+        ),
+
+      max_output_tokens:
+        normalizeMaxTokens(
+          input.maxTokens,
+        ),
     });
 
   const text =
@@ -87,4 +97,68 @@ export async function executeOpenAI(
     cost:
       0,
   };
+}
+
+function normalizeTemperature(
+  temperature:
+    | number
+    | undefined,
+) {
+  if (
+    temperature ===
+    undefined
+  ) {
+    return undefined;
+  }
+
+  if (
+    !Number.isFinite(
+      temperature,
+    )
+  ) {
+    return undefined;
+  }
+
+  return Math.min(
+    2,
+    Math.max(
+      0,
+      temperature,
+    ),
+  );
+}
+
+function normalizeMaxTokens(
+  maxTokens:
+    | number
+    | undefined,
+) {
+  if (
+    maxTokens ===
+    undefined
+  ) {
+    return undefined;
+  }
+
+  if (
+    !Number.isFinite(
+      maxTokens,
+    )
+  ) {
+    return undefined;
+  }
+
+  const normalized =
+    Math.floor(
+      maxTokens,
+    );
+
+  if (
+    normalized <=
+    0
+  ) {
+    return undefined;
+  }
+
+  return normalized;
 }

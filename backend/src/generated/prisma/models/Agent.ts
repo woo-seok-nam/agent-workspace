@@ -20,8 +20,24 @@ export type AgentModel = runtime.Types.Result.DefaultSelection<Prisma.$AgentPayl
 
 export type AggregateAgent = {
   _count: AgentCountAggregateOutputType | null
+  _avg: AgentAvgAggregateOutputType | null
+  _sum: AgentSumAggregateOutputType | null
   _min: AgentMinAggregateOutputType | null
   _max: AgentMaxAggregateOutputType | null
+}
+
+export type AgentAvgAggregateOutputType = {
+  temperature: number | null
+  maxTokens: number | null
+  retryCount: number | null
+  timeoutSeconds: number | null
+}
+
+export type AgentSumAggregateOutputType = {
+  temperature: number | null
+  maxTokens: number | null
+  retryCount: number | null
+  timeoutSeconds: number | null
 }
 
 export type AgentMinAggregateOutputType = {
@@ -31,6 +47,11 @@ export type AgentMinAggregateOutputType = {
   modelId: string | null
   toolIds: string | null
   enabled: boolean | null
+  systemPrompt: string | null
+  temperature: number | null
+  maxTokens: number | null
+  retryCount: number | null
+  timeoutSeconds: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -42,6 +63,11 @@ export type AgentMaxAggregateOutputType = {
   modelId: string | null
   toolIds: string | null
   enabled: boolean | null
+  systemPrompt: string | null
+  temperature: number | null
+  maxTokens: number | null
+  retryCount: number | null
+  timeoutSeconds: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -53,11 +79,30 @@ export type AgentCountAggregateOutputType = {
   modelId: number
   toolIds: number
   enabled: number
+  systemPrompt: number
+  temperature: number
+  maxTokens: number
+  retryCount: number
+  timeoutSeconds: number
   createdAt: number
   updatedAt: number
   _all: number
 }
 
+
+export type AgentAvgAggregateInputType = {
+  temperature?: true
+  maxTokens?: true
+  retryCount?: true
+  timeoutSeconds?: true
+}
+
+export type AgentSumAggregateInputType = {
+  temperature?: true
+  maxTokens?: true
+  retryCount?: true
+  timeoutSeconds?: true
+}
 
 export type AgentMinAggregateInputType = {
   id?: true
@@ -66,6 +111,11 @@ export type AgentMinAggregateInputType = {
   modelId?: true
   toolIds?: true
   enabled?: true
+  systemPrompt?: true
+  temperature?: true
+  maxTokens?: true
+  retryCount?: true
+  timeoutSeconds?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -77,6 +127,11 @@ export type AgentMaxAggregateInputType = {
   modelId?: true
   toolIds?: true
   enabled?: true
+  systemPrompt?: true
+  temperature?: true
+  maxTokens?: true
+  retryCount?: true
+  timeoutSeconds?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -88,6 +143,11 @@ export type AgentCountAggregateInputType = {
   modelId?: true
   toolIds?: true
   enabled?: true
+  systemPrompt?: true
+  temperature?: true
+  maxTokens?: true
+  retryCount?: true
+  timeoutSeconds?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -131,6 +191,18 @@ export type AgentAggregateArgs<ExtArgs extends runtime.Types.Extensions.Internal
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: AgentAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: AgentSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: AgentMinAggregateInputType
@@ -161,6 +233,8 @@ export type AgentGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
   take?: number
   skip?: number
   _count?: AgentCountAggregateInputType | true
+  _avg?: AgentAvgAggregateInputType
+  _sum?: AgentSumAggregateInputType
   _min?: AgentMinAggregateInputType
   _max?: AgentMaxAggregateInputType
 }
@@ -172,9 +246,16 @@ export type AgentGroupByOutputType = {
   modelId: string
   toolIds: string
   enabled: boolean
+  systemPrompt: string | null
+  temperature: number
+  maxTokens: number
+  retryCount: number
+  timeoutSeconds: number
   createdAt: Date
   updatedAt: Date
   _count: AgentCountAggregateOutputType | null
+  _avg: AgentAvgAggregateOutputType | null
+  _sum: AgentSumAggregateOutputType | null
   _min: AgentMinAggregateOutputType | null
   _max: AgentMaxAggregateOutputType | null
 }
@@ -204,6 +285,11 @@ export type AgentWhereInput = {
   modelId?: Prisma.StringFilter<"Agent"> | string
   toolIds?: Prisma.StringFilter<"Agent"> | string
   enabled?: Prisma.BoolFilter<"Agent"> | boolean
+  systemPrompt?: Prisma.StringNullableFilter<"Agent"> | string | null
+  temperature?: Prisma.FloatFilter<"Agent"> | number
+  maxTokens?: Prisma.IntFilter<"Agent"> | number
+  retryCount?: Prisma.IntFilter<"Agent"> | number
+  timeoutSeconds?: Prisma.IntFilter<"Agent"> | number
   createdAt?: Prisma.DateTimeFilter<"Agent"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Agent"> | Date | string
 }
@@ -215,6 +301,11 @@ export type AgentOrderByWithRelationInput = {
   modelId?: Prisma.SortOrder
   toolIds?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
+  systemPrompt?: Prisma.SortOrderInput | Prisma.SortOrder
+  temperature?: Prisma.SortOrder
+  maxTokens?: Prisma.SortOrder
+  retryCount?: Prisma.SortOrder
+  timeoutSeconds?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -229,6 +320,11 @@ export type AgentWhereUniqueInput = Prisma.AtLeast<{
   modelId?: Prisma.StringFilter<"Agent"> | string
   toolIds?: Prisma.StringFilter<"Agent"> | string
   enabled?: Prisma.BoolFilter<"Agent"> | boolean
+  systemPrompt?: Prisma.StringNullableFilter<"Agent"> | string | null
+  temperature?: Prisma.FloatFilter<"Agent"> | number
+  maxTokens?: Prisma.IntFilter<"Agent"> | number
+  retryCount?: Prisma.IntFilter<"Agent"> | number
+  timeoutSeconds?: Prisma.IntFilter<"Agent"> | number
   createdAt?: Prisma.DateTimeFilter<"Agent"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Agent"> | Date | string
 }, "id">
@@ -240,11 +336,18 @@ export type AgentOrderByWithAggregationInput = {
   modelId?: Prisma.SortOrder
   toolIds?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
+  systemPrompt?: Prisma.SortOrderInput | Prisma.SortOrder
+  temperature?: Prisma.SortOrder
+  maxTokens?: Prisma.SortOrder
+  retryCount?: Prisma.SortOrder
+  timeoutSeconds?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.AgentCountOrderByAggregateInput
+  _avg?: Prisma.AgentAvgOrderByAggregateInput
   _max?: Prisma.AgentMaxOrderByAggregateInput
   _min?: Prisma.AgentMinOrderByAggregateInput
+  _sum?: Prisma.AgentSumOrderByAggregateInput
 }
 
 export type AgentScalarWhereWithAggregatesInput = {
@@ -257,6 +360,11 @@ export type AgentScalarWhereWithAggregatesInput = {
   modelId?: Prisma.StringWithAggregatesFilter<"Agent"> | string
   toolIds?: Prisma.StringWithAggregatesFilter<"Agent"> | string
   enabled?: Prisma.BoolWithAggregatesFilter<"Agent"> | boolean
+  systemPrompt?: Prisma.StringNullableWithAggregatesFilter<"Agent"> | string | null
+  temperature?: Prisma.FloatWithAggregatesFilter<"Agent"> | number
+  maxTokens?: Prisma.IntWithAggregatesFilter<"Agent"> | number
+  retryCount?: Prisma.IntWithAggregatesFilter<"Agent"> | number
+  timeoutSeconds?: Prisma.IntWithAggregatesFilter<"Agent"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Agent"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Agent"> | Date | string
 }
@@ -268,6 +376,11 @@ export type AgentCreateInput = {
   modelId: string
   toolIds: string
   enabled?: boolean
+  systemPrompt?: string | null
+  temperature?: number
+  maxTokens?: number
+  retryCount?: number
+  timeoutSeconds?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -279,6 +392,11 @@ export type AgentUncheckedCreateInput = {
   modelId: string
   toolIds: string
   enabled?: boolean
+  systemPrompt?: string | null
+  temperature?: number
+  maxTokens?: number
+  retryCount?: number
+  timeoutSeconds?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -290,6 +408,11 @@ export type AgentUpdateInput = {
   modelId?: Prisma.StringFieldUpdateOperationsInput | string
   toolIds?: Prisma.StringFieldUpdateOperationsInput | string
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  systemPrompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  temperature?: Prisma.FloatFieldUpdateOperationsInput | number
+  maxTokens?: Prisma.IntFieldUpdateOperationsInput | number
+  retryCount?: Prisma.IntFieldUpdateOperationsInput | number
+  timeoutSeconds?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -301,6 +424,11 @@ export type AgentUncheckedUpdateInput = {
   modelId?: Prisma.StringFieldUpdateOperationsInput | string
   toolIds?: Prisma.StringFieldUpdateOperationsInput | string
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  systemPrompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  temperature?: Prisma.FloatFieldUpdateOperationsInput | number
+  maxTokens?: Prisma.IntFieldUpdateOperationsInput | number
+  retryCount?: Prisma.IntFieldUpdateOperationsInput | number
+  timeoutSeconds?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -312,6 +440,11 @@ export type AgentCreateManyInput = {
   modelId: string
   toolIds: string
   enabled?: boolean
+  systemPrompt?: string | null
+  temperature?: number
+  maxTokens?: number
+  retryCount?: number
+  timeoutSeconds?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -323,6 +456,11 @@ export type AgentUpdateManyMutationInput = {
   modelId?: Prisma.StringFieldUpdateOperationsInput | string
   toolIds?: Prisma.StringFieldUpdateOperationsInput | string
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  systemPrompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  temperature?: Prisma.FloatFieldUpdateOperationsInput | number
+  maxTokens?: Prisma.IntFieldUpdateOperationsInput | number
+  retryCount?: Prisma.IntFieldUpdateOperationsInput | number
+  timeoutSeconds?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -334,6 +472,11 @@ export type AgentUncheckedUpdateManyInput = {
   modelId?: Prisma.StringFieldUpdateOperationsInput | string
   toolIds?: Prisma.StringFieldUpdateOperationsInput | string
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  systemPrompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  temperature?: Prisma.FloatFieldUpdateOperationsInput | number
+  maxTokens?: Prisma.IntFieldUpdateOperationsInput | number
+  retryCount?: Prisma.IntFieldUpdateOperationsInput | number
+  timeoutSeconds?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -345,8 +488,20 @@ export type AgentCountOrderByAggregateInput = {
   modelId?: Prisma.SortOrder
   toolIds?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
+  systemPrompt?: Prisma.SortOrder
+  temperature?: Prisma.SortOrder
+  maxTokens?: Prisma.SortOrder
+  retryCount?: Prisma.SortOrder
+  timeoutSeconds?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type AgentAvgOrderByAggregateInput = {
+  temperature?: Prisma.SortOrder
+  maxTokens?: Prisma.SortOrder
+  retryCount?: Prisma.SortOrder
+  timeoutSeconds?: Prisma.SortOrder
 }
 
 export type AgentMaxOrderByAggregateInput = {
@@ -356,6 +511,11 @@ export type AgentMaxOrderByAggregateInput = {
   modelId?: Prisma.SortOrder
   toolIds?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
+  systemPrompt?: Prisma.SortOrder
+  temperature?: Prisma.SortOrder
+  maxTokens?: Prisma.SortOrder
+  retryCount?: Prisma.SortOrder
+  timeoutSeconds?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -367,8 +527,20 @@ export type AgentMinOrderByAggregateInput = {
   modelId?: Prisma.SortOrder
   toolIds?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
+  systemPrompt?: Prisma.SortOrder
+  temperature?: Prisma.SortOrder
+  maxTokens?: Prisma.SortOrder
+  retryCount?: Prisma.SortOrder
+  timeoutSeconds?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type AgentSumOrderByAggregateInput = {
+  temperature?: Prisma.SortOrder
+  maxTokens?: Prisma.SortOrder
+  retryCount?: Prisma.SortOrder
+  timeoutSeconds?: Prisma.SortOrder
 }
 
 export type StringFieldUpdateOperationsInput = {
@@ -381,6 +553,22 @@ export type NullableStringFieldUpdateOperationsInput = {
 
 export type BoolFieldUpdateOperationsInput = {
   set?: boolean
+}
+
+export type FloatFieldUpdateOperationsInput = {
+  set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
+export type IntFieldUpdateOperationsInput = {
+  set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
 }
 
 export type DateTimeFieldUpdateOperationsInput = {
@@ -396,6 +584,11 @@ export type AgentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   modelId?: boolean
   toolIds?: boolean
   enabled?: boolean
+  systemPrompt?: boolean
+  temperature?: boolean
+  maxTokens?: boolean
+  retryCount?: boolean
+  timeoutSeconds?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["agent"]>
@@ -407,6 +600,11 @@ export type AgentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   modelId?: boolean
   toolIds?: boolean
   enabled?: boolean
+  systemPrompt?: boolean
+  temperature?: boolean
+  maxTokens?: boolean
+  retryCount?: boolean
+  timeoutSeconds?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["agent"]>
@@ -418,6 +616,11 @@ export type AgentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   modelId?: boolean
   toolIds?: boolean
   enabled?: boolean
+  systemPrompt?: boolean
+  temperature?: boolean
+  maxTokens?: boolean
+  retryCount?: boolean
+  timeoutSeconds?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["agent"]>
@@ -429,11 +632,16 @@ export type AgentSelectScalar = {
   modelId?: boolean
   toolIds?: boolean
   enabled?: boolean
+  systemPrompt?: boolean
+  temperature?: boolean
+  maxTokens?: boolean
+  retryCount?: boolean
+  timeoutSeconds?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type AgentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "modelId" | "toolIds" | "enabled" | "createdAt" | "updatedAt", ExtArgs["result"]["agent"]>
+export type AgentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "modelId" | "toolIds" | "enabled" | "systemPrompt" | "temperature" | "maxTokens" | "retryCount" | "timeoutSeconds" | "createdAt" | "updatedAt", ExtArgs["result"]["agent"]>
 
 export type $AgentPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Agent"
@@ -445,6 +653,11 @@ export type $AgentPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     modelId: string
     toolIds: string
     enabled: boolean
+    systemPrompt: string | null
+    temperature: number
+    maxTokens: number
+    retryCount: number
+    timeoutSeconds: number
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["agent"]>
@@ -876,6 +1089,11 @@ export interface AgentFieldRefs {
   readonly modelId: Prisma.FieldRef<"Agent", 'String'>
   readonly toolIds: Prisma.FieldRef<"Agent", 'String'>
   readonly enabled: Prisma.FieldRef<"Agent", 'Boolean'>
+  readonly systemPrompt: Prisma.FieldRef<"Agent", 'String'>
+  readonly temperature: Prisma.FieldRef<"Agent", 'Float'>
+  readonly maxTokens: Prisma.FieldRef<"Agent", 'Int'>
+  readonly retryCount: Prisma.FieldRef<"Agent", 'Int'>
+  readonly timeoutSeconds: Prisma.FieldRef<"Agent", 'Int'>
   readonly createdAt: Prisma.FieldRef<"Agent", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Agent", 'DateTime'>
 }

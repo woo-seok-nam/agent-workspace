@@ -8,14 +8,21 @@ datasource db {
 }
 
 model Agent {
-  id          String   @id
-  name        String
-  description String?
-  modelId     String
-  toolIds     String
-  enabled     Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String   @id
+  name           String
+  description    String?
+  modelId        String
+  toolIds        String
+  enabled        Boolean  @default(true)
+
+  systemPrompt   String?
+  temperature    Float    @default(0.2)
+  maxTokens      Int      @default(4096)
+  retryCount     Int      @default(2)
+  timeoutSeconds Int      @default(60)
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model Tool {
@@ -50,7 +57,7 @@ model Workflow {
 }
 
 model WorkflowNode {
-  id          String  @id @default(cuid())
+  id          String @id @default(cuid())
   nodeId      String
   workflowId  String
   type        String
@@ -70,7 +77,7 @@ model WorkflowNode {
 }
 
 model WorkflowEdge {
-  id           String  @id @default(cuid())
+  id           String @id @default(cuid())
   edgeId       String
   workflowId   String
   source       String
@@ -86,17 +93,17 @@ model WorkflowEdge {
 }
 
 model WorkflowRun {
-  id          String    @id
+  id          String   @id
   workflowId  String
   name        String
   prompt      String?
-  status      String    @default("QUEUED")
-  tokenUsage  Int       @default(0)
-  cost        Float     @default(0)
+  status      String   @default("QUEUED")
+  tokenUsage  Int      @default(0)
+  cost        Float    @default(0)
   startedAt   DateTime?
   completedAt DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   workflow  Workflow   @relation(fields: [workflowId], references: [id], onDelete: Cascade)
   stepRuns  StepRun[]
@@ -108,20 +115,20 @@ model WorkflowRun {
 }
 
 model StepRun {
-  id             String    @id
+  id             String   @id
   runId          String
   nodeId         String
-  status         String    @default("PENDING")
+  status         String   @default("PENDING")
   approvalStatus String?
   input          String?
   output         String?
-  logs           String    @default("[]")
-  tokenUsage     Int       @default(0)
-  cost           Float     @default(0)
+  logs           String   @default("[]")
+  tokenUsage     Int      @default(0)
+  cost           Float    @default(0)
   startedAt      DateTime?
   completedAt    DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   run WorkflowRun @relation(fields: [runId], references: [id], onDelete: Cascade)
 

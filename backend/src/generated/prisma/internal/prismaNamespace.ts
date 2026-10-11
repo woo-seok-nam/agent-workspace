@@ -1134,6 +1134,11 @@ export const AgentScalarFieldEnum = {
   modelId: 'modelId',
   toolIds: 'toolIds',
   enabled: 'enabled',
+  systemPrompt: 'systemPrompt',
+  temperature: 'temperature',
+  maxTokens: 'maxTokens',
+  retryCount: 'retryCount',
+  timeoutSeconds: 'timeoutSeconds',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1298,13 +1303,6 @@ export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel,
 
 
 /**
- * Reference to a field of type 'DateTime'
- */
-export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
-    
-
-
-/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -1315,6 +1313,13 @@ export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, '
  * Reference to a field of type 'Int'
  */
 export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
+    
+
+
+/**
+ * Reference to a field of type 'DateTime'
+ */
+export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
     
 
 /**

@@ -365,15 +365,32 @@ export function AgentManagementPage() {
             modelId:
               defaultModel.id,
 
-            toolIds: [],
+            toolIds:
+              [],
 
             enabled:
               true,
+
+            systemPrompt:
+              "",
+
+            temperature:
+              0.2,
+
+            maxTokens:
+              4096,
+
+            retryCount:
+              2,
+
+            timeoutSeconds:
+              60,
           });
 
         setAgents(
           (current) => [
             ...current,
+
             newAgent,
           ],
         );
@@ -381,6 +398,7 @@ export function AgentManagementPage() {
         setDraftAgents(
           (current) => [
             ...current,
+
             structuredClone(
               newAgent,
             ),
@@ -434,6 +452,96 @@ export function AgentManagementPage() {
         return;
       }
 
+      const invalidTemperature =
+        changedAgents.find(
+          (agent) =>
+            !Number.isFinite(
+              agent.temperature,
+            ) ||
+            agent.temperature <
+              0 ||
+            agent.temperature >
+              2,
+        );
+
+      if (invalidTemperature) {
+        setSelectedAgentId(
+          invalidTemperature.id,
+        );
+
+        window.alert(
+          "Temperature는 0 이상 2 이하로 설정하세요.",
+        );
+
+        return;
+      }
+
+      const invalidMaxTokens =
+        changedAgents.find(
+          (agent) =>
+            !Number.isInteger(
+              agent.maxTokens,
+            ) ||
+            agent.maxTokens <=
+              0,
+        );
+
+      if (invalidMaxTokens) {
+        setSelectedAgentId(
+          invalidMaxTokens.id,
+        );
+
+        window.alert(
+          "Max Tokens는 1 이상의 정수로 설정하세요.",
+        );
+
+        return;
+      }
+
+      const invalidRetryCount =
+        changedAgents.find(
+          (agent) =>
+            !Number.isInteger(
+              agent.retryCount,
+            ) ||
+            agent.retryCount <
+              0,
+        );
+
+      if (invalidRetryCount) {
+        setSelectedAgentId(
+          invalidRetryCount.id,
+        );
+
+        window.alert(
+          "Retry Count는 0 이상의 정수로 설정하세요.",
+        );
+
+        return;
+      }
+
+      const invalidTimeout =
+        changedAgents.find(
+          (agent) =>
+            !Number.isInteger(
+              agent.timeoutSeconds,
+            ) ||
+            agent.timeoutSeconds <
+              0,
+        );
+
+      if (invalidTimeout) {
+        setSelectedAgentId(
+          invalidTimeout.id,
+        );
+
+        window.alert(
+          "Timeout은 0 이상의 정수로 설정하세요.",
+        );
+
+        return;
+      }
+
       try {
         setSaving(
           true,
@@ -466,6 +574,21 @@ export function AgentManagementPage() {
 
                     enabled:
                       agent.enabled,
+
+                    systemPrompt:
+                      agent.systemPrompt,
+
+                    temperature:
+                      agent.temperature,
+
+                    maxTokens:
+                      agent.maxTokens,
+
+                    retryCount:
+                      agent.retryCount,
+
+                    timeoutSeconds:
+                      agent.timeoutSeconds,
                   },
                 ),
             ),
@@ -477,7 +600,8 @@ export function AgentManagementPage() {
             Agent
           >();
 
-        const failedAgentIds: string[] =
+        const failedAgentIds:
+          string[] =
           [];
 
         results.forEach(
@@ -675,12 +799,14 @@ export function AgentManagementPage() {
           {hasUnsavedChanges && (
             <p>
               저장되지 않은 변경사항이{" "}
+
               <strong>
                 {
                   dirtyAgentIds.size
                 }
                 개
               </strong>
+
               {" "}
               있습니다.
             </p>
@@ -907,6 +1033,22 @@ function isSameAgentConfiguration(
       second.modelId &&
     first.enabled ===
       second.enabled &&
+    (
+      first.systemPrompt ??
+      ""
+    ) ===
+      (
+        second.systemPrompt ??
+        ""
+      ) &&
+    first.temperature ===
+      second.temperature &&
+    first.maxTokens ===
+      second.maxTokens &&
+    first.retryCount ===
+      second.retryCount &&
+    first.timeoutSeconds ===
+      second.timeoutSeconds &&
     isSameStringArray(
       first.toolIds,
       second.toolIds,

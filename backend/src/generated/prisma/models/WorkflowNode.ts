@@ -569,14 +569,6 @@ export type WorkflowNodeUncheckedUpdateManyWithoutWorkflowNestedInput = {
   deleteMany?: Prisma.WorkflowNodeScalarWhereInput | Prisma.WorkflowNodeScalarWhereInput[]
 }
 
-export type FloatFieldUpdateOperationsInput = {
-  set?: number
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type WorkflowNodeCreateWithoutWorkflowInput = {
   id?: string
   nodeId: string

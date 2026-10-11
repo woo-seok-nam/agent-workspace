@@ -16,11 +16,19 @@ function mapAgent(
     modelId: string;
     toolIds: string;
     enabled: boolean;
+
+    systemPrompt: string | null;
+    temperature: number;
+    maxTokens: number;
+    retryCount: number;
+    timeoutSeconds: number;
+
     createdAt: Date;
     updatedAt: Date;
   },
 ): Agent {
-  let parsedToolIds: string[] = [];
+  let parsedToolIds: string[] =
+    [];
 
   try {
     const parsed =
@@ -29,18 +37,22 @@ function mapAgent(
       );
 
     if (
-      Array.isArray(parsed)
+      Array.isArray(
+        parsed,
+      )
     ) {
       parsedToolIds =
         parsed.filter(
           (
             value,
           ): value is string =>
-            typeof value === "string",
+            typeof value ===
+            "string",
         );
     }
   } catch {
-    parsedToolIds = [];
+    parsedToolIds =
+      [];
   }
 
   return {
@@ -63,6 +75,22 @@ function mapAgent(
     enabled:
       agent.enabled,
 
+    systemPrompt:
+      agent.systemPrompt ??
+      undefined,
+
+    temperature:
+      agent.temperature,
+
+    maxTokens:
+      agent.maxTokens,
+
+    retryCount:
+      agent.retryCount,
+
+    timeoutSeconds:
+      agent.timeoutSeconds,
+
     createdAt:
       agent.createdAt.toISOString(),
 
@@ -77,7 +105,8 @@ export async function findAllAgents(): Promise<
   const agents =
     await prisma.agent.findMany({
       orderBy: {
-        createdAt: "asc",
+        createdAt:
+          "asc",
       },
     });
 
@@ -94,12 +123,15 @@ export async function findAgentById(
   const agent =
     await prisma.agent.findUnique({
       where: {
-        id: agentId,
+        id:
+          agentId,
       },
     });
 
   return agent
-    ? mapAgent(agent)
+    ? mapAgent(
+        agent,
+      )
     : undefined;
 }
 
@@ -130,6 +162,25 @@ export async function createAgent(
         enabled:
           input.enabled ??
           true,
+
+        systemPrompt:
+          input.systemPrompt,
+
+        temperature:
+          input.temperature ??
+          0.2,
+
+        maxTokens:
+          input.maxTokens ??
+          4096,
+
+        retryCount:
+          input.retryCount ??
+          2,
+
+        timeoutSeconds:
+          input.timeoutSeconds ??
+          60,
       },
     });
 
@@ -147,7 +198,8 @@ export async function updateAgent(
   const existing =
     await prisma.agent.findUnique({
       where: {
-        id: agentId,
+        id:
+          agentId,
       },
     });
 
@@ -158,7 +210,8 @@ export async function updateAgent(
   const agent =
     await prisma.agent.update({
       where: {
-        id: agentId,
+        id:
+          agentId,
       },
 
       data: {
@@ -181,6 +234,21 @@ export async function updateAgent(
 
         enabled:
           input.enabled,
+
+        systemPrompt:
+          input.systemPrompt,
+
+        temperature:
+          input.temperature,
+
+        maxTokens:
+          input.maxTokens,
+
+        retryCount:
+          input.retryCount,
+
+        timeoutSeconds:
+          input.timeoutSeconds,
       },
     });
 
@@ -195,7 +263,8 @@ export async function deleteAgent(
   const existing =
     await prisma.agent.findUnique({
       where: {
-        id: agentId,
+        id:
+          agentId,
       },
     });
 
@@ -205,7 +274,8 @@ export async function deleteAgent(
 
   await prisma.agent.delete({
     where: {
-      id: agentId,
+      id:
+        agentId,
     },
   });
 

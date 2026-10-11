@@ -11,6 +11,16 @@ export interface Agent {
 
   enabled: boolean;
 
+  systemPrompt?: string;
+
+  temperature: number;
+
+  maxTokens: number;
+
+  retryCount: number;
+
+  timeoutSeconds: number;
+
   createdAt: string;
 
   updatedAt: string;
@@ -26,6 +36,16 @@ export interface CreateAgentInput {
   toolIds?: string[];
 
   enabled?: boolean;
+
+  systemPrompt?: string;
+
+  temperature?: number;
+
+  maxTokens?: number;
+
+  retryCount?: number;
+
+  timeoutSeconds?: number;
 }
 
 export interface UpdateAgentInput {
@@ -38,4 +58,14 @@ export interface UpdateAgentInput {
   toolIds?: string[];
 
   enabled?: boolean;
+
+  systemPrompt?: string;
+
+  temperature?: number;
+
+  maxTokens?: number;
+
+  retryCount?: number;
+
+  timeoutSeconds?: number;
 }

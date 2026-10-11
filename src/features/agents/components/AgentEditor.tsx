@@ -63,6 +63,19 @@ export function AgentEditor({
   const tools =
     getTools();
 
+  const updateAgent = (
+    updates: Partial<Agent>,
+  ) => {
+    onChange({
+      ...agent,
+
+      ...updates,
+
+      updatedAt:
+        new Date().toISOString(),
+    });
+  };
+
   const handleToolToggle = (
     toolId: string,
   ) => {
@@ -96,17 +109,13 @@ export function AgentEditor({
           )
         : [
             ...agent.toolIds,
+
             toolId,
           ];
 
-    onChange({
-      ...agent,
-
+    updateAgent({
       toolIds:
         nextToolIds,
-
-      updatedAt:
-        new Date().toISOString(),
     });
   };
 
@@ -206,15 +215,10 @@ export function AgentEditor({
                 onChange={(
                   event,
                 ) => {
-                  onChange({
-                    ...agent,
-
+                  updateAgent({
                     name:
                       event.target
                         .value,
-
-                    updatedAt:
-                      new Date().toISOString(),
                   });
                 }}
               />
@@ -234,15 +238,10 @@ export function AgentEditor({
                 onChange={(
                   event,
                 ) => {
-                  onChange({
-                    ...agent,
-
+                  updateAgent({
                     description:
                       event.target
                         .value,
-
-                    updatedAt:
-                      new Date().toISOString(),
                   });
                 }}
               />
@@ -261,15 +260,10 @@ export function AgentEditor({
                 onChange={(
                   event,
                 ) => {
-                  onChange({
-                    ...agent,
-
+                  updateAgent({
                     modelId:
                       event.target
                         .value,
-
-                    updatedAt:
-                      new Date().toISOString(),
                   });
                 }}
               >
@@ -313,15 +307,10 @@ export function AgentEditor({
                   onChange={(
                     event,
                   ) => {
-                    onChange({
-                      ...agent,
-
+                    updateAgent({
                       enabled:
                         event.target
                           .checked,
-
-                      updatedAt:
-                        new Date().toISOString(),
                     });
                   }}
                 />
@@ -339,6 +328,417 @@ export function AgentEditor({
                 </div>
               </label>
             </div>
+          </div>
+        </section>
+
+        <section className="agent-settings-section">
+          <div className="agent-settings-section__heading">
+            <h3>
+              System Prompt
+            </h3>
+
+            <p>
+              Agent의 역할과 행동 원칙을
+              정의합니다.
+            </p>
+          </div>
+
+          <div className="agent-form-grid">
+            <div className="agent-form-field agent-form-field--full">
+              <label htmlFor="agent-system-prompt">
+                System Prompt
+              </label>
+
+              <textarea
+                id="agent-system-prompt"
+                value={
+                  agent.systemPrompt ??
+                  ""
+                }
+                rows={
+                  8
+                }
+                placeholder={
+                  [
+                    "예:",
+                    "You are a professional research agent.",
+                    "Verify important claims before answering.",
+                    "Use concise and structured responses.",
+                  ].join(
+                    "\n",
+                  )
+                }
+                onChange={(
+                  event,
+                ) => {
+                  updateAgent({
+                    systemPrompt:
+                      event.target
+                        .value,
+                  });
+                }}
+                style={{
+                  minHeight:
+                    "180px",
+
+                  resize:
+                    "vertical",
+                }}
+              />
+
+              <span
+                style={{
+                  marginTop:
+                    "6px",
+
+                  fontSize:
+                    "11px",
+
+                  color:
+                    "#64748b",
+
+                  lineHeight:
+                    1.5,
+                }}
+              >
+                이 Prompt는 Workflow 실행 시
+                Runtime System Prompt보다 먼저
+                적용됩니다.
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <section className="agent-settings-section">
+          <div className="agent-settings-section__heading">
+            <h3>
+              Execution Settings
+            </h3>
+
+            <p>
+              모델 생성 옵션과 Agent의
+              기본 실행 정책을 설정합니다.
+            </p>
+          </div>
+
+          <div className="agent-form-grid">
+            <div className="agent-form-field">
+              <label htmlFor="agent-temperature">
+                Temperature
+              </label>
+
+              <input
+                id="agent-temperature"
+                type="number"
+                min={
+                  0
+                }
+                max={
+                  2
+                }
+                step={
+                  0.1
+                }
+                value={
+                  agent.temperature ??
+                  0.2
+                }
+                onChange={(
+                  event,
+                ) => {
+                  const value =
+                    Number(
+                      event.target
+                        .value,
+                    );
+
+                  updateAgent({
+                    temperature:
+                      Number.isFinite(
+                        value,
+                      )
+                        ? Math.min(
+                            2,
+                            Math.max(
+                              0,
+                              value,
+                            ),
+                          )
+                        : 0.2,
+                  });
+                }}
+              />
+
+              <span
+                style={{
+                  marginTop:
+                    "5px",
+
+                  fontSize:
+                    "11px",
+
+                  color:
+                    "#64748b",
+                }}
+              >
+                낮을수록 일관적이고,
+                높을수록 다양한 결과를
+                생성합니다. 권장값: 0.2
+              </span>
+            </div>
+
+            <div className="agent-form-field">
+              <label htmlFor="agent-max-tokens">
+                Max Tokens
+              </label>
+
+              <input
+                id="agent-max-tokens"
+                type="number"
+                min={
+                  1
+                }
+                step={
+                  256
+                }
+                value={
+                  agent.maxTokens ??
+                  4096
+                }
+                onChange={(
+                  event,
+                ) => {
+                  const value =
+                    Number(
+                      event.target
+                        .value,
+                    );
+
+                  updateAgent({
+                    maxTokens:
+                      Number.isFinite(
+                        value,
+                      ) &&
+                      value >
+                        0
+                        ? Math.floor(
+                            value,
+                          )
+                        : 4096,
+                  });
+                }}
+              />
+
+              <span
+                style={{
+                  marginTop:
+                    "5px",
+
+                  fontSize:
+                    "11px",
+
+                  color:
+                    "#64748b",
+                }}
+              >
+                한 번의 모델 실행에서
+                생성할 최대 출력 Token 수입니다.
+              </span>
+            </div>
+
+            <div className="agent-form-field">
+              <label htmlFor="agent-retry-count">
+                Retry Count
+              </label>
+
+              <input
+                id="agent-retry-count"
+                type="number"
+                min={
+                  0
+                }
+                max={
+                  10
+                }
+                step={
+                  1
+                }
+                value={
+                  agent.retryCount ??
+                  2
+                }
+                onChange={(
+                  event,
+                ) => {
+                  const value =
+                    Number(
+                      event.target
+                        .value,
+                    );
+
+                  updateAgent({
+                    retryCount:
+                      Number.isFinite(
+                        value,
+                      )
+                        ? Math.min(
+                            10,
+                            Math.max(
+                              0,
+                              Math.floor(
+                                value,
+                              ),
+                            ),
+                          )
+                        : 2,
+                  });
+                }}
+              />
+
+              <span
+                style={{
+                  marginTop:
+                    "5px",
+
+                  fontSize:
+                    "11px",
+
+                  color:
+                    "#64748b",
+                }}
+              >
+                일시적인 API 오류가 발생했을
+                때 재시도하는 기본 횟수입니다.
+              </span>
+            </div>
+
+            <div className="agent-form-field">
+              <label htmlFor="agent-timeout">
+                Timeout
+              </label>
+
+              <select
+                id="agent-timeout"
+                value={
+                  agent.timeoutSeconds ??
+                  60
+                }
+                onChange={(
+                  event,
+                ) => {
+                  updateAgent({
+                    timeoutSeconds:
+                      Number(
+                        event.target
+                          .value,
+                      ),
+                  });
+                }}
+              >
+                <option value={0}>
+                  제한 없음
+                </option>
+
+                <option value={30}>
+                  30초
+                </option>
+
+                <option value={60}>
+                  1분
+                </option>
+
+                <option value={120}>
+                  2분
+                </option>
+
+                <option value={300}>
+                  5분
+                </option>
+
+                <option value={600}>
+                  10분
+                </option>
+
+                <option value={1800}>
+                  30분
+                </option>
+              </select>
+
+              <span
+                style={{
+                  marginTop:
+                    "5px",
+
+                  fontSize:
+                    "11px",
+
+                  color:
+                    "#64748b",
+                }}
+              >
+                Workflow Node에 별도 Timeout이
+                있으면 Node 설정이 우선됩니다.
+              </span>
+            </div>
+          </div>
+
+          <div
+            style={{
+              marginTop:
+                "18px",
+
+              padding:
+                "12px 14px",
+
+              border:
+                "1px solid #e2e8f0",
+
+              borderRadius:
+                "8px",
+
+              background:
+                "#f8fafc",
+
+              fontSize:
+                "11px",
+
+              color:
+                "#475569",
+
+              lineHeight:
+                1.6,
+            }}
+          >
+            <strong
+              style={{
+                display:
+                  "block",
+
+                marginBottom:
+                  "4px",
+
+                color:
+                  "#334155",
+              }}
+            >
+              Workflow 실행 설정 우선순위
+            </strong>
+
+            Retry와 Timeout은
+            {" "}
+            <strong>
+              Workflow Node 설정
+            </strong>
+            {" → "}
+            <strong>
+              Agent 기본 설정
+            </strong>
+            {" → "}
+            <strong>
+              시스템 기본값
+            </strong>
+            {" "}
+            순서로 결정됩니다.
           </div>
         </section>
 
@@ -369,9 +769,11 @@ export function AgentEditor({
                     }
                     className={[
                       "agent-tool-card",
+
                       checked
                         ? "agent-tool-card--selected"
                         : "",
+
                       !tool.enabled
                         ? "agent-tool-card--disabled"
                         : "",

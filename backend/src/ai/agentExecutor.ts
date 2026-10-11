@@ -11,19 +11,12 @@ import {
 } from "./providerResolver.js";
 
 import type {
+  AIExecutionInput,
   AIExecutionResult,
 } from "./ai.types.js";
 
-interface ExecuteAgentInput {
-  modelId: string;
-
-  systemPrompt: string;
-
-  userPrompt: string;
-}
-
 export async function executeAgent(
-  input: ExecuteAgentInput,
+  input: AIExecutionInput,
 ): Promise<AIExecutionResult> {
   const provider =
     resolveProvider(

@@ -7,6 +7,10 @@ import {
 } from "../modules/artifacts/artifactWriter.js";
 
 import {
+  getAgent,
+} from "../modules/agents/agent.service.js";
+
+import {
   editRun,
   editStepRun,
   getRun,
@@ -56,10 +60,14 @@ function createLog(
     | "error" = "info",
 ): ExecutionLog {
   return {
-    id: `log-${crypto.randomUUID()}`,
+    id:
+      `log-${crypto.randomUUID()}`,
+
     timestamp:
       new Date().toISOString(),
+
     level,
+
     message,
   };
 }
@@ -768,8 +776,34 @@ async function executeWorkflowNode(
   }
 
   /*
-   * Condition은 외부 API 호출이 아닌 결정적 평가이므로
-   * 실패 시 같은 조건을 반복 평가해도 의미가 없다.
+   * STEP 42
+   *
+   * Agent Node인 경우 Agent의 기본 실행 정책도 불러온다.
+   *
+   * 최종 우선순위:
+   *
+   * Node Config
+   * → Agent Config
+   * → Runtime 기본값
+   */
+  const agent =
+    node.type ===
+      "agent" &&
+    node.agentId
+      ? await getAgent(
+          node.agentId,
+        )
+      : undefined;
+
+  /*
+   * Condition은 외부 API 호출이 아닌
+   * 결정적 조건 평가이므로 재시도하지 않는다.
+   *
+   * 그 외 Node:
+   *
+   * Node retryCount
+   * → Agent retryCount
+   * → 기본값 2
    */
   const retryCount =
     node.type ===
@@ -779,12 +813,24 @@ async function executeWorkflowNode(
           0,
           node.config
             ?.retryCount ??
+            agent?.retryCount ??
             2,
         );
 
+  /*
+   * Timeout:
+   *
+   * Node timeoutSeconds
+   * → Agent timeoutSeconds
+   * → 기본값 60초
+   *
+   * 0 이하의 값은 executeWithTimeout에서
+   * Timeout 없음으로 처리한다.
+   */
   const timeoutSeconds =
     node.config
       ?.timeoutSeconds ??
+    agent?.timeoutSeconds ??
     60;
 
   const maximumAttempts =
@@ -814,7 +860,7 @@ async function executeWorkflowNode(
             0
               ? `${timeoutSeconds}초`
               : "없음"
-          }`,
+          }, 재시도: ${retryCount}회`,
         ),
       ],
     },
@@ -904,9 +950,12 @@ async function executeWorkflowNode(
 
             return executeNode({
               workflow,
+
               run:
                 latestRun,
+
               node,
+
               dependencyOutputs,
             });
           },
