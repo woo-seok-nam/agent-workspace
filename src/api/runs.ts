@@ -18,6 +18,16 @@ export interface CreateRunInput {
   prompt?: string;
 }
 
+export interface DeleteRunResult {
+  runId: string;
+
+  deleted: boolean;
+
+  deletedArtifactFiles: number;
+
+  failedArtifactFiles: string[];
+}
+
 export async function fetchRuns(): Promise<
   WorkflowRun[]
 > {
@@ -173,6 +183,54 @@ export async function rejectRunStep(
   const result =
     (await response.json()) as ApiResponse<
       WorkflowRun
+    >;
+
+  return result.data;
+}
+
+export async function deleteRun(
+  runId: string,
+): Promise<DeleteRunResult> {
+  const response =
+    await fetch(
+      `${API_BASE_URL}/api/runs/${runId}`,
+      {
+        method:
+          "DELETE",
+      },
+    );
+
+  if (!response.ok) {
+    let message =
+      "Run 삭제에 실패했습니다.";
+
+    try {
+      const result =
+        (await response.json()) as {
+          error?: {
+            message?: string;
+          };
+        };
+
+      if (
+        result.error
+          ?.message
+      ) {
+        message =
+          result.error.message;
+      }
+    } catch {
+      // JSON 응답이 아니어도 기본 메시지를 사용한다.
+    }
+
+    throw new Error(
+      message,
+    );
+  }
+
+  const result =
+    (await response.json()) as ApiResponse<
+      DeleteRunResult
     >;
 
   return result.data;

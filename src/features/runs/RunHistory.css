@@ -230,6 +230,9 @@
   font-size: 9px;
 
   white-space: nowrap;
+
+  transition:
+    opacity 160ms ease;
 }
 
 .run-history-table tbody
@@ -240,6 +243,10 @@
 .run-history-table tbody
   tr:hover {
   background: #fafcff;
+}
+
+.run-history-row--deleting td {
+  opacity: 0.5;
 }
 
 .run-history-name {
@@ -330,10 +337,14 @@
   width: 28px;
   height: 28px;
 
-  border: 1px solid transparent;
+  border:
+    1px solid
+      transparent;
+
   border-radius: 6px;
 
-  background: transparent;
+  background:
+    transparent;
 
   color:
     var(--color-text-secondary);
@@ -341,7 +352,9 @@
   cursor: pointer;
 }
 
-.run-history-icon-button:hover {
+.run-history-icon-button:hover:not(
+    :disabled
+  ) {
   border-color:
     var(--color-border);
 
@@ -349,6 +362,35 @@
 
   color:
     var(--color-primary);
+}
+
+.run-history-icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.run-history-delete-button:hover:not(
+    :disabled
+  ) {
+  border-color: #fecaca;
+
+  background: #fff5f5;
+
+  color: #dc2626;
+}
+
+.run-history-spinner {
+  animation:
+    run-history-spin
+    900ms linear
+    infinite;
+}
+
+@keyframes run-history-spin {
+  to {
+    transform:
+      rotate(360deg);
+  }
 }
 
 .run-history-empty {
@@ -360,6 +402,295 @@
   font-size: 10px;
 
   text-align: center;
+}
+
+/* =========================
+   Delete Modal
+========================= */
+
+.run-delete-modal-backdrop {
+  position: fixed;
+  z-index: 1000;
+
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background:
+    rgba(
+      15,
+      23,
+      42,
+      0.42
+    );
+
+  backdrop-filter:
+    blur(2px);
+}
+
+.run-delete-modal {
+  position: relative;
+
+  width: 100%;
+  max-width: 430px;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+      #e2e8f0;
+
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 24px 70px
+      rgba(
+        15,
+        23,
+        42,
+        0.18
+      );
+}
+
+.run-delete-modal-close {
+  position: absolute;
+
+  top: 12px;
+  right: 12px;
+
+  display: grid;
+  place-items: center;
+
+  width: 30px;
+  height: 30px;
+
+  border: 0;
+  border-radius: 7px;
+
+  background:
+    transparent;
+
+  color: #64748b;
+
+  cursor: pointer;
+}
+
+.run-delete-modal-close:hover:not(
+    :disabled
+  ) {
+  background: #f1f5f9;
+
+  color: #0f172a;
+}
+
+.run-delete-modal-close:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.run-delete-modal-icon {
+  display: flex;
+
+  width: 44px;
+  height: 44px;
+
+  align-items: center;
+  justify-content: center;
+
+  margin:
+    24px
+    24px
+    0;
+
+  border-radius: 12px;
+
+  background: #fff1f2;
+
+  color: #dc2626;
+}
+
+.run-delete-modal-content {
+  padding:
+    16px
+    24px
+    20px;
+}
+
+.run-delete-modal-content > span {
+  color: #dc2626;
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.run-delete-modal-content h2 {
+  margin:
+    5px
+    0
+    0;
+
+  color: #0f172a;
+
+  font-size: 18px;
+
+  letter-spacing:
+    -0.25px;
+}
+
+.run-delete-modal-content > p {
+  margin:
+    9px
+    0
+    0;
+
+  color: #64748b;
+
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+.run-delete-target {
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+
+  margin-top: 16px;
+
+  padding: 12px;
+
+  border:
+    1px solid
+      #e2e8f0;
+
+  border-radius: 9px;
+
+  background: #f8fafc;
+}
+
+.run-delete-target strong {
+  color: #0f172a;
+
+  font-size: 11px;
+}
+
+.run-delete-target span {
+  overflow: hidden;
+
+  color: #64748b;
+
+  font-size: 9px;
+
+  text-overflow:
+    ellipsis;
+
+  white-space: nowrap;
+}
+
+.run-delete-error {
+  margin-top: 12px;
+
+  padding: 10px 11px;
+
+  border:
+    1px solid
+      #fecaca;
+
+  border-radius: 8px;
+
+  background: #fff1f2;
+
+  color: #b91c1c;
+
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.run-delete-modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: 8px;
+
+  padding:
+    14px
+    24px;
+
+  border-top:
+    1px solid
+      #edf0f4;
+
+  background: #fbfcfe;
+}
+
+.run-delete-cancel-button,
+.run-delete-confirm-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  min-width: 72px;
+  height: 34px;
+
+  padding: 0 12px;
+
+  border-radius: 7px;
+
+  font: inherit;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.run-delete-cancel-button {
+  border:
+    1px solid
+      #dbe2ea;
+
+  background: #ffffff;
+
+  color: #475569;
+}
+
+.run-delete-cancel-button:hover:not(
+    :disabled
+  ) {
+  background: #f8fafc;
+}
+
+.run-delete-confirm-button {
+  border:
+    1px solid
+      #dc2626;
+
+  background: #dc2626;
+
+  color: #ffffff;
+}
+
+.run-delete-confirm-button:hover:not(
+    :disabled
+  ) {
+  background: #b91c1c;
+
+  border-color: #b91c1c;
+}
+
+.run-delete-cancel-button:disabled,
+.run-delete-confirm-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 /* =========================
