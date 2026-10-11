@@ -42,6 +42,7 @@ export type WorkflowRunMinAggregateOutputType = {
   name: string | null
   prompt: string | null
   status: string | null
+  state: string | null
   tokenUsage: number | null
   cost: number | null
   startedAt: Date | null
@@ -56,6 +57,7 @@ export type WorkflowRunMaxAggregateOutputType = {
   name: string | null
   prompt: string | null
   status: string | null
+  state: string | null
   tokenUsage: number | null
   cost: number | null
   startedAt: Date | null
@@ -70,6 +72,7 @@ export type WorkflowRunCountAggregateOutputType = {
   name: number
   prompt: number
   status: number
+  state: number
   tokenUsage: number
   cost: number
   startedAt: number
@@ -96,6 +99,7 @@ export type WorkflowRunMinAggregateInputType = {
   name?: true
   prompt?: true
   status?: true
+  state?: true
   tokenUsage?: true
   cost?: true
   startedAt?: true
@@ -110,6 +114,7 @@ export type WorkflowRunMaxAggregateInputType = {
   name?: true
   prompt?: true
   status?: true
+  state?: true
   tokenUsage?: true
   cost?: true
   startedAt?: true
@@ -124,6 +129,7 @@ export type WorkflowRunCountAggregateInputType = {
   name?: true
   prompt?: true
   status?: true
+  state?: true
   tokenUsage?: true
   cost?: true
   startedAt?: true
@@ -225,6 +231,7 @@ export type WorkflowRunGroupByOutputType = {
   name: string
   prompt: string | null
   status: string
+  state: string
   tokenUsage: number
   cost: number
   startedAt: Date | null
@@ -262,6 +269,7 @@ export type WorkflowRunWhereInput = {
   name?: Prisma.StringFilter<"WorkflowRun"> | string
   prompt?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
   status?: Prisma.StringFilter<"WorkflowRun"> | string
+  state?: Prisma.StringFilter<"WorkflowRun"> | string
   tokenUsage?: Prisma.IntFilter<"WorkflowRun"> | number
   cost?: Prisma.FloatFilter<"WorkflowRun"> | number
   startedAt?: Prisma.DateTimeNullableFilter<"WorkflowRun"> | Date | string | null
@@ -279,6 +287,7 @@ export type WorkflowRunOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   prompt?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
+  state?: Prisma.SortOrder
   tokenUsage?: Prisma.SortOrder
   cost?: Prisma.SortOrder
   startedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -299,6 +308,7 @@ export type WorkflowRunWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"WorkflowRun"> | string
   prompt?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
   status?: Prisma.StringFilter<"WorkflowRun"> | string
+  state?: Prisma.StringFilter<"WorkflowRun"> | string
   tokenUsage?: Prisma.IntFilter<"WorkflowRun"> | number
   cost?: Prisma.FloatFilter<"WorkflowRun"> | number
   startedAt?: Prisma.DateTimeNullableFilter<"WorkflowRun"> | Date | string | null
@@ -316,6 +326,7 @@ export type WorkflowRunOrderByWithAggregationInput = {
   name?: Prisma.SortOrder
   prompt?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
+  state?: Prisma.SortOrder
   tokenUsage?: Prisma.SortOrder
   cost?: Prisma.SortOrder
   startedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -338,6 +349,7 @@ export type WorkflowRunScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<"WorkflowRun"> | string
   prompt?: Prisma.StringNullableWithAggregatesFilter<"WorkflowRun"> | string | null
   status?: Prisma.StringWithAggregatesFilter<"WorkflowRun"> | string
+  state?: Prisma.StringWithAggregatesFilter<"WorkflowRun"> | string
   tokenUsage?: Prisma.IntWithAggregatesFilter<"WorkflowRun"> | number
   cost?: Prisma.FloatWithAggregatesFilter<"WorkflowRun"> | number
   startedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"WorkflowRun"> | Date | string | null
@@ -351,6 +363,7 @@ export type WorkflowRunCreateInput = {
   name: string
   prompt?: string | null
   status?: string
+  state?: string
   tokenUsage?: number
   cost?: number
   startedAt?: Date | string | null
@@ -368,6 +381,7 @@ export type WorkflowRunUncheckedCreateInput = {
   name: string
   prompt?: string | null
   status?: string
+  state?: string
   tokenUsage?: number
   cost?: number
   startedAt?: Date | string | null
@@ -383,6 +397,7 @@ export type WorkflowRunUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   prompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
   tokenUsage?: Prisma.IntFieldUpdateOperationsInput | number
   cost?: Prisma.FloatFieldUpdateOperationsInput | number
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -400,6 +415,7 @@ export type WorkflowRunUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   prompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
   tokenUsage?: Prisma.IntFieldUpdateOperationsInput | number
   cost?: Prisma.FloatFieldUpdateOperationsInput | number
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -416,6 +432,7 @@ export type WorkflowRunCreateManyInput = {
   name: string
   prompt?: string | null
   status?: string
+  state?: string
   tokenUsage?: number
   cost?: number
   startedAt?: Date | string | null
@@ -429,6 +446,7 @@ export type WorkflowRunUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   prompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
   tokenUsage?: Prisma.IntFieldUpdateOperationsInput | number
   cost?: Prisma.FloatFieldUpdateOperationsInput | number
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -443,6 +461,7 @@ export type WorkflowRunUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   prompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
   tokenUsage?: Prisma.IntFieldUpdateOperationsInput | number
   cost?: Prisma.FloatFieldUpdateOperationsInput | number
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -467,6 +486,7 @@ export type WorkflowRunCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   prompt?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  state?: Prisma.SortOrder
   tokenUsage?: Prisma.SortOrder
   cost?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
@@ -486,6 +506,7 @@ export type WorkflowRunMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder
   prompt?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  state?: Prisma.SortOrder
   tokenUsage?: Prisma.SortOrder
   cost?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
@@ -500,6 +521,7 @@ export type WorkflowRunMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   prompt?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  state?: Prisma.SortOrder
   tokenUsage?: Prisma.SortOrder
   cost?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
@@ -597,6 +619,7 @@ export type WorkflowRunCreateWithoutWorkflowInput = {
   name: string
   prompt?: string | null
   status?: string
+  state?: string
   tokenUsage?: number
   cost?: number
   startedAt?: Date | string | null
@@ -612,6 +635,7 @@ export type WorkflowRunUncheckedCreateWithoutWorkflowInput = {
   name: string
   prompt?: string | null
   status?: string
+  state?: string
   tokenUsage?: number
   cost?: number
   startedAt?: Date | string | null
@@ -656,6 +680,7 @@ export type WorkflowRunScalarWhereInput = {
   name?: Prisma.StringFilter<"WorkflowRun"> | string
   prompt?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
   status?: Prisma.StringFilter<"WorkflowRun"> | string
+  state?: Prisma.StringFilter<"WorkflowRun"> | string
   tokenUsage?: Prisma.IntFilter<"WorkflowRun"> | number
   cost?: Prisma.FloatFilter<"WorkflowRun"> | number
   startedAt?: Prisma.DateTimeNullableFilter<"WorkflowRun"> | Date | string | null
@@ -669,6 +694,7 @@ export type WorkflowRunCreateWithoutStepRunsInput = {
   name: string
   prompt?: string | null
   status?: string
+  state?: string
   tokenUsage?: number
   cost?: number
   startedAt?: Date | string | null
@@ -685,6 +711,7 @@ export type WorkflowRunUncheckedCreateWithoutStepRunsInput = {
   name: string
   prompt?: string | null
   status?: string
+  state?: string
   tokenUsage?: number
   cost?: number
   startedAt?: Date | string | null
@@ -715,6 +742,7 @@ export type WorkflowRunUpdateWithoutStepRunsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   prompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
   tokenUsage?: Prisma.IntFieldUpdateOperationsInput | number
   cost?: Prisma.FloatFieldUpdateOperationsInput | number
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -731,6 +759,7 @@ export type WorkflowRunUncheckedUpdateWithoutStepRunsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   prompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
   tokenUsage?: Prisma.IntFieldUpdateOperationsInput | number
   cost?: Prisma.FloatFieldUpdateOperationsInput | number
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -745,6 +774,7 @@ export type WorkflowRunCreateWithoutArtifactsInput = {
   name: string
   prompt?: string | null
   status?: string
+  state?: string
   tokenUsage?: number
   cost?: number
   startedAt?: Date | string | null
@@ -761,6 +791,7 @@ export type WorkflowRunUncheckedCreateWithoutArtifactsInput = {
   name: string
   prompt?: string | null
   status?: string
+  state?: string
   tokenUsage?: number
   cost?: number
   startedAt?: Date | string | null
@@ -791,6 +822,7 @@ export type WorkflowRunUpdateWithoutArtifactsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   prompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
   tokenUsage?: Prisma.IntFieldUpdateOperationsInput | number
   cost?: Prisma.FloatFieldUpdateOperationsInput | number
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -807,6 +839,7 @@ export type WorkflowRunUncheckedUpdateWithoutArtifactsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   prompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
   tokenUsage?: Prisma.IntFieldUpdateOperationsInput | number
   cost?: Prisma.FloatFieldUpdateOperationsInput | number
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -821,6 +854,7 @@ export type WorkflowRunCreateManyWorkflowInput = {
   name: string
   prompt?: string | null
   status?: string
+  state?: string
   tokenUsage?: number
   cost?: number
   startedAt?: Date | string | null
@@ -834,6 +868,7 @@ export type WorkflowRunUpdateWithoutWorkflowInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   prompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
   tokenUsage?: Prisma.IntFieldUpdateOperationsInput | number
   cost?: Prisma.FloatFieldUpdateOperationsInput | number
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -849,6 +884,7 @@ export type WorkflowRunUncheckedUpdateWithoutWorkflowInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   prompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
   tokenUsage?: Prisma.IntFieldUpdateOperationsInput | number
   cost?: Prisma.FloatFieldUpdateOperationsInput | number
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -864,6 +900,7 @@ export type WorkflowRunUncheckedUpdateManyWithoutWorkflowInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   prompt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
   tokenUsage?: Prisma.IntFieldUpdateOperationsInput | number
   cost?: Prisma.FloatFieldUpdateOperationsInput | number
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -918,6 +955,7 @@ export type WorkflowRunSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   name?: boolean
   prompt?: boolean
   status?: boolean
+  state?: boolean
   tokenUsage?: boolean
   cost?: boolean
   startedAt?: boolean
@@ -936,6 +974,7 @@ export type WorkflowRunSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   name?: boolean
   prompt?: boolean
   status?: boolean
+  state?: boolean
   tokenUsage?: boolean
   cost?: boolean
   startedAt?: boolean
@@ -951,6 +990,7 @@ export type WorkflowRunSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   name?: boolean
   prompt?: boolean
   status?: boolean
+  state?: boolean
   tokenUsage?: boolean
   cost?: boolean
   startedAt?: boolean
@@ -966,6 +1006,7 @@ export type WorkflowRunSelectScalar = {
   name?: boolean
   prompt?: boolean
   status?: boolean
+  state?: boolean
   tokenUsage?: boolean
   cost?: boolean
   startedAt?: boolean
@@ -974,7 +1015,7 @@ export type WorkflowRunSelectScalar = {
   updatedAt?: boolean
 }
 
-export type WorkflowRunOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "workflowId" | "name" | "prompt" | "status" | "tokenUsage" | "cost" | "startedAt" | "completedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["workflowRun"]>
+export type WorkflowRunOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "workflowId" | "name" | "prompt" | "status" | "state" | "tokenUsage" | "cost" | "startedAt" | "completedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["workflowRun"]>
 export type WorkflowRunInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   workflow?: boolean | Prisma.WorkflowDefaultArgs<ExtArgs>
   stepRuns?: boolean | Prisma.WorkflowRun$stepRunsArgs<ExtArgs>
@@ -1001,6 +1042,7 @@ export type $WorkflowRunPayload<ExtArgs extends runtime.Types.Extensions.Interna
     name: string
     prompt: string | null
     status: string
+    state: string
     tokenUsage: number
     cost: number
     startedAt: Date | null
@@ -1438,6 +1480,7 @@ export interface WorkflowRunFieldRefs {
   readonly name: Prisma.FieldRef<"WorkflowRun", 'String'>
   readonly prompt: Prisma.FieldRef<"WorkflowRun", 'String'>
   readonly status: Prisma.FieldRef<"WorkflowRun", 'String'>
+  readonly state: Prisma.FieldRef<"WorkflowRun", 'String'>
   readonly tokenUsage: Prisma.FieldRef<"WorkflowRun", 'Int'>
   readonly cost: Prisma.FieldRef<"WorkflowRun", 'Float'>
   readonly startedAt: Prisma.FieldRef<"WorkflowRun", 'DateTime'>

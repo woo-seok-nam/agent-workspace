@@ -14,6 +14,7 @@ import {
   editRun,
   editStepRun,
   getRun,
+  setRunStateValue,
 } from "../modules/runs/run.service.js";
 
 import type {
@@ -330,8 +331,8 @@ export async function continueWorkflowRun(
      * Condition 분기 결과 때문에 더 이상
      * 도달할 수 없는 Pending Step은 SKIPPED로 만든다.
      *
-     * 한 번의 loop에서 상위 Branch Node를 SKIP하면
-     * 다음 loop에서 그 아래 Node도 연쇄적으로 SKIP될 수 있다.
+     * 상위 Branch가 SKIPPED 되면 다음 loop에서
+     * 그 아래 Node도 연쇄적으로 SKIPPED 될 수 있다.
      */
     const skippableSteps =
       pendingSteps.filter(
@@ -776,15 +777,13 @@ async function executeWorkflowNode(
   }
 
   /*
-   * STEP 42
+   * Agent Node라면 Agent의 기본 실행 정책을 불러온다.
    *
-   * Agent Node인 경우 Agent의 기본 실행 정책도 불러온다.
-   *
-   * 최종 우선순위:
+   * 우선순위:
    *
    * Node Config
    * → Agent Config
-   * → Runtime 기본값
+   * → Runtime Default
    */
   const agent =
     node.type ===
@@ -796,14 +795,8 @@ async function executeWorkflowNode(
       : undefined;
 
   /*
-   * Condition은 외부 API 호출이 아닌
-   * 결정적 조건 평가이므로 재시도하지 않는다.
-   *
-   * 그 외 Node:
-   *
-   * Node retryCount
-   * → Agent retryCount
-   * → 기본값 2
+   * Condition Node는 결정적 평가이기 때문에
+   * 같은 입력에 대해 반복 실행할 이유가 없다.
    */
   const retryCount =
     node.type ===
@@ -817,16 +810,6 @@ async function executeWorkflowNode(
             2,
         );
 
-  /*
-   * Timeout:
-   *
-   * Node timeoutSeconds
-   * → Agent timeoutSeconds
-   * → 기본값 60초
-   *
-   * 0 이하의 값은 executeWithTimeout에서
-   * Timeout 없음으로 처리한다.
-   */
   const timeoutSeconds =
     node.config
       ?.timeoutSeconds ??
@@ -917,6 +900,12 @@ async function executeWorkflowNode(
         );
       }
 
+      /*
+       * Retry를 포함한 각 실행 시도마다 최신 Run을 읽는다.
+       *
+       * 그래야 다른 Node가 앞서 저장한 Shared State를
+       * 현재 Node가 사용할 수 있다.
+       */
       const latestRun =
         await getRun(
           runId,
@@ -957,12 +946,49 @@ async function executeWorkflowNode(
               node,
 
               dependencyOutputs,
+
+              sharedState:
+                latestRun.state,
             });
           },
 
           timeoutSeconds,
         );
 
+      /*
+       * STEP 43
+       *
+       * Node 실행 결과를 Run Shared State에도 저장한다.
+       *
+       * 예:
+       *
+       * state = {
+       *   "research-node": {
+       *     text: "...",
+       *     ...
+       *   },
+       *   "analysis-node": {
+       *     text: "...",
+       *     ...
+       *   }
+       * }
+       *
+       * run.service의 setRunStateValue()가 같은 Run에서
+       * 병렬 Node가 동시에 저장하는 경우를 직렬화해준다.
+       */
+      await setRunStateValue(
+        runId,
+        node.id,
+        result.output,
+      );
+
+      /*
+       * Shared State 저장 후 Step 자체의 실행 결과도 저장한다.
+       *
+       * Shared State 영속화가 실패한 경우에는
+       * 이 아래까지 진행하지 않고 catch로 이동하므로
+       * Step을 성공 처리하지 않는다.
+       */
       const afterExecutionRun =
         await getRun(
           runId,
@@ -1000,6 +1026,10 @@ async function executeWorkflowNode(
               afterExecutionStep
                 ?.logs ??
               currentStepRun.logs
+            ),
+
+            createLog(
+              `${node.name} 실행 결과를 Shared State에 저장했습니다.`,
             ),
 
             createLog(

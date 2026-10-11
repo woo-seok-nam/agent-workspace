@@ -98,6 +98,9 @@ model WorkflowRun {
   name        String
   prompt      String?
   status      String   @default("QUEUED")
+
+  state       String   @default("{}")
+
   tokenUsage  Int      @default(0)
   cost        Float    @default(0)
   startedAt   DateTime?

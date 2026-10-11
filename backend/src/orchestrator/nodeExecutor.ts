@@ -30,6 +30,7 @@ export async function executeNode(
     node,
     run,
     dependencyOutputs,
+    sharedState,
   } =
     context;
 
@@ -96,7 +97,7 @@ export async function executeNode(
   }
 
   /*
-   * 현재 Model 선택 우선순위는
+   * 현재 Model 선택 우선순위:
    *
    * Agent Model
    * → Workflow Node Model
@@ -173,17 +174,21 @@ export async function executeNode(
   }
 
   /*
+   * STEP 43
+   *
    * Workflow 실행 Context를 기반으로
-   * 기본 Agent Prompt를 생성한다.
+   * Agent Prompt를 생성한다.
    *
-   * 여기에는 다음과 같은 Runtime 정보가
-   * 포함될 수 있다.
+   * dependencyOutputs:
+   *   현재 Node와 직접 연결된
+   *   선행 Node의 실행 결과
    *
-   * - Workflow 사용자 요청
-   * - 이전 Node 결과
-   * - Tool 결과
-   * - Agent 이름/설명
-   * - 현재 Node 정보
+   * sharedState:
+   *   현재 Workflow Run 전체에서
+   *   지금까지 영속적으로 축적된 실행 상태
+   *
+   * toolResults:
+   *   현재 Node에서 실제 실행된 Tool 결과
    */
   const {
     systemPrompt:
@@ -198,6 +203,8 @@ export async function executeNode(
         run.prompt,
 
       dependencyOutputs,
+
+      sharedState,
 
       toolResults,
 
@@ -215,12 +222,13 @@ export async function executeNode(
    * Runtime에서 생성한 System Prompt를 결합한다.
    *
    * Agent System Prompt:
-   *   Agent의 역할 / 성격 / 행동 원칙
+   *   Agent의 Role / 행동 원칙
    *
    * Runtime System Prompt:
-   *   현재 Workflow 실행에 필요한 실행 규칙
+   *   현재 Workflow 실행 Context와 실행 규칙
    *
-   * 둘 중 하나가 비어 있어도 정상 작동한다.
+   * Agent Prompt를 먼저 배치하여
+   * Agent의 고유 Role을 우선 정의한다.
    */
   const systemPrompt =
     buildEffectiveSystemPrompt(

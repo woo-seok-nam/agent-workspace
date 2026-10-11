@@ -28,6 +28,12 @@ export type ExecutionLogLevel =
   | "warning"
   | "error";
 
+export type WorkflowRunState =
+  Record<
+    string,
+    unknown
+  >;
+
 export interface ExecutionLog {
   id: string;
 
@@ -75,6 +81,8 @@ export interface WorkflowRun {
 
   status: WorkflowRunStatus;
 
+  state: WorkflowRunState;
+
   startedAt?: string;
 
   completedAt?: string;
@@ -96,10 +104,14 @@ export interface CreateWorkflowRunInput {
   name?: string;
 
   prompt?: string;
+
+  state?: WorkflowRunState;
 }
 
 export interface UpdateWorkflowRunInput {
   status?: WorkflowRunStatus;
+
+  state?: WorkflowRunState;
 
   startedAt?: string | null;
 

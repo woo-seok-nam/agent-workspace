@@ -11,6 +11,7 @@ import type {
   UpdateStepRunInput,
   UpdateWorkflowRunInput,
   WorkflowRun,
+  WorkflowRunState,
   WorkflowRunStatus,
 } from "./run.types.js";
 
@@ -27,6 +28,38 @@ function parseJson(
     );
   } catch {
     return undefined;
+  }
+}
+
+function parseRunState(
+  value:
+    | string
+    | null,
+): WorkflowRunState {
+  if (!value) {
+    return {};
+  }
+
+  try {
+    const parsed =
+      JSON.parse(
+        value,
+      );
+
+    if (
+      !parsed ||
+      typeof parsed !==
+        "object" ||
+      Array.isArray(
+        parsed,
+      )
+    ) {
+      return {};
+    }
+
+    return parsed as WorkflowRunState;
+  } catch {
+    return {};
   }
 }
 
@@ -119,6 +152,7 @@ function mapRun(
     name: string;
     prompt: string | null;
     status: string;
+    state: string;
     tokenUsage: number;
     cost: number;
     startedAt: Date | null;
@@ -158,6 +192,11 @@ function mapRun(
 
     status:
       run.status as WorkflowRunStatus,
+
+    state:
+      parseRunState(
+        run.state,
+      ),
 
     startedAt:
       run.startedAt?.toISOString(),
@@ -217,7 +256,8 @@ export async function findRunById(
   const run =
     await prisma.workflowRun.findUnique({
       where: {
-        id: runId,
+        id:
+          runId,
       },
 
       include: {
@@ -231,7 +271,9 @@ export async function findRunById(
     });
 
   return run
-    ? mapRun(run)
+    ? mapRun(
+        run,
+      )
     : undefined;
 }
 
@@ -246,7 +288,8 @@ export async function createRun(
       },
 
       include: {
-        nodes: true,
+        nodes:
+          true,
       },
     });
 
@@ -285,6 +328,12 @@ export async function createRun(
 
       status:
         "QUEUED",
+
+      state:
+        JSON.stringify(
+          input.state ??
+          {},
+        ),
 
       stepRuns: {
         create:
@@ -339,7 +388,8 @@ export async function updateRun(
   const existing =
     await prisma.workflowRun.findUnique({
       where: {
-        id: runId,
+        id:
+          runId,
       },
     });
 
@@ -349,12 +399,21 @@ export async function updateRun(
 
   await prisma.workflowRun.update({
     where: {
-      id: runId,
+      id:
+        runId,
     },
 
     data: {
       status:
         input.status,
+
+      state:
+        input.state ===
+        undefined
+          ? undefined
+          : JSON.stringify(
+              input.state,
+            ),
 
       startedAt:
         input.startedAt ===
@@ -429,21 +488,24 @@ export async function updateStepRun(
           input.approvalStatus,
 
         input:
-          input.input === undefined
+          input.input ===
+          undefined
             ? undefined
             : JSON.stringify(
                 input.input,
               ),
 
         output:
-          input.output === undefined
+          input.output ===
+          undefined
             ? undefined
             : JSON.stringify(
                 input.output,
               ),
 
         logs:
-          input.logs === undefined
+          input.logs ===
+          undefined
             ? undefined
             : JSON.stringify(
                 input.logs,

@@ -1221,6 +1221,7 @@ export const WorkflowRunScalarFieldEnum = {
   name: 'name',
   prompt: 'prompt',
   status: 'status',
+  state: 'state',
   tokenUsage: 'tokenUsage',
   cost: 'cost',
   startedAt: 'startedAt',

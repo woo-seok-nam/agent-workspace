@@ -5,12 +5,16 @@ import type {
 
 import type {
   WorkflowRun,
+  WorkflowRunState,
 } from "../modules/runs/run.types.js";
 
 export interface OrchestratorContext {
   workflow: Workflow;
 
   run: WorkflowRun;
+
+  sharedState:
+    WorkflowRunState;
 }
 
 export interface NodeExecutionContext {
@@ -24,6 +28,9 @@ export interface NodeExecutionContext {
     string,
     unknown
   >;
+
+  sharedState:
+    WorkflowRunState;
 }
 
 export interface NodeExecutionResult {
