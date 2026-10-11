@@ -33,8 +33,17 @@ import type {
 } from "../modules/workflows/workflow.types.js";
 
 import {
+  buildNextRecoveryState,
+  buildSupervisorStateValue,
+} from "../supervisor/recovery.service.js";
+
+import {
   superviseRun,
 } from "../supervisor/supervisor.service.js";
+
+import type {
+  SupervisorDecision,
+} from "../supervisor/supervisor.types.js";
 
 import {
   buildConditionContext,
@@ -116,6 +125,37 @@ function isRunTerminal(
   );
 }
 
+function getLastStepErrorMessage(
+  stepRun: StepRun,
+) {
+  for (
+    let index =
+      stepRun.logs.length -
+      1;
+    index >=
+    0;
+    index -=
+      1
+  ) {
+    const log =
+      stepRun.logs[
+        index
+      ];
+
+    if (
+      !log ||
+      log.level !==
+        "error"
+    ) {
+      continue;
+    }
+
+    return log.message;
+  }
+
+  return undefined;
+}
+
 async function restoreStepForPausedRun(
   runId: string,
   nodeId: string,
@@ -163,6 +203,9 @@ async function restoreStepForPausedRun(
     {
       status:
         "PENDING",
+
+      startedAt:
+        null,
 
       completedAt:
         null,
@@ -216,6 +259,228 @@ async function canContinueNodeExecution(
   }
 
   return true;
+}
+
+/*
+ * STEP 47
+ *
+ * Supervisor가 RECOVER 결정을 내린 경우
+ * 실패한 Step을 다시 실행 가능한 상태로 되돌린다.
+ *
+ * 중요한 순서:
+ *
+ * 1. Recovery 횟수를 Durable Shared State에 먼저 저장
+ * 2. FAILED Step을 PENDING으로 되돌림
+ * 3. Orchestrator loop가 DAG를 다시 평가
+ *
+ * Recovery 횟수를 먼저 저장하는 이유는
+ * Step Reset 뒤 서버가 죽더라도 Recovery 횟수가
+ * 사라져 무한 Recovery가 발생하지 않도록 하기 위해서다.
+ */
+async function recoverFailedStep(
+  run: WorkflowRun,
+  decision: SupervisorDecision,
+) {
+  const nodeId =
+    decision.recoveryNodeId;
+
+  if (!nodeId) {
+    throw new Error(
+      "Supervisor Recovery 대상 Node ID가 없습니다.",
+    );
+  }
+
+  const failedStep =
+    run.stepRuns.find(
+      (stepRun) =>
+        stepRun.nodeId ===
+        nodeId,
+    );
+
+  if (!failedStep) {
+    throw new Error(
+      `Recovery 대상 Step을 찾을 수 없습니다: ${nodeId}`,
+    );
+  }
+
+  if (
+    failedStep.status !==
+    "FAILED"
+  ) {
+    return;
+  }
+
+  /*
+   * Recovery 직전 최신 Run을 다시 읽는다.
+   *
+   * Pause / Cancel 같은 사용자 제어가
+   * 중간에 들어왔을 수 있기 때문이다.
+   */
+  const latestRun =
+    await getRun(
+      run.id,
+    );
+
+  if (
+    !latestRun ||
+    latestRun.status !==
+      "RUNNING"
+  ) {
+    return;
+  }
+
+  const latestFailedStep =
+    latestRun.stepRuns.find(
+      (stepRun) =>
+        stepRun.nodeId ===
+        nodeId,
+    );
+
+  if (
+    !latestFailedStep ||
+    latestFailedStep.status !==
+      "FAILED"
+  ) {
+    return;
+  }
+
+  const failureMessage =
+    getLastStepErrorMessage(
+      latestFailedStep,
+    );
+
+  /*
+   * 현재 Shared State를 기준으로
+   * Supervisor Recovery 횟수를 +1 한다.
+   */
+  const nextRecoveryState =
+    buildNextRecoveryState(
+      latestRun.state,
+      nodeId,
+      failureMessage,
+    );
+
+  /*
+   * 기존 __supervisor metadata가 있을 수 있으므로
+   * recovery 부분만 안전하게 갱신한 값을 만든다.
+   */
+  const supervisorState =
+    buildSupervisorStateValue(
+      latestRun.state,
+      nextRecoveryState,
+    );
+
+  /*
+   * STEP 43에서 만든 Durable Shared State API를 사용한다.
+   *
+   * 최종 DB 구조:
+   *
+   * {
+   *   "...node output...": {...},
+   *   "__supervisor": {
+   *     "recovery": {
+   *       "steps": {
+   *         "node-id": {
+   *           "attempts": 1,
+   *           ...
+   *         }
+   *       }
+   *     }
+   *   }
+   * }
+   */
+  await setRunStateValue(
+    run.id,
+    "__supervisor",
+    supervisorState,
+  );
+
+  /*
+   * Recovery State 저장 중 Pause/Cancel이
+   * 발생했는지 다시 확인한다.
+   */
+  const beforeReset =
+    await getRun(
+      run.id,
+    );
+
+  if (
+    !beforeReset ||
+    beforeReset.status !==
+      "RUNNING"
+  ) {
+    return;
+  }
+
+  const stepBeforeReset =
+    beforeReset.stepRuns.find(
+      (stepRun) =>
+        stepRun.nodeId ===
+        nodeId,
+    );
+
+  if (
+    !stepBeforeReset ||
+    stepBeforeReset.status !==
+      "FAILED"
+  ) {
+    return;
+  }
+
+  const attempt =
+    decision.recoveryAttempt ??
+    nextRecoveryState.steps[
+      nodeId
+    ]?.attempts ??
+    1;
+
+  const maxAttempts =
+    decision.recoveryMaxAttempts ??
+    0;
+
+  /*
+   * 실패 실행에서 생성된 output / token / cost는
+   * 다음 Recovery 실행의 결과로 간주하면 안 되므로
+   * 초기화한다.
+   *
+   * 기존 로그는 보존하여
+   * 왜 Recovery가 발생했는지 추적할 수 있게 한다.
+   */
+  await editStepRun(
+    run.id,
+    nodeId,
+    {
+      status:
+        "PENDING",
+
+      input:
+        null,
+
+      output:
+        null,
+
+      tokenUsage:
+        0,
+
+      cost:
+        0,
+
+      startedAt:
+        null,
+
+      completedAt:
+        null,
+
+      logs: [
+        ...stepBeforeReset.logs,
+
+        createLog(
+          `Supervisor가 실패한 Step을 복구합니다. Recovery ${attempt}/${maxAttempts}.`,
+          "warning",
+        ),
+      ],
+    },
+  );
 }
 
 export async function startWorkflowRun(
@@ -318,13 +583,7 @@ export async function continueWorkflowRun(
     }
 
     /*
-     * STEP 46
-     *
-     * Supervisor가 현재 Run 전체 상태를 평가한다.
-     *
-     * Orchestrator는 더 이상
-     * 완료/실패/대기/종료 여부를
-     * 전부 직접 판단하지 않는다.
+     * Supervisor가 현재 Workflow Run 전체를 평가한다.
      */
     const supervisorDecision =
       superviseRun(
@@ -335,52 +594,71 @@ export async function continueWorkflowRun(
       supervisorDecision.action
     ) {
       /*
-       * 이미 완료/실패/취소된 Run.
+       * 이미 완료 / 실패 / 취소된 Run.
        */
       case "STOP": {
         return;
       }
 
       /*
-       * Pause / Human Approval /
-       * 현재 실행 중 Step 등의 이유로
-       * 추가 실행을 시작하지 않는다.
+       * Pause / Approval / 실행 중 Step.
        */
       case "WAIT": {
         return;
       }
 
       /*
-       * 실패한 Step이 존재한다.
+       * STEP 47
        *
-       * STEP 47에서는 여기에서
-       * Recovery / Replanning 판단으로 확장한다.
+       * 실패한 Step을 Workflow 수준에서
+       * Recovery한 뒤 loop 처음으로 돌아간다.
+       *
+       * 다음 loop에서는 Supervisor가
+       * PENDING Step을 보고 CONTINUE를 반환하고,
+       * DAG Engine이 다시 실행 가능 Node를 계산한다.
+       */
+      case "RECOVER": {
+        await recoverFailedStep(
+          run,
+          supervisorDecision,
+        );
+
+        continue;
+      }
+
+      /*
+       * Recovery 가능 횟수를 모두 사용한 실패.
        */
       case "FAIL": {
-        if (
-          run.status ===
-          "RUNNING"
-        ) {
-          await editRun(
+        const latestRun =
+          await getRun(
             runId,
-            {
-              status:
-                "FAILED",
-
-              completedAt:
-                new Date().toISOString(),
-            },
           );
+
+        if (
+          !latestRun ||
+          latestRun.status !==
+            "RUNNING"
+        ) {
+          return;
         }
+
+        await editRun(
+          runId,
+          {
+            status:
+              "FAILED",
+
+            completedAt:
+              new Date().toISOString(),
+          },
+        );
 
         return;
       }
 
       /*
-       * 더 이상 실행할 Step이 없다.
-       *
-       * 최종 Artifact와 Token/Cost를 계산하고
-       * COMPLETED로 변경한다.
+       * 모든 Step이 종료됨.
        */
       case "COMPLETE": {
         const workflow =
@@ -403,20 +681,13 @@ export async function continueWorkflowRun(
       }
 
       /*
-       * PENDING Step이 존재한다.
-       *
-       * 실제 실행 가능 여부는
-       * DAG Graph Engine이 계산한다.
+       * 실행 가능한 PENDING Step이 존재한다.
        */
       case "CONTINUE": {
         break;
       }
     }
 
-    /*
-     * continueWorkflowRun은 실제 Runtime 상태가
-     * RUNNING일 때만 새로운 Node를 실행한다.
-     */
     if (
       run.status !==
       "RUNNING"
@@ -442,13 +713,6 @@ export async function continueWorkflowRun(
           "PENDING",
       );
 
-    /*
-     * Supervisor가 CONTINUE를 반환했는데
-     * PENDING Step이 없다면 상태가 실행 중에
-     * 변경된 것이다.
-     *
-     * 다시 최신 상태를 평가하도록 loop를 반복한다.
-     */
     if (
       pendingSteps.length ===
       0
@@ -459,9 +723,6 @@ export async function continueWorkflowRun(
     /*
      * Condition 분기 때문에 더 이상
      * 도달할 수 없는 Step을 SKIPPED 처리한다.
-     *
-     * 이것은 Supervisor의 역할이 아니라
-     * DAG 구조 판단이므로 Orchestrator가 담당한다.
      */
     const skippableSteps =
       pendingSteps.filter(
@@ -559,15 +820,11 @@ export async function continueWorkflowRun(
         ),
       );
 
-      /*
-       * SKIPPED 처리 후 Supervisor에게
-       * 최신 상태를 다시 평가받는다.
-       */
       continue;
     }
 
     /*
-     * DAG상 지금 실행 가능한 Step을 계산한다.
+     * DAG 기준으로 현재 실행 가능한 Node 계산.
      */
     const executableSteps =
       pendingSteps.filter(
@@ -580,10 +837,10 @@ export async function continueWorkflowRun(
       );
 
     /*
-     * PENDING Step은 있는데 실행 가능한 Step이 없다.
+     * PENDING은 존재하는데 실행 가능한 Step이 없다.
      *
-     * 이는 정상 WAIT가 아니라
-     * DAG Deadlock / Dependency 문제다.
+     * 최신 상태를 다시 Supervisor에게 확인한 뒤
+     * 여전히 CONTINUE라면 DAG Deadlock으로 판단한다.
      */
     if (
       executableSteps.length ===
@@ -607,10 +864,6 @@ export async function continueWorkflowRun(
           latestRun,
         );
 
-      /*
-       * 상태가 바뀌어 Supervisor가 WAIT/STOP 등을
-       * 판단했다면 Graph Failure로 만들지 않는다.
-       */
       if (
         latestDecision.action !==
         "CONTINUE"
@@ -633,7 +886,7 @@ export async function continueWorkflowRun(
     }
 
     /*
-     * Human Approval이 필요한 Step을 찾는다.
+     * Human Approval이 필요한 실행 가능 Step 확인.
      */
     const approvalStep =
       executableSteps.find(
@@ -742,10 +995,6 @@ export async function continueWorkflowRun(
       return;
     }
 
-    /*
-     * 실제 Node 실행 직전에도
-     * Runtime 상태를 다시 확인한다.
-     */
     const beforeExecution =
       await getRun(
         runId,
@@ -760,8 +1009,7 @@ export async function continueWorkflowRun(
     }
 
     /*
-     * 같은 DAG Level에서 실행 가능한 Node는
-     * 병렬 실행한다.
+     * 동일 DAG Level의 Node는 병렬 실행한다.
      */
     await Promise.all(
       executableSteps.map(
@@ -840,11 +1088,9 @@ export async function continueWorkflowRun(
     );
 
     /*
-     * 실행이 끝나면 여기에서 직접
-     * COMPLETED/FAILED를 판단하지 않는다.
-     *
-     * loop 처음으로 돌아가 최신 Run을 조회하고
-     * Supervisor에게 다시 판단시킨다.
+     * 직접 실패/완료 판단하지 않고
+     * loop 처음으로 돌아가 Supervisor에게
+     * 최신 상태를 다시 평가받는다.
      */
   }
 }
@@ -1075,10 +1321,6 @@ async function completeWorkflowRun(
     );
   }
 
-  /*
-   * Artifact 생성 도중 Pause / Cancel 등의
-   * 제어 요청이 들어왔는지 다시 확인한다.
-   */
   const latestRun =
     await getRun(
       run.id,
@@ -1092,10 +1334,6 @@ async function completeWorkflowRun(
     return;
   }
 
-  /*
-   * 최종 완료 직전 Supervisor로
-   * 한 번 더 현재 상태를 검증한다.
-   */
   const finalDecision =
     superviseRun(
       latestRun,
@@ -1383,10 +1621,6 @@ async function executeWorkflowNode(
           timeoutSeconds,
         );
 
-      /*
-       * Provider 실행 중 Runtime 상태가
-       * 변경됐을 수 있으므로 결과 적용 전 검사한다.
-       */
       const afterProvider =
         await getRun(
           runId,
@@ -1442,11 +1676,6 @@ async function executeWorkflowNode(
         return;
       }
 
-      /*
-       * STEP 43
-       *
-       * Node 결과를 Durable Shared State에 저장한다.
-       */
       await setRunStateValue(
         runId,
         node.id,
@@ -1611,6 +1840,11 @@ async function executeWorkflowNode(
         attempt <
         maximumAttempts;
 
+      /*
+       * Node 내부 Retry.
+       *
+       * Supervisor Recovery와 별개의 레이어다.
+       */
       if (
         decision.retryable &&
         retriesRemaining
@@ -1657,6 +1891,14 @@ async function executeWorkflowNode(
         continue;
       }
 
+      /*
+       * Node 자체의 Retry가 끝났다면 FAILED 처리한다.
+       *
+       * 여기서 Run 전체를 FAILED로 만들지 않는다.
+       *
+       * 다음 Orchestrator loop에서 Supervisor가
+       * 이 FAILED Step을 보고 Recovery 여부를 판단한다.
+       */
       const beforeFailure =
         await getRun(
           runId,

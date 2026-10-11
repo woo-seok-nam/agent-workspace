@@ -6,6 +6,7 @@ import type {
 export type SupervisorAction =
   | "CONTINUE"
   | "WAIT"
+  | "RECOVER"
   | "COMPLETE"
   | "FAIL"
   | "STOP";
@@ -17,7 +18,8 @@ export type SupervisorReason =
   | "RUN_COMPLETED"
   | "RUN_FAILED"
   | "RUN_CANCELLED"
-  | "STEP_FAILED"
+  | "STEP_FAILED_RECOVERABLE"
+  | "STEP_FAILED_EXHAUSTED"
   | "STEP_WAITING_APPROVAL"
   | "STEP_RUNNING"
   | "STEP_PENDING"
@@ -41,6 +43,12 @@ export interface SupervisorDecision {
   pendingStepIds: string[];
 
   waitingApprovalStepIds: string[];
+
+  recoveryNodeId?: string;
+
+  recoveryAttempt?: number;
+
+  recoveryMaxAttempts?: number;
 }
 
 export interface SupervisorContext {
