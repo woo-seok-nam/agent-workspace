@@ -1,6 +1,6 @@
 import {
   Bot,
-  Save,
+  Circle,
   Trash2,
 } from "lucide-react";
 
@@ -16,19 +16,19 @@ import {
 interface AgentEditorProps {
   agent?: Agent;
 
+  isDirty?: boolean;
+
   onChange: (
     agent: Agent,
   ) => void;
-
-  onSave: () => void;
 
   onDelete: () => void;
 }
 
 export function AgentEditor({
   agent,
+  isDirty = false,
   onChange,
-  onSave,
   onDelete,
 }: AgentEditorProps) {
   if (!agent) {
@@ -36,7 +36,11 @@ export function AgentEditor({
       <section className="agent-editor">
         <div className="agent-editor__empty">
           <div className="agent-editor__empty-icon">
-            <Bot size={26} />
+            <Bot
+              size={
+                26
+              }
+            />
           </div>
 
           <h2>
@@ -65,7 +69,8 @@ export function AgentEditor({
     const tool =
       tools.find(
         (item) =>
-          item.id === toolId,
+          item.id ===
+          toolId,
       );
 
     if (
@@ -86,7 +91,8 @@ export function AgentEditor({
       hasTool
         ? agent.toolIds.filter(
             (id) =>
-              id !== toolId,
+              id !==
+              toolId,
           )
         : [
             ...agent.toolIds,
@@ -115,6 +121,42 @@ export function AgentEditor({
           <h2>
             {agent.name}
           </h2>
+
+          {isDirty && (
+            <div
+              style={{
+                display:
+                  "inline-flex",
+
+                alignItems:
+                  "center",
+
+                gap:
+                  "5px",
+
+                marginTop:
+                  "6px",
+
+                color:
+                  "#b45309",
+
+                fontSize:
+                  "10px",
+
+                fontWeight:
+                  700,
+              }}
+            >
+              <Circle
+                size={
+                  7
+                }
+                fill="currentColor"
+              />
+
+              저장되지 않은 변경사항
+            </div>
+          )}
         </div>
 
         <div className="agent-editor__header-actions">
@@ -125,19 +167,13 @@ export function AgentEditor({
               onDelete
             }
           >
-            <Trash2 size={14} />
-            삭제
-          </button>
+            <Trash2
+              size={
+                14
+              }
+            />
 
-          <button
-            type="button"
-            className="primary-button"
-            onClick={
-              onSave
-            }
-          >
-            <Save size={14} />
-            저장
+            삭제
           </button>
         </div>
       </div>
@@ -340,8 +376,12 @@ export function AgentEditor({
                         ? "agent-tool-card--disabled"
                         : "",
                     ]
-                      .filter(Boolean)
-                      .join(" ")}
+                      .filter(
+                        Boolean,
+                      )
+                      .join(
+                        " ",
+                      )}
                   >
                     <input
                       type="checkbox"
@@ -361,7 +401,9 @@ export function AgentEditor({
 
                     <div>
                       <strong>
-                        {tool.name}
+                        {
+                          tool.name
+                        }
                       </strong>
 
                       <span>
