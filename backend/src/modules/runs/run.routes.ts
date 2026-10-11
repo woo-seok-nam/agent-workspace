@@ -4,10 +4,13 @@ import {
 
 import {
   approveStepController,
+  cancelRunController,
   createRunController,
   listRuns,
+  pauseRunController,
   readRun,
   rejectStepController,
+  resumeRunController,
   startRunController,
   updateRunController,
   updateStepRunController,
@@ -34,6 +37,21 @@ runRouter.post(
 runRouter.post(
   "/:runId/start",
   startRunController,
+);
+
+runRouter.post(
+  "/:runId/pause",
+  pauseRunController,
+);
+
+runRouter.post(
+  "/:runId/resume",
+  resumeRunController,
+);
+
+runRouter.post(
+  "/:runId/cancel",
+  cancelRunController,
 );
 
 runRouter.post(

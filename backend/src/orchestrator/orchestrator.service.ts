@@ -20,6 +20,7 @@ import {
 import type {
   ExecutionLog,
   StepRun,
+  WorkflowRun,
 } from "../modules/runs/run.types.js";
 
 import {
@@ -98,6 +99,143 @@ function getErrorMessage(
   }
 }
 
+function isRunTerminal(
+  run: WorkflowRun,
+) {
+  return (
+    run.status ===
+      "COMPLETED" ||
+    run.status ===
+      "FAILED" ||
+    run.status ===
+      "CANCELLED"
+  );
+}
+
+/*
+ * Pause된 Run에서 현재 RUNNING 상태인 Step을
+ * 다시 PENDING으로 되돌린다.
+ *
+ * 현재 Provider 요청을 실제 Abort하지 않기 때문에,
+ * 요청 결과가 돌아온 뒤 이 함수가 실행되면
+ * 그 결과는 버리고 Resume 시 Step을 처음부터 다시 실행한다.
+ */
+async function restoreStepForPausedRun(
+  runId: string,
+  nodeId: string,
+  message:
+    string =
+      "Workflow Run이 일시정지되어 현재 Step 결과를 적용하지 않습니다. 재개 시 다시 실행합니다.",
+) {
+  const run =
+    await getRun(
+      runId,
+    );
+
+  if (!run) {
+    return;
+  }
+
+  if (
+    run.status !==
+    "PAUSED"
+  ) {
+    return;
+  }
+
+  const stepRun =
+    run.stepRuns.find(
+      (step) =>
+        step.nodeId ===
+        nodeId,
+    );
+
+  if (!stepRun) {
+    return;
+  }
+
+  /*
+   * 이미 다른 제어 흐름에서 상태가 바뀌었다면
+   * 다시 덮어쓰지 않는다.
+   */
+  if (
+    stepRun.status !==
+    "RUNNING"
+  ) {
+    return;
+  }
+
+  await editStepRun(
+    runId,
+    nodeId,
+    {
+      status:
+        "PENDING",
+
+      completedAt:
+        null,
+
+      logs: [
+        ...stepRun.logs,
+
+        createLog(
+          message,
+          "warning",
+        ),
+      ],
+    },
+  );
+}
+
+/*
+ * Node 실행을 계속 진행해도 되는지 검사한다.
+ *
+ * true:
+ *   계속 실행 가능
+ *
+ * false:
+ *   PAUSED 또는 CANCELLED 등의 이유로
+ *   현재 Node 실행 흐름을 중단해야 함
+ */
+async function canContinueNodeExecution(
+  runId: string,
+  nodeId: string,
+): Promise<boolean> {
+  const run =
+    await getRun(
+      runId,
+    );
+
+  if (!run) {
+    return false;
+  }
+
+  if (
+    run.status ===
+    "PAUSED"
+  ) {
+    await restoreStepForPausedRun(
+      runId,
+      nodeId,
+    );
+
+    return false;
+  }
+
+  if (
+    run.status ===
+      "CANCELLED" ||
+    run.status ===
+      "FAILED" ||
+    run.status ===
+      "COMPLETED"
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
 export async function startWorkflowRun(
   runId: string,
 ) {
@@ -123,9 +261,17 @@ export async function startWorkflowRun(
 
   if (
     existingRun.status ===
-      "COMPLETED" ||
-    existingRun.status ===
-      "CANCELLED"
+      "PAUSED"
+  ) {
+    throw new Error(
+      "일시정지된 Run은 Resume 기능으로 재개해야 합니다.",
+    );
+  }
+
+  if (
+    isRunTerminal(
+      existingRun,
+    )
   ) {
     return existingRun;
   }
@@ -189,6 +335,19 @@ export async function continueWorkflowRun(
       );
     }
 
+    /*
+     * STEP 44
+     *
+     * Pause 상태에서는 새로운 Node를
+     * 절대로 시작하지 않는다.
+     */
+    if (
+      run.status ===
+      "PAUSED"
+    ) {
+      return;
+    }
+
     if (
       run.status ===
       "WAITING_APPROVAL"
@@ -197,12 +356,20 @@ export async function continueWorkflowRun(
     }
 
     if (
-      run.status ===
-        "FAILED" ||
-      run.status ===
-        "CANCELLED" ||
-      run.status ===
-        "COMPLETED"
+      isRunTerminal(
+        run,
+      )
+    ) {
+      return;
+    }
+
+    /*
+     * continueWorkflowRun은 RUNNING 상태에서만
+     * 실제 실행을 진행한다.
+     */
+    if (
+      run.status !==
+      "RUNNING"
     ) {
       return;
     }
@@ -272,6 +439,25 @@ export async function continueWorkflowRun(
         return;
       }
 
+      /*
+       * RUNNING Step이 있다면 아직 완료 판정을
+       * 내려서는 안 된다.
+       */
+      const hasRunningStep =
+        run.stepRuns.some(
+          (stepRun) =>
+            stepRun.status ===
+              "RUNNING" ||
+            stepRun.status ===
+              "QUEUED",
+        );
+
+      if (
+        hasRunningStep
+      ) {
+        return;
+      }
+
       const totalTokenUsage =
         run.stepRuns.reduce(
           (
@@ -307,6 +493,23 @@ export async function continueWorkflowRun(
         );
       }
 
+      /*
+       * Artifact 처리 도중 Pause/Cancel이 발생했을 수도
+       * 있으므로 최종 상태를 다시 확인한다.
+       */
+      const beforeCompletion =
+        await getRun(
+          runId,
+        );
+
+      if (
+        !beforeCompletion ||
+        beforeCompletion.status !==
+          "RUNNING"
+      ) {
+        return;
+      }
+
       await editRun(
         runId,
         {
@@ -328,11 +531,8 @@ export async function continueWorkflowRun(
     }
 
     /*
-     * Condition 분기 결과 때문에 더 이상
-     * 도달할 수 없는 Pending Step은 SKIPPED로 만든다.
-     *
-     * 상위 Branch가 SKIPPED 되면 다음 loop에서
-     * 그 아래 Node도 연쇄적으로 SKIPPED 될 수 있다.
+     * Condition 분기상 더 이상 도달할 수 없는
+     * Step을 SKIPPED 처리한다.
      */
     const skippableSteps =
       pendingSteps.filter(
@@ -348,11 +548,40 @@ export async function continueWorkflowRun(
       skippableSteps.length >
       0
     ) {
+      /*
+       * SKIPPED 처리 직전에도 Run 제어 상태 확인.
+       */
+      const beforeSkip =
+        await getRun(
+          runId,
+        );
+
+      if (
+        !beforeSkip ||
+        beforeSkip.status !==
+          "RUNNING"
+      ) {
+        return;
+      }
+
       await Promise.all(
         skippableSteps.map(
           async (
             stepRun,
           ) => {
+            const latestRun =
+              await getRun(
+                runId,
+              );
+
+            if (
+              !latestRun ||
+              latestRun.status !==
+                "RUNNING"
+            ) {
+              return;
+            }
+
             const node =
               workflow.nodes.find(
                 (
@@ -419,6 +648,19 @@ export async function continueWorkflowRun(
         return;
       }
 
+      const beforeFailure =
+        await getRun(
+          runId,
+        );
+
+      if (
+        !beforeFailure ||
+        beforeFailure.status !==
+          "RUNNING"
+      ) {
+        return;
+      }
+
       await editRun(
         runId,
         {
@@ -458,12 +700,40 @@ export async function continueWorkflowRun(
     if (
       approvalStep
     ) {
+      const beforeApproval =
+        await getRun(
+          runId,
+        );
+
+      if (
+        !beforeApproval ||
+        beforeApproval.status !==
+          "RUNNING"
+      ) {
+        return;
+      }
+
       const approvalNode =
         workflow.nodes.find(
           (node) =>
             node.id ===
             approvalStep.nodeId,
         );
+
+      const latestApprovalStep =
+        beforeApproval.stepRuns.find(
+          (step) =>
+            step.nodeId ===
+            approvalStep.nodeId,
+        );
+
+      if (
+        !latestApprovalStep ||
+        latestApprovalStep.status !==
+          "PENDING"
+      ) {
+        continue;
+      }
 
       await editStepRun(
         runId,
@@ -476,7 +746,7 @@ export async function continueWorkflowRun(
             "PENDING",
 
           logs: [
-            ...approvalStep.logs,
+            ...latestApprovalStep.logs,
 
             createLog(
               `${
@@ -487,6 +757,19 @@ export async function continueWorkflowRun(
           ],
         },
       );
+
+      const afterApprovalStep =
+        await getRun(
+          runId,
+        );
+
+      if (
+        !afterApprovalStep ||
+        afterApprovalStep.status !==
+          "RUNNING"
+      ) {
+        return;
+      }
 
       await editRun(
         runId,
@@ -499,11 +782,56 @@ export async function continueWorkflowRun(
       return;
     }
 
+    /*
+     * 실제 병렬 Node를 시작하기 직전
+     * 마지막으로 RUNNING 상태인지 확인한다.
+     */
+    const beforeExecution =
+      await getRun(
+        runId,
+      );
+
+    if (
+      !beforeExecution ||
+      beforeExecution.status !==
+        "RUNNING"
+    ) {
+      return;
+    }
+
     await Promise.all(
       executableSteps.map(
         async (
           stepRun,
         ) => {
+          const currentRun =
+            await getRun(
+              runId,
+            );
+
+          if (
+            !currentRun ||
+            currentRun.status !==
+              "RUNNING"
+          ) {
+            return;
+          }
+
+          const currentStep =
+            currentRun.stepRuns.find(
+              (step) =>
+                step.nodeId ===
+                stepRun.nodeId,
+            );
+
+          if (
+            !currentStep ||
+            currentStep.status !==
+              "PENDING"
+          ) {
+            return;
+          }
+
           const node =
             workflow.nodes.find(
               (
@@ -525,7 +853,7 @@ export async function continueWorkflowRun(
                   new Date().toISOString(),
 
                 logs: [
-                  ...stepRun.logs,
+                  ...currentStep.logs,
 
                   createLog(
                     "Workflow Node를 찾지 못했습니다.",
@@ -558,6 +886,26 @@ export async function continueWorkflowRun(
       return;
     }
 
+    /*
+     * 실행 중 Pause 또는 Cancel이 발생했다면
+     * 다음 loop로 넘어가지 않는다.
+     */
+    if (
+      afterExecution.status ===
+        "PAUSED" ||
+      afterExecution.status ===
+        "CANCELLED"
+    ) {
+      return;
+    }
+
+    if (
+      afterExecution.status !==
+      "RUNNING"
+    ) {
+      return;
+    }
+
     const failed =
       afterExecution.stepRuns.some(
         (stepRun) =>
@@ -566,6 +914,19 @@ export async function continueWorkflowRun(
       );
 
     if (failed) {
+      const beforeFailure =
+        await getRun(
+          runId,
+        );
+
+      if (
+        !beforeFailure ||
+        beforeFailure.status !==
+          "RUNNING"
+      ) {
+        return;
+      }
+
       await editRun(
         runId,
         {
@@ -594,6 +955,15 @@ export async function approveWorkflowStep(
   if (!run) {
     throw new Error(
       "Run을 찾을 수 없습니다.",
+    );
+  }
+
+  if (
+    run.status !==
+    "WAITING_APPROVAL"
+  ) {
+    throw new Error(
+      "현재 승인 대기 상태의 Run이 아닙니다.",
     );
   }
 
@@ -680,6 +1050,15 @@ export async function rejectWorkflowStep(
     );
   }
 
+  if (
+    run.status !==
+    "WAITING_APPROVAL"
+  ) {
+    throw new Error(
+      "현재 승인 대기 상태의 Run이 아닙니다.",
+    );
+  }
+
   const stepRun =
     run.stepRuns.find(
       (step) =>
@@ -756,12 +1135,20 @@ async function executeWorkflowNode(
   workflow: Workflow,
   node: WorkflowNode,
 ) {
+  /*
+   * Node 실행을 시작하기 전에도
+   * Run 상태를 반드시 확인한다.
+   */
   const initialRun =
     await getRun(
       runId,
     );
 
-  if (!initialRun) {
+  if (
+    !initialRun ||
+    initialRun.status !==
+      "RUNNING"
+  ) {
     return;
   }
 
@@ -772,19 +1159,14 @@ async function executeWorkflowNode(
         node.id,
     );
 
-  if (!initialStepRun) {
+  if (
+    !initialStepRun ||
+    initialStepRun.status !==
+      "PENDING"
+  ) {
     return;
   }
 
-  /*
-   * Agent Node라면 Agent의 기본 실행 정책을 불러온다.
-   *
-   * 우선순위:
-   *
-   * Node Config
-   * → Agent Config
-   * → Runtime Default
-   */
   const agent =
     node.type ===
       "agent" &&
@@ -794,10 +1176,6 @@ async function executeWorkflowNode(
         )
       : undefined;
 
-  /*
-   * Condition Node는 결정적 평가이기 때문에
-   * 같은 입력에 대해 반복 실행할 이유가 없다.
-   */
   const retryCount =
     node.type ===
     "condition"
@@ -820,6 +1198,38 @@ async function executeWorkflowNode(
     retryCount +
     1;
 
+  /*
+   * Agent 조회 등의 준비 작업 동안 Pause/Cancel이
+   * 발생했을 수도 있으므로 다시 검사한다.
+   */
+  const beforeStart =
+    await getRun(
+      runId,
+    );
+
+  if (
+    !beforeStart ||
+    beforeStart.status !==
+      "RUNNING"
+  ) {
+    return;
+  }
+
+  const beforeStartStep =
+    beforeStart.stepRuns.find(
+      (step) =>
+        step.nodeId ===
+        node.id,
+    );
+
+  if (
+    !beforeStartStep ||
+    beforeStartStep.status !==
+      "PENDING"
+  ) {
+    return;
+  }
+
   await editStepRun(
     runId,
     node.id,
@@ -828,14 +1238,14 @@ async function executeWorkflowNode(
         "RUNNING",
 
       startedAt:
-        initialStepRun.startedAt ??
+        beforeStartStep.startedAt ??
         new Date().toISOString(),
 
       completedAt:
         null,
 
       logs: [
-        ...initialStepRun.logs,
+        ...beforeStartStep.logs,
 
         createLog(
           `${node.name} 실행을 시작했습니다. 제한 시간: ${
@@ -857,6 +1267,19 @@ async function executeWorkflowNode(
     attempt +=
       1
   ) {
+    /*
+     * 각 Retry 시작 전 Pause / Cancel 검사.
+     */
+    const allowedToRun =
+      await canContinueNodeExecution(
+        runId,
+        node.id,
+      );
+
+    if (!allowedToRun) {
+      return;
+    }
+
     const currentRun =
       await getRun(
         runId,
@@ -874,7 +1297,9 @@ async function executeWorkflowNode(
       );
 
     if (
-      !currentStepRun
+      !currentStepRun ||
+      currentStepRun.status !==
+        "RUNNING"
     ) {
       return;
     }
@@ -898,20 +1323,42 @@ async function executeWorkflowNode(
             ],
           },
         );
+
+        /*
+         * Retry 로그 저장 중 상태가 바뀔 수 있으므로
+         * 한 번 더 검사한다.
+         */
+        const canRetry =
+          await canContinueNodeExecution(
+            runId,
+            node.id,
+          );
+
+        if (!canRetry) {
+          return;
+        }
       }
 
-      /*
-       * Retry를 포함한 각 실행 시도마다 최신 Run을 읽는다.
-       *
-       * 그래야 다른 Node가 앞서 저장한 Shared State를
-       * 현재 Node가 사용할 수 있다.
-       */
       const latestRun =
         await getRun(
           runId,
         );
 
-      if (!latestRun) {
+      if (
+        !latestRun ||
+        latestRun.status !==
+          "RUNNING"
+      ) {
+        if (
+          latestRun?.status ===
+          "PAUSED"
+        ) {
+          await restoreStepForPausedRun(
+            runId,
+            node.id,
+          );
+        }
+
         return;
       }
 
@@ -956,25 +1403,77 @@ async function executeWorkflowNode(
         );
 
       /*
+       * 매우 중요:
+       *
+       * Provider 응답이 도착한 시점에 Run이
+       * Pause/Cancel 되었을 수 있다.
+       *
+       * 이 확인 전에 result.output을 DB에 쓰면
+       * CANCELLED 상태를 COMPLETED로 덮어쓸 수 있다.
+       */
+      const afterProvider =
+        await getRun(
+          runId,
+        );
+
+      if (!afterProvider) {
+        return;
+      }
+
+      if (
+        afterProvider.status ===
+        "PAUSED"
+      ) {
+        await restoreStepForPausedRun(
+          runId,
+          node.id,
+          `${node.name} 실행 중 Workflow가 일시정지되어 반환된 실행 결과를 폐기했습니다. Resume 시 다시 실행합니다.`,
+        );
+
+        return;
+      }
+
+      if (
+        afterProvider.status ===
+          "CANCELLED" ||
+        afterProvider.status ===
+          "FAILED" ||
+        afterProvider.status ===
+          "COMPLETED"
+      ) {
+        return;
+      }
+
+      if (
+        afterProvider.status !==
+        "RUNNING"
+      ) {
+        return;
+      }
+
+      const afterProviderStep =
+        afterProvider.stepRuns.find(
+          (step) =>
+            step.nodeId ===
+            node.id,
+        );
+
+      /*
+       * Cancel Controller 등이 Step 상태까지
+       * 이미 변경했다면 결과를 절대 저장하지 않는다.
+       */
+      if (
+        !afterProviderStep ||
+        afterProviderStep.status !==
+          "RUNNING"
+      ) {
+        return;
+      }
+
+      /*
        * STEP 43
        *
-       * Node 실행 결과를 Run Shared State에도 저장한다.
-       *
-       * 예:
-       *
-       * state = {
-       *   "research-node": {
-       *     text: "...",
-       *     ...
-       *   },
-       *   "analysis-node": {
-       *     text: "...",
-       *     ...
-       *   }
-       * }
-       *
-       * run.service의 setRunStateValue()가 같은 Run에서
-       * 병렬 Node가 동시에 저장하는 경우를 직렬화해준다.
+       * 실행 결과를 Durable Shared State에 저장.
        */
       await setRunStateValue(
         runId,
@@ -983,24 +1482,52 @@ async function executeWorkflowNode(
       );
 
       /*
-       * Shared State 저장 후 Step 자체의 실행 결과도 저장한다.
-       *
-       * Shared State 영속화가 실패한 경우에는
-       * 이 아래까지 진행하지 않고 catch로 이동하므로
-       * Step을 성공 처리하지 않는다.
+       * Shared State 저장 과정 동안에도
+       * Pause/Cancel 가능성이 있으므로 재검사.
        */
-      const afterExecutionRun =
+      const afterStateSave =
         await getRun(
           runId,
         );
 
-      const afterExecutionStep =
-        afterExecutionRun
-          ?.stepRuns.find(
-            (step) =>
-              step.nodeId ===
-              node.id,
-          );
+      if (!afterStateSave) {
+        return;
+      }
+
+      if (
+        afterStateSave.status ===
+        "PAUSED"
+      ) {
+        await restoreStepForPausedRun(
+          runId,
+          node.id,
+          `${node.name} 결과 저장 중 Workflow가 일시정지되었습니다. Step은 Resume 시 다시 실행합니다.`,
+        );
+
+        return;
+      }
+
+      if (
+        afterStateSave.status !==
+        "RUNNING"
+      ) {
+        return;
+      }
+
+      const afterStateStep =
+        afterStateSave.stepRuns.find(
+          (step) =>
+            step.nodeId ===
+            node.id,
+        );
+
+      if (
+        !afterStateStep ||
+        afterStateStep.status !==
+          "RUNNING"
+      ) {
+        return;
+      }
 
       await editStepRun(
         runId,
@@ -1022,11 +1549,7 @@ async function executeWorkflowNode(
             new Date().toISOString(),
 
           logs: [
-            ...(
-              afterExecutionStep
-                ?.logs ??
-              currentStepRun.logs
-            ),
+            ...afterStateStep.logs,
 
             createLog(
               `${node.name} 실행 결과를 Shared State에 저장했습니다.`,
@@ -1044,6 +1567,43 @@ async function executeWorkflowNode(
 
       return;
     } catch (error) {
+      /*
+       * Error 처리 전에 Pause/Cancel 여부부터 검사한다.
+       *
+       * 사용자가 취소했는데 Provider 요청이 에러로
+       * 끝났다는 이유로 Step을 FAILED로 덮어쓰면 안 된다.
+       */
+      const controlledRun =
+        await getRun(
+          runId,
+        );
+
+      if (!controlledRun) {
+        return;
+      }
+
+      if (
+        controlledRun.status ===
+        "PAUSED"
+      ) {
+        await restoreStepForPausedRun(
+          runId,
+          node.id,
+          `${node.name} 실행 중 Workflow가 일시정지되었습니다. 오류 결과는 적용하지 않고 Resume 시 다시 실행합니다.`,
+        );
+
+        return;
+      }
+
+      if (
+        controlledRun.status ===
+          "CANCELLED" ||
+        controlledRun.status ===
+          "COMPLETED"
+      ) {
+        return;
+      }
+
       const decision =
         classifyExecutionError(
           error,
@@ -1059,18 +1619,31 @@ async function executeWorkflowNode(
           runId,
         );
 
+      if (
+        !latestRun ||
+        latestRun.status !==
+          "RUNNING"
+      ) {
+        return;
+      }
+
       const latestStepRun =
-        latestRun
-          ?.stepRuns.find(
-            (step) =>
-              step.nodeId ===
-              node.id,
-          );
+        latestRun.stepRuns.find(
+          (step) =>
+            step.nodeId ===
+            node.id,
+        );
+
+      if (
+        !latestStepRun ||
+        latestStepRun.status !==
+          "RUNNING"
+      ) {
+        return;
+      }
 
       const currentLogs =
-        latestStepRun
-          ?.logs ??
-        currentStepRun.logs;
+        latestStepRun.logs;
 
       const retriesRemaining =
         attempt <
@@ -1107,7 +1680,54 @@ async function executeWorkflowNode(
           delay,
         );
 
+        /*
+         * Retry delay 동안 Pause/Cancel이
+         * 발생했는지 반드시 확인한다.
+         */
+        const canRetryAfterDelay =
+          await canContinueNodeExecution(
+            runId,
+            node.id,
+          );
+
+        if (
+          !canRetryAfterDelay
+        ) {
+          return;
+        }
+
         continue;
+      }
+
+      /*
+       * FAILED 처리 직전 최종 상태 확인.
+       */
+      const beforeFailure =
+        await getRun(
+          runId,
+        );
+
+      if (
+        !beforeFailure ||
+        beforeFailure.status !==
+          "RUNNING"
+      ) {
+        return;
+      }
+
+      const beforeFailureStep =
+        beforeFailure.stepRuns.find(
+          (step) =>
+            step.nodeId ===
+            node.id,
+        );
+
+      if (
+        !beforeFailureStep ||
+        beforeFailureStep.status !==
+          "RUNNING"
+      ) {
+        return;
       }
 
       const finalMessage =
@@ -1126,7 +1746,7 @@ async function executeWorkflowNode(
             new Date().toISOString(),
 
           logs: [
-            ...currentLogs,
+            ...beforeFailureStep.logs,
 
             createLog(
               finalMessage,
