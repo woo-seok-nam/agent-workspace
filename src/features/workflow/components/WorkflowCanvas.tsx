@@ -1,8 +1,7 @@
 import {
   addEdge,
-  Background,
-  BackgroundVariant,
   Controls,
+  MarkerType,
   MiniMap,
   ReactFlow,
   useEdgesState,
@@ -21,11 +20,14 @@ import {
 import "@xyflow/react/dist/style.css";
 
 import type {
+  WorkflowCondition,
   WorkflowEdge,
   WorkflowNode,
 } from "../types";
 
-import { CustomWorkflowNode } from "./CustomWorkflowNode";
+import {
+  CustomWorkflowNode,
+} from "./CustomWorkflowNode";
 
 interface WorkflowCanvasProps {
   nodes: WorkflowNode[];
@@ -60,19 +62,28 @@ function convertNodes(
   workflowNodes: WorkflowNode[],
 ): Node[] {
   return workflowNodes.map(
-    (node) => ({
-      id: node.id,
+    (
+      node,
+    ) => ({
+      id:
+        node.id,
 
-      position: node.position,
+      position:
+        node.position,
 
       data: {
-        label: node.name,
+        label:
+          node.name,
+
         description:
           node.description,
-        type: node.type,
+
+        type:
+          node.type,
       },
 
-      type: "workflowNode",
+      type:
+        "workflowNode",
     }),
   );
 }
@@ -81,11 +92,17 @@ function convertEdges(
   workflowEdges: WorkflowEdge[],
 ): Edge[] {
   return workflowEdges.map(
-    (edge) => ({
-      id: edge.id,
+    (
+      edge,
+    ) => ({
+      id:
+        edge.id,
 
-      source: edge.source,
-      target: edge.target,
+      source:
+        edge.source,
+
+      target:
+        edge.target,
 
       sourceHandle:
         edge.sourceHandle,
@@ -93,7 +110,31 @@ function convertEdges(
       targetHandle:
         edge.targetHandle,
 
-      type: "smoothstep",
+      type:
+        "smoothstep",
+
+      markerEnd: {
+        type:
+          MarkerType.ArrowClosed,
+
+        width:
+          14,
+
+        height:
+          14,
+      },
+
+      label:
+        edge.condition
+          ? formatConditionLabel(
+              edge.condition,
+            )
+          : undefined,
+
+      className:
+        edge.condition
+          ? "workflow-flow-edge workflow-flow-edge--conditional"
+          : "workflow-flow-edge",
     }),
   );
 }
@@ -107,55 +148,76 @@ export function WorkflowCanvas({
   onEdgeCreate,
   onEdgeDelete,
 }: WorkflowCanvasProps) {
-  const nodeTypes = useMemo(
-    () => ({
-      workflowNode:
-        CustomWorkflowNode,
-    }),
-    [],
-  );
+  const nodeTypes =
+    useMemo(
+      () => ({
+        workflowNode:
+          CustomWorkflowNode,
+      }),
+      [],
+    );
 
   const [
     flowNodes,
     setFlowNodes,
     onNodesChange,
-  ] = useNodesState(
-    convertNodes(nodes),
-  );
+  ] =
+    useNodesState(
+      convertNodes(
+        nodes,
+      ),
+    );
 
   const [
     flowEdges,
     setFlowEdges,
     onEdgesChange,
-  ] = useEdgesState(
-    convertEdges(edges),
+  ] =
+    useEdgesState(
+      convertEdges(
+        edges,
+      ),
+    );
+
+  useEffect(
+    () => {
+      setFlowNodes(
+        convertNodes(
+          nodes,
+        ),
+      );
+    },
+    [
+      nodes,
+      setFlowNodes,
+    ],
   );
 
-  useEffect(() => {
-    setFlowNodes(
-      convertNodes(nodes),
-    );
-  }, [
-    nodes,
-    setFlowNodes,
-  ]);
-
-  useEffect(() => {
-    setFlowEdges(
-      convertEdges(edges),
-    );
-  }, [
-    edges,
-    setFlowEdges,
-  ]);
+  useEffect(
+    () => {
+      setFlowEdges(
+        convertEdges(
+          edges,
+        ),
+      );
+    },
+    [
+      edges,
+      setFlowEdges,
+    ],
+  );
 
   const handleNodesChange = (
     changes: NodeChange<Node>[],
   ) => {
-    onNodesChange(changes);
+    onNodesChange(
+      changes,
+    );
 
     changes.forEach(
-      (change) => {
+      (
+        change,
+      ) => {
         if (
           change.type ===
             "position" &&
@@ -190,11 +252,29 @@ export function WorkflowCanvas({
     }
 
     setFlowEdges(
-      (currentEdges) =>
+      (
+        currentEdges,
+      ) =>
         addEdge(
           {
             ...connection,
-            type: "smoothstep",
+
+            type:
+              "smoothstep",
+
+            markerEnd: {
+              type:
+                MarkerType.ArrowClosed,
+
+              width:
+                14,
+
+              height:
+                14,
+            },
+
+            className:
+              "workflow-flow-edge",
           },
           currentEdges,
         ),
@@ -206,20 +286,31 @@ export function WorkflowCanvas({
     );
   };
 
+  const displayedNodes =
+    flowNodes.map(
+      (
+        node,
+      ) => ({
+        ...node,
+
+        selected:
+          node.id ===
+          selectedNodeId,
+      }),
+    );
+
   return (
     <section className="workflow-canvas">
       <ReactFlow
-        nodes={flowNodes.map(
-          (node) => ({
-            ...node,
-
-            selected:
-              node.id ===
-              selectedNodeId,
-          }),
-        )}
-        edges={flowEdges}
-        nodeTypes={nodeTypes}
+        nodes={
+          displayedNodes
+        }
+        edges={
+          flowEdges
+        }
+        nodeTypes={
+          nodeTypes
+        }
         onNodesChange={
           handleNodesChange
         }
@@ -238,13 +329,17 @@ export function WorkflowCanvas({
           );
         }}
         onPaneClick={() => {
-          onNodeSelect?.("");
+          onNodeSelect?.(
+            "",
+          );
         }}
         onEdgesDelete={(
           deletedEdges,
         ) => {
           deletedEdges.forEach(
-            (edge) => {
+            (
+              edge,
+            ) => {
               onEdgeDelete?.(
                 edge.id,
               );
@@ -253,23 +348,24 @@ export function WorkflowCanvas({
         }}
         fitView
         fitViewOptions={{
-          padding: 0.25,
+          padding:
+            0.25,
         }}
-        minZoom={0.3}
-        maxZoom={2}
-        deleteKeyCode={[
-          "Backspace",
-          "Delete",
-        ]}
+        minZoom={
+          0.3
+        }
+        maxZoom={
+          2
+        }
+        deleteKeyCode={
+          onEdgeDelete
+            ? [
+                "Backspace",
+                "Delete",
+              ]
+            : null
+        }
       >
-        <Background
-          variant={
-            BackgroundVariant.Dots
-          }
-          gap={18}
-          size={1}
-        />
-
         <Controls />
 
         <MiniMap
@@ -279,4 +375,88 @@ export function WorkflowCanvas({
       </ReactFlow>
     </section>
   );
+}
+
+function formatConditionLabel(
+  condition: WorkflowCondition,
+) {
+  const value =
+    formatConditionValue(
+      condition.value,
+    );
+
+  return `${condition.field} ${formatConditionOperator(
+    condition.operator,
+  )} ${value}`;
+}
+
+function formatConditionOperator(
+  operator:
+    WorkflowCondition["operator"],
+) {
+  switch (
+    operator
+  ) {
+    case "equals":
+      return "=";
+
+    case "not_equals":
+      return "≠";
+
+    case "contains":
+      return "contains";
+
+    case "gt":
+      return ">";
+
+    case "gte":
+      return "≥";
+
+    case "lt":
+      return "<";
+
+    case "lte":
+      return "≤";
+  }
+}
+
+function formatConditionValue(
+  value: unknown,
+) {
+  if (
+    typeof value ===
+    "string"
+  ) {
+    return value;
+  }
+
+  if (
+    typeof value ===
+      "number" ||
+    typeof value ===
+      "boolean"
+  ) {
+    return String(
+      value,
+    );
+  }
+
+  if (
+    value ===
+      null ||
+    value ===
+      undefined
+  ) {
+    return "-";
+  }
+
+  try {
+    return JSON.stringify(
+      value,
+    );
+  } catch {
+    return String(
+      value,
+    );
+  }
 }

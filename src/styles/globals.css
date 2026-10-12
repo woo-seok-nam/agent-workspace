@@ -8,11 +8,18 @@ html,
 body,
 #root {
   margin: 0;
+
   width: 100%;
   min-height: 100%;
 }
 
+html {
+  background: var(--color-bg);
+}
+
 body {
+  min-width: 320px;
+
   font-family:
     Inter,
     Pretendard,
@@ -23,6 +30,9 @@ body {
 
   background: var(--color-bg);
   color: var(--color-text-primary);
+
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 button,
@@ -32,23 +42,50 @@ select {
   font: inherit;
 }
 
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  color: inherit;
+}
+
 a {
   color: inherit;
   text-decoration: none;
 }
 
+::selection {
+  background: rgba(37, 99, 235, 0.16);
+}
+
+/* =========================================================
+   Application Layout
+   ========================================================= */
+
 .app-layout {
   min-height: 100vh;
+
+  background: var(--color-bg);
 }
 
 .app-main {
   min-height: 100vh;
+
   margin-left: var(--sidebar-width);
-  padding: 32px;
+
+  padding: 28px 32px 36px;
 }
+
+/* =========================================================
+   Sidebar
+   ========================================================= */
 
 .app-sidebar {
   position: fixed;
+  z-index: 30;
+
   inset: 0 auto 0 0;
 
   display: flex;
@@ -57,100 +94,259 @@ a {
   width: var(--sidebar-width);
   height: 100vh;
 
-  padding: 16px 12px;
+  padding: 14px 10px;
+
+  border-right: 1px solid var(--color-border);
 
   background: var(--color-sidebar-bg);
-  border-right: 1px solid var(--color-border);
 }
+
+/* =========================================================
+   Sidebar Logo
+   ========================================================= */
 
 .app-sidebar__logo {
   display: flex;
   align-items: center;
-  gap: 10px;
 
-  height: 48px;
-  padding: 0 10px;
+  gap: 9px;
 
-  font-size: 14px;
+  min-height: 48px;
+
+  padding: 0 9px;
+
+  color: var(--color-text-primary);
+
+  font-size: 13px;
   font-weight: 700;
+  letter-spacing: -0.2px;
 }
 
 .app-sidebar__logo-icon {
   display: grid;
   place-items: center;
 
-  width: 28px;
-  height: 28px;
+  flex-shrink: 0;
+
+  width: 30px;
+  height: 30px;
 
   border-radius: 8px;
+
   background: var(--color-primary);
-  color: white;
+  color: #ffffff;
+
+  box-shadow:
+    0 4px 12px rgba(37, 99, 235, 0.18);
 }
+
+/* =========================================================
+   Sidebar Navigation
+   ========================================================= */
 
 .app-sidebar__nav {
   display: flex;
   flex-direction: column;
-  gap: 4px;
 
-  margin-top: 18px;
+  gap: 3px;
+
+  margin-top: 17px;
 }
 
 .app-sidebar__item {
+  position: relative;
+
   display: flex;
   align-items: center;
-  gap: 10px;
 
-  height: 40px;
-  padding: 0 12px;
+  gap: 9px;
 
-  border-radius: 8px;
+  min-height: 38px;
+
+  padding: 0 10px;
+
+  border: 1px solid transparent;
+  border-radius: 7px;
 
   color: var(--color-text-secondary);
 
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
+
+  transition:
+    background 0.14s ease,
+    border-color 0.14s ease,
+    color 0.14s ease,
+    transform 0.14s ease;
+}
+
+.app-sidebar__item svg {
+  flex-shrink: 0;
 }
 
 .app-sidebar__item:hover {
-  background: #f3f6fa;
+  border-color: #edf0f4;
+
+  background: #f6f8fb;
+
+  color: var(--color-text-primary);
+
+  transform: translateX(1px);
+}
+
+.app-sidebar__item:focus-visible {
+  outline: 2px solid rgba(37, 99, 235, 0.22);
+  outline-offset: 2px;
 }
 
 .app-sidebar__item--active {
+  border-color: #dbe7ff;
+
   background: var(--color-sidebar-active);
+
   color: var(--color-primary);
+
+  font-weight: 650;
 }
+
+.app-sidebar__item--active::before {
+  position: absolute;
+
+  top: 50%;
+  left: -10px;
+
+  width: 3px;
+  height: 20px;
+
+  border-radius: 0 4px 4px 0;
+
+  background: var(--color-primary);
+
+  content: "";
+
+  transform: translateY(-50%);
+}
+
+/* =========================================================
+   Sidebar User
+   ========================================================= */
 
 .app-sidebar__user {
   display: flex;
   align-items: center;
-  gap: 10px;
+
+  gap: 9px;
 
   margin-top: auto;
-  padding: 12px 10px;
+
+  padding: 11px 9px;
+
+  border-top: 1px solid var(--color-border);
+
+  color: var(--color-text-primary);
 }
 
 .app-sidebar__avatar {
   display: grid;
   place-items: center;
 
-  width: 34px;
-  height: 34px;
+  flex-shrink: 0;
+
+  width: 32px;
+  height: 32px;
 
   border-radius: 50%;
 
-  background: var(--color-primary);
-  color: white;
+  background: #eef4ff;
 
-  font-size: 12px;
+  color: var(--color-primary);
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.app-sidebar__user > div:last-child {
+  min-width: 0;
 }
 
 .app-sidebar__user strong {
-  font-size: 13px;
+  display: block;
+
+  overflow: hidden;
+
+  color: var(--color-text-primary);
+
+  font-size: 11px;
+  font-weight: 650;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .app-sidebar__user p {
   margin: 2px 0 0;
 
+  overflow: hidden;
+
   color: var(--color-text-secondary);
-  font-size: 11px;
+
+  font-size: 9px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* =========================================================
+   Common Scrollbar
+   ========================================================= */
+
+* {
+  scrollbar-width: thin;
+
+  scrollbar-color:
+    #cbd5e1
+    transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+
+  background: #cbd5e1;
+
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+
+  background-clip: padding-box;
+}
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media (max-width: 900px) {
+  .app-main {
+    padding: 24px;
+  }
+}
+
+@media (max-width: 720px) {
+  .app-main {
+    padding:
+      22px
+      18px
+      28px;
+  }
 }

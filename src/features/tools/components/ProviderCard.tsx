@@ -27,22 +27,29 @@ export function ProviderCard({
 }: ProviderCardProps) {
   const providerModels =
     getModels().filter(
-      (model) =>
+      (
+        model,
+      ) =>
         model.provider ===
         provider.id,
     );
 
   const isLocal =
-    provider.id === "local";
+    provider.id ===
+    "local";
 
   return (
     <article className="provider-card">
       <div className="provider-card__top">
         <div className="provider-card__icon">
           {isLocal ? (
-            <Server size={18} />
+            <Server
+              size={18}
+            />
           ) : (
-            <Cpu size={18} />
+            <Cpu
+              size={18}
+            />
           )}
         </div>
 
@@ -64,17 +71,29 @@ export function ProviderCard({
           </p>
         </div>
 
-        <label className="provider-toggle">
+        <label
+          className="provider-toggle"
+          title={
+            provider.enabled
+              ? "Provider 비활성화"
+              : "Provider 활성화"
+          }
+        >
           <input
             type="checkbox"
             checked={
               provider.enabled
             }
-            onChange={() =>
+            aria-label={`${provider.name} ${
+              provider.enabled
+                ? "비활성화"
+                : "활성화"
+            }`}
+            onChange={() => {
               onToggle(
                 provider.id,
-              )
-            }
+              );
+            }}
           />
 
           <span />
@@ -90,7 +109,9 @@ export function ProviderCard({
         0 ? (
           <div>
             {providerModels.map(
-              (model) => (
+              (
+                model,
+              ) => (
                 <span
                   key={
                     model.id
@@ -110,8 +131,8 @@ export function ProviderCard({
       </div>
 
       <div className="provider-card__notice">
-        실제 API 인증 정보는
-        Backend에서 관리합니다.
+        API Key 및 인증 정보는 Backend 환경에서
+        관리합니다.
       </div>
     </article>
   );
@@ -124,26 +145,30 @@ function ProviderStatus({
     ProviderConfig["connectionStatus"];
 }) {
   if (
-    status === "connected"
+    status ===
+    "connected"
   ) {
     return (
       <span className="provider-status provider-status--connected">
         <CheckCircle2
           size={10}
         />
+
         Connected
       </span>
     );
   }
 
   if (
-    status === "error"
+    status ===
+    "error"
   ) {
     return (
       <span className="provider-status provider-status--error">
         <CircleOff
           size={10}
         />
+
         Error
       </span>
     );
@@ -151,7 +176,10 @@ function ProviderStatus({
 
   return (
     <span className="provider-status provider-status--not-configured">
-      <CircleOff size={10} />
+      <CircleOff
+        size={10}
+      />
+
       Not configured
     </span>
   );

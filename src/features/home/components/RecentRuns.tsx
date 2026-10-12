@@ -3,7 +3,7 @@ import {
 } from "lucide-react";
 
 import {
-  useNavigate,
+  Link,
 } from "react-router-dom";
 
 import type {
@@ -17,9 +17,6 @@ interface RecentRunsProps {
 export function RecentRuns({
   runs,
 }: RecentRunsProps) {
-  const navigate =
-    useNavigate();
-
   const recentRuns =
     runs.slice(
       0,
@@ -35,31 +32,34 @@ export function RecentRuns({
           </h2>
 
           <p>
-            최근 실행한 Workflow를
-            확인합니다.
+            최근 실행한 Workflow의 상태와
+            사용량을 확인할 수 있습니다.
           </p>
         </div>
 
-        <button
-          type="button"
+        <Link
+          to="/runs"
           className="home-section__link"
-          onClick={() => {
-            navigate(
-              "/runs",
-            );
-          }}
         >
           전체 보기
-        </button>
+        </Link>
       </div>
 
-      {recentRuns.length === 0 ? (
+      {recentRuns.length ===
+      0 ? (
         <div className="home-empty-state">
-          아직 실행 기록이 없습니다.
+          <strong>
+            아직 실행 기록이 없습니다.
+          </strong>
+
+          <p>
+            Workflow를 실행하면 최근 실행 결과가
+            여기에 표시됩니다.
+          </p>
         </div>
       ) : (
-        <div className="recent-runs-table-wrapper">
-          <table className="recent-runs-table">
+        <div className="recent-runs">
+          <table className="recent-runs__table">
             <thead>
               <tr>
                 <th>
@@ -78,13 +78,17 @@ export function RecentRuns({
                   Cost
                 </th>
 
-                <th />
+                <th>
+                  Action
+                </th>
               </tr>
             </thead>
 
             <tbody>
               {recentRuns.map(
-                (run) => (
+                (
+                  run,
+                ) => (
                   <tr
                     key={
                       run.id
@@ -93,15 +97,17 @@ export function RecentRuns({
                     <td>
                       <div className="recent-run-name">
                         <strong>
-                          {
-                            run.name
-                          }
+                          {run.name}
                         </strong>
 
-                        <span>
-                          {
+                        <span
+                          title={
                             run.id
                           }
+                        >
+                          {shortenId(
+                            run.id,
+                          )}
                         </span>
                       </div>
                     </td>
@@ -109,17 +115,15 @@ export function RecentRuns({
                     <td>
                       <span
                         className={[
-                          "recent-run-status",
-                          `recent-run-status--${run.status.toLowerCase()}`,
+                          "run-status",
+                          `run-status--${run.status.toLowerCase()}`,
                         ].join(
                           " ",
                         )}
                       >
-                        {
-                          getStatusLabel(
-                            run.status,
-                          )
-                        }
+                        {getStatusLabel(
+                          run.status,
+                        )}
                       </span>
                     </td>
 
@@ -128,27 +132,22 @@ export function RecentRuns({
                     </td>
 
                     <td>
-                      $
-                      {run.cost.toFixed(
-                        2,
+                      {formatCost(
+                        run.cost,
                       )}
                     </td>
 
                     <td>
-                      <button
-                        type="button"
-                        className="recent-run-action"
+                      <Link
+                        to={`/runs/${run.id}`}
+                        className="table-action"
                         aria-label={`${run.name} 실행 상세 보기`}
-                        onClick={() => {
-                          navigate(
-                            `/runs/${run.id}`,
-                          );
-                        }}
                       >
+                        상세
                         <ArrowUpRight
-                          size={14}
+                          size={12}
                         />
-                      </button>
+                      </Link>
                     </td>
                   </tr>
                 ),
@@ -164,7 +163,9 @@ export function RecentRuns({
 function getStatusLabel(
   status: WorkflowRun["status"],
 ) {
-  switch (status) {
+  switch (
+    status
+  ) {
     case "IDLE":
       return "대기";
 
@@ -189,4 +190,46 @@ function getStatusLabel(
     case "CANCELLED":
       return "취소됨";
   }
+}
+
+function shortenId(
+  id: string,
+) {
+  if (
+    id.length <=
+    16
+  ) {
+    return id;
+  }
+
+  return `${id.slice(
+    0,
+    8,
+  )}...${id.slice(
+    -5,
+  )}`;
+}
+
+function formatCost(
+  cost: number,
+) {
+  if (
+    cost ===
+    0
+  ) {
+    return "$0.00";
+  }
+
+  if (
+    cost <
+    0.01
+  ) {
+    return `$${cost.toFixed(
+      4,
+    )}`;
+  }
+
+  return `$${cost.toFixed(
+    2,
+  )}`;
 }

@@ -5,6 +5,12 @@ import {
 } from "react";
 
 import {
+  Pause,
+  Play,
+  Square,
+} from "lucide-react";
+
+import {
   useParams,
 } from "react-router-dom";
 
@@ -124,11 +130,6 @@ export function WorkflowRuntimePage() {
       false,
     );
 
-  /*
-   * STEP 44
-   *
-   * Pause / Resume / Cancel 중복 요청 방지용 상태.
-   */
   const [
     runtimeControlAction,
     setRuntimeControlAction,
@@ -253,14 +254,11 @@ export function WorkflowRuntimePage() {
   );
 
   /*
-   * Run 상태 polling.
+   * Run 상태 polling
    *
-   * COMPLETED / FAILED / CANCELLED는
-   * 더 이상 변하지 않는 terminal status이므로
-   * polling을 중단한다.
-   *
-   * PAUSED는 Resume될 가능성이 있으므로
-   * polling을 계속 유지한다.
+   * terminal 상태에서는 polling 중단.
+   * PAUSED / WAITING_APPROVAL 상태는
+   * 이후 상태가 바뀔 수 있으므로 계속 확인한다.
    */
   useEffect(
     () => {
@@ -305,8 +303,7 @@ export function WorkflowRuntimePage() {
                 () => {
                   /*
                    * 일시적인 polling 실패는
-                   * 전체 Runtime 화면 오류로
-                   * 전환하지 않는다.
+                   * Runtime 전체 오류로 처리하지 않는다.
                    */
                 },
               );
@@ -430,12 +427,6 @@ export function WorkflowRuntimePage() {
     ],
   );
 
-  /*
-   * STEP 44
-   *
-   * RUNNING
-   * → PAUSED
-   */
   const handlePause =
     async () => {
       if (
@@ -480,13 +471,6 @@ export function WorkflowRuntimePage() {
       }
     };
 
-  /*
-   * STEP 44
-   *
-   * PAUSED
-   * → RUNNING
-   * → Backend Orchestrator 재실행
-   */
   const handleResume =
     async () => {
       if (
@@ -531,14 +515,6 @@ export function WorkflowRuntimePage() {
       }
     };
 
-  /*
-   * STEP 44
-   *
-   * 실행 중인 Run을 최종 취소한다.
-   *
-   * Cancel은 되돌릴 수 없으므로
-   * 사용자 확인을 한 번 받는다.
-   */
   const handleCancel =
     async () => {
       if (
@@ -586,9 +562,6 @@ export function WorkflowRuntimePage() {
           null,
         );
 
-        /*
-         * 승인 Modal이 열려 있다면 닫는다.
-         */
         setApprovalOpen(
           false,
         );
@@ -610,10 +583,6 @@ export function WorkflowRuntimePage() {
             : "Workflow 취소에 실패했습니다.",
         );
 
-        /*
-         * 승인 대기 상태에서 Cancel이 실패했다면
-         * Approval Modal을 다시 보여준다.
-         */
         if (
           run.status ===
           "WAITING_APPROVAL"
@@ -741,7 +710,9 @@ export function WorkflowRuntimePage() {
   ) {
     return (
       <div className="workflow-runtime-page">
-        Runtime 정보를 불러오는 중입니다...
+        <div className="execution-trace__loading">
+          Runtime 정보를 불러오는 중입니다...
+        </div>
       </div>
     );
   }
@@ -751,13 +722,30 @@ export function WorkflowRuntimePage() {
   ) {
     return (
       <div className="workflow-runtime-page">
-        <h1>
-          Workflow Runtime
-        </h1>
+        <header className="run-header">
+          <div>
+            <div className="run-header__breadcrumb">
+              Runtime
+            </div>
 
-        <p>
+            <div className="run-header__title">
+              <h1>
+                Workflow Runtime
+              </h1>
+            </div>
+
+            <p>
+              실행 정보를 불러오는 과정에서 문제가 발생했습니다.
+            </p>
+          </div>
+        </header>
+
+        <div
+          className="runtime-control-error"
+          role="alert"
+        >
           {error}
-        </p>
+        </div>
       </div>
     );
   }
@@ -768,7 +756,9 @@ export function WorkflowRuntimePage() {
   ) {
     return (
       <div className="workflow-runtime-page">
-        Runtime 정보를 찾을 수 없습니다.
+        <div className="execution-trace__empty">
+          Runtime 정보를 찾을 수 없습니다.
+        </div>
       </div>
     );
   }
@@ -808,6 +798,11 @@ export function WorkflowRuntimePage() {
     run.status ===
       "WAITING_APPROVAL";
 
+  const showRuntimeControls =
+    canPause ||
+    canResume ||
+    canCancel;
+
   return (
     <div className="workflow-runtime-page">
       <RunHeader
@@ -822,37 +817,15 @@ export function WorkflowRuntimePage() {
         }
       />
 
-      {/*
-       * STEP 44
-       *
-       * 기능 구현 우선이므로 기존 CSS 구조를
-       * 크게 변경하지 않고 Runtime 제어 영역을 추가한다.
-       */}
-      {(canPause ||
-        canResume ||
-        canCancel) && (
+      {showRuntimeControls && (
         <section
+          className="runtime-controls"
           aria-label="Workflow runtime controls"
-          style={{
-            display:
-              "flex",
-
-            alignItems:
-              "center",
-
-            flexWrap:
-              "wrap",
-
-            gap:
-              "8px",
-
-            marginBottom:
-              "16px",
-          }}
         >
           {canPause && (
             <button
               type="button"
+              className="runtime-button"
               disabled={
                 runtimeControlProcessing ||
                 approvalProcessing
@@ -861,6 +834,10 @@ export function WorkflowRuntimePage() {
                 void handlePause();
               }}
             >
+              <Pause
+                size={14}
+              />
+
               {runtimeControlAction ===
               "pause"
                 ? "일시정지 중..."
@@ -871,6 +848,7 @@ export function WorkflowRuntimePage() {
           {canResume && (
             <button
               type="button"
+              className="runtime-button runtime-button--primary"
               disabled={
                 runtimeControlProcessing ||
                 approvalProcessing
@@ -879,6 +857,10 @@ export function WorkflowRuntimePage() {
                 void handleResume();
               }}
             >
+              <Play
+                size={14}
+              />
+
               {runtimeControlAction ===
               "resume"
                 ? "재개 중..."
@@ -889,6 +871,7 @@ export function WorkflowRuntimePage() {
           {canCancel && (
             <button
               type="button"
+              className="runtime-button--danger"
               disabled={
                 runtimeControlProcessing ||
                 approvalProcessing
@@ -897,6 +880,10 @@ export function WorkflowRuntimePage() {
                 void handleCancel();
               }}
             >
+              <Square
+                size={13}
+              />
+
               {runtimeControlAction ===
               "cancel"
                 ? "취소 중..."
@@ -906,8 +893,16 @@ export function WorkflowRuntimePage() {
 
           {run.status ===
             "PAUSED" && (
-            <span>
+            <span className="runtime-controls__message">
               Workflow가 일시정지되어 있습니다.
+              실행 재개를 누르면 중단 지점부터 계속됩니다.
+            </span>
+          )}
+
+          {run.status ===
+            "WAITING_APPROVAL" && (
+            <span className="runtime-controls__message">
+              사용자 승인이 필요한 Step에서 실행이 대기 중입니다.
             </span>
           )}
         </section>
@@ -915,11 +910,8 @@ export function WorkflowRuntimePage() {
 
       {runtimeControlError && (
         <div
+          className="runtime-control-error"
           role="alert"
-          style={{
-            marginBottom:
-              "16px",
-          }}
         >
           {runtimeControlError}
         </div>
@@ -961,12 +953,6 @@ export function WorkflowRuntimePage() {
         />
       </div>
 
-      {/*
-       * STEP 50
-       *
-       * Backend Observability API에서 계산한
-       * Execution Trace를 별도 패널로 표시한다.
-       */}
       <ExecutionTracePanel
         runId={
           run.id

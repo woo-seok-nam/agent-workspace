@@ -3,7 +3,7 @@ import {
   FileOutput,
   GitBranch,
   Hand,
-  PackageOpen,
+  Inbox,
   Wrench,
 } from "lucide-react";
 
@@ -13,18 +13,16 @@ import {
   type NodeProps,
 } from "@xyflow/react";
 
+import type {
+  WorkflowNodeType,
+} from "../types";
+
 interface WorkflowNodeData {
   label: string;
 
   description?: string;
 
-  type:
-    | "input"
-    | "agent"
-    | "tool"
-    | "condition"
-    | "approval"
-    | "output";
+  type: WorkflowNodeType;
 }
 
 function getNodeIcon(
@@ -32,7 +30,7 @@ function getNodeIcon(
 ) {
   switch (type) {
     case "input":
-      return PackageOpen;
+      return Inbox;
 
     case "agent":
       return Bot;
@@ -48,9 +46,6 @@ function getNodeIcon(
 
     case "output":
       return FileOutput;
-
-    default:
-      return Bot;
   }
 }
 
@@ -62,7 +57,9 @@ export function CustomWorkflowNode({
     data as unknown as WorkflowNodeData;
 
   const Icon =
-    getNodeIcon(nodeData.type);
+    getNodeIcon(
+      nodeData.type,
+    );
 
   return (
     <div
@@ -73,20 +70,29 @@ export function CustomWorkflowNode({
           ? "custom-workflow-node--selected"
           : "",
       ]
-        .filter(Boolean)
-        .join(" ")}
+        .filter(
+          Boolean,
+        )
+        .join(
+          " ",
+        )}
     >
-      {nodeData.type !== "input" && (
+      {nodeData.type !==
+        "input" && (
         <Handle
           id="target-top"
           type="target"
-          position={Position.Top}
+          position={
+            Position.Top
+          }
           className="custom-node-handle"
         />
       )}
 
       <div className="custom-workflow-node__icon">
-        <Icon size={15} />
+        <Icon
+          size={15}
+        />
       </div>
 
       <div className="custom-workflow-node__content">
@@ -100,13 +106,30 @@ export function CustomWorkflowNode({
               nodeData.type,
             )}
         </span>
+
+        {nodeData.type ===
+          "condition" && (
+          <span className="condition-branch-badge">
+            Conditional Branch
+          </span>
+        )}
+
+        {nodeData.type ===
+          "approval" && (
+          <span className="approval-node-badge">
+            Human Review
+          </span>
+        )}
       </div>
 
-      {nodeData.type !== "output" && (
+      {nodeData.type !==
+        "output" && (
         <Handle
           id="source-bottom"
           type="source"
-          position={Position.Bottom}
+          position={
+            Position.Bottom
+          }
           className="custom-node-handle"
         />
       )}
@@ -119,21 +142,21 @@ function getDefaultDescription(
 ) {
   switch (type) {
     case "input":
-      return "사용자 입력";
+      return "Workflow 입력";
 
     case "agent":
-      return "Agent 작업";
+      return "AI Agent 작업";
 
     case "tool":
       return "Tool 실행";
 
     case "condition":
-      return "조건 분기";
+      return "State 기반 조건 분기";
 
     case "approval":
-      return "사용자 승인";
+      return "사용자 승인 대기";
 
     case "output":
-      return "결과 출력";
+      return "최종 결과 출력";
   }
 }

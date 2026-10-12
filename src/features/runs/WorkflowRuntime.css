@@ -3,11 +3,12 @@
   max-width: 1180px;
 
   margin: 0 auto;
+  padding-bottom: 48px;
 }
 
-/* =========================
+/* =========================================================
    Header
-========================= */
+   ========================================================= */
 
 .run-header {
   display: flex;
@@ -23,6 +24,7 @@
   color: var(--color-text-secondary);
 
   font-size: 10px;
+  font-weight: 600;
 }
 
 .run-header__title {
@@ -36,9 +38,11 @@
 .run-header__title h1 {
   margin: 0;
 
-  font-size: 24px;
+  color: var(--color-text-primary);
 
-  letter-spacing: -0.5px;
+  font-size: 26px;
+  font-weight: 750;
+  letter-spacing: -0.6px;
 }
 
 .run-header p {
@@ -47,6 +51,7 @@
   color: var(--color-text-secondary);
 
   font-size: 12px;
+  line-height: 1.55;
 }
 
 .run-header__actions {
@@ -55,16 +60,22 @@
   gap: 8px;
 }
 
+/* =========================================================
+   Runtime status
+   ========================================================= */
+
 .runtime-status {
   display: inline-flex;
   align-items: center;
+  gap: 5px;
 
-  padding: 4px 8px;
+  padding: 5px 9px;
 
   border-radius: 999px;
 
   font-size: 10px;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .runtime-status--running {
@@ -99,9 +110,75 @@
   color: #64748b;
 }
 
+/* =========================================================
+   Shared runtime buttons
+   ========================================================= */
+
+.runtime-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  min-width: 76px;
+  height: 36px;
+
+  padding: 0 13px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+
+  background: #ffffff;
+  color: var(--color-text-primary);
+
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 650;
+
+  cursor: pointer;
+
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 100ms ease,
+    opacity 140ms ease;
+}
+
+.runtime-button:hover:not(:disabled) {
+  border-color: #cbd5e1;
+
+  background: #f8fafc;
+}
+
+.runtime-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.runtime-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.runtime-button--primary {
+  border-color: var(--color-primary);
+
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
+.runtime-button--primary:hover:not(:disabled) {
+  filter: brightness(0.96);
+
+  box-shadow:
+    0 4px 12px rgba(37, 99, 235, 0.14);
+}
+
+.runtime-button--danger,
 .danger-outline-button {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
 
   height: 36px;
@@ -115,18 +192,78 @@
 
   color: #dc2626;
 
+  font-family: inherit;
   font-size: 11px;
+  font-weight: 650;
 
   cursor: pointer;
+
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    opacity 140ms ease;
 }
 
+.runtime-button--danger:hover:not(:disabled),
 .danger-outline-button:hover {
   background: #fff7f7;
 }
 
-/* =========================
+.runtime-button--danger:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* =========================================================
+   Runtime controls
+   STEP 44
+   ========================================================= */
+
+.runtime-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 8px;
+
+  margin-bottom: 16px;
+  padding: 11px 12px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+
+  background: #ffffff;
+}
+
+.runtime-controls__message {
+  display: inline-flex;
+  align-items: center;
+
+  margin-left: 4px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 11px;
+}
+
+.runtime-control-error {
+  margin-bottom: 16px;
+  padding: 11px 13px;
+
+  border: 1px solid #fecaca;
+  border-radius: 9px;
+
+  background: #fff7f7;
+
+  color: #b91c1c;
+
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+/* =========================================================
    Progress
-========================= */
+   ========================================================= */
 
 .run-progress {
   margin-bottom: 18px;
@@ -137,6 +274,9 @@
   border-radius: 11px;
 
   background: #ffffff;
+
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.02);
 }
 
 .run-progress__header {
@@ -153,6 +293,8 @@
 }
 
 .run-progress__header strong {
+  color: var(--color-text-primary);
+
   font-size: 11px;
 }
 
@@ -179,7 +321,7 @@
 }
 
 .run-progress__footer {
-  margin-top: 6px;
+  margin-top: 7px;
 
   color: var(--color-text-secondary);
 
@@ -187,29 +329,32 @@
   text-align: right;
 }
 
-/* =========================
+/* =========================================================
    Runtime Layout
-========================= */
+   ========================================================= */
 
 .runtime-layout {
   display: grid;
 
   grid-template-columns:
-    250px minmax(0, 1fr);
+    260px minmax(0, 1fr);
 
   min-height: 560px;
 
   overflow: hidden;
 
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: 13px;
 
   background: #ffffff;
+
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.025);
 }
 
-/* =========================
+/* =========================================================
    Timeline
-========================= */
+   ========================================================= */
 
 .execution-timeline {
   overflow-y: auto;
@@ -224,7 +369,7 @@
   display: flex;
   align-items: center;
 
-  height: 48px;
+  height: 50px;
 
   padding: 0 16px;
 
@@ -235,7 +380,10 @@
 .execution-timeline__header h2 {
   margin: 0;
 
+  color: var(--color-text-primary);
+
   font-size: 12px;
+  font-weight: 700;
 }
 
 .execution-timeline__list {
@@ -250,21 +398,30 @@
 
   width: 100%;
 
-  padding: 7px 8px;
+  padding: 8px;
 
   border: none;
   border-radius: 8px;
 
   background: transparent;
 
+  color: inherit;
+
+  font-family: inherit;
   text-align: left;
 
   cursor: pointer;
+
+  transition:
+    background 120ms ease;
 }
 
-.timeline-step:hover,
+.timeline-step:hover {
+  background: #f2f6fc;
+}
+
 .timeline-step--selected {
-  background: #eef4ff;
+  background: #eaf2ff;
 }
 
 .timeline-step__rail {
@@ -319,7 +476,7 @@
   top: 19px;
 
   width: 1px;
-  height: 36px;
+  height: 38px;
 
   background: #d8dee8;
 }
@@ -328,11 +485,21 @@
   display: flex;
   flex-direction: column;
 
+  min-width: 0;
+
   padding-left: 4px;
 }
 
 .timeline-step__content strong {
+  overflow: hidden;
+
+  color: var(--color-text-primary);
+
   font-size: 10px;
+  font-weight: 650;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .timeline-step__content span {
@@ -349,11 +516,13 @@
   color: var(--color-text-secondary);
 
   font-size: 8px;
+
+  white-space: nowrap;
 }
 
-/* =========================
+/* =========================================================
    Step Detail
-========================= */
+   ========================================================= */
 
 .step-execution-panel {
   overflow-y: auto;
@@ -394,7 +563,11 @@
 .step-runtime-header h2 {
   margin: 5px 0 0;
 
+  color: var(--color-text-primary);
+
   font-size: 18px;
+  font-weight: 720;
+  letter-spacing: -0.25px;
 }
 
 .step-runtime-header p {
@@ -403,6 +576,7 @@
   color: var(--color-text-secondary);
 
   font-size: 10px;
+  line-height: 1.55;
 }
 
 .step-runtime-status {
@@ -418,6 +592,8 @@
 
   font-size: 9px;
   font-weight: 700;
+
+  white-space: nowrap;
 }
 
 .step-runtime-status--running {
@@ -430,7 +606,8 @@
   color: #15803d;
 }
 
-.step-runtime-status--failed {
+.step-runtime-status--failed,
+.step-runtime-status--cancelled {
   background: #fff0f0;
   color: #dc2626;
 }
@@ -440,9 +617,9 @@
   color: #b45309;
 }
 
-/* =========================
+/* =========================================================
    Runtime Cards
-========================= */
+   ========================================================= */
 
 .runtime-info-grid {
   display: grid;
@@ -504,15 +681,17 @@
 
   margin-top: 2px;
 
+  color: var(--color-text-primary);
+
   font-size: 9px;
 
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* =========================
+/* =========================================================
    Runtime Sections
-========================= */
+   ========================================================= */
 
 .runtime-section {
   margin-top: 22px;
@@ -525,7 +704,10 @@
 
   margin: 0 0 10px;
 
+  color: var(--color-text-primary);
+
   font-size: 11px;
+  font-weight: 700;
 }
 
 .runtime-tools {
@@ -537,9 +719,10 @@
 .runtime-tools span {
   padding: 5px 8px;
 
+  border: 1px solid #e7ebf0;
   border-radius: 6px;
 
-  background: #f1f5f9;
+  background: #f6f8fa;
 
   color: #475569;
 
@@ -552,9 +735,9 @@
   font-size: 9px;
 }
 
-/* =========================
+/* =========================================================
    Logs
-========================= */
+   ========================================================= */
 
 .execution-log {
   overflow: hidden;
@@ -586,6 +769,7 @@
   color: #cbd5e1;
 
   font-size: 9px;
+  line-height: 1.5;
 }
 
 .execution-log__row:last-child {
@@ -610,13 +794,579 @@
   color: #64748b;
 
   font-size: 9px;
-
   text-align: center;
 }
 
-/* =========================
+/* =========================================================
+   Execution Trace
+   STEP 50
+   ========================================================= */
+
+.execution-trace {
+  display: grid;
+  gap: 16px;
+
+  margin-top: 24px;
+}
+
+.execution-trace__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.execution-trace__header h2 {
+  margin: 0;
+
+  color: var(--color-text-primary);
+
+  font-size: 18px;
+  font-weight: 720;
+  letter-spacing: -0.3px;
+}
+
+.execution-trace__header p {
+  max-width: 720px;
+
+  margin: 6px 0 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.execution-trace__error {
+  padding: 10px 12px;
+
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+
+  background: #fff7f7;
+
+  color: #b91c1c;
+
+  font-size: 10px;
+}
+
+.execution-trace__summary {
+  display: grid;
+
+  grid-template-columns:
+    repeat(7, minmax(0, 1fr));
+
+  gap: 8px;
+}
+
+.execution-trace-summary-card {
+  min-width: 0;
+
+  padding: 12px;
+
+  border: 1px solid #e8edf3;
+  border-radius: 9px;
+
+  background: #ffffff;
+}
+
+.execution-trace-summary-card span {
+  display: block;
+
+  color: var(--color-text-secondary);
+
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.execution-trace-summary-card strong {
+  display: block;
+
+  overflow: hidden;
+
+  margin-top: 4px;
+
+  color: var(--color-text-primary);
+
+  font-size: 13px;
+  font-weight: 720;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.execution-trace__steps {
+  display: grid;
+  gap: 9px;
+}
+
+.execution-trace-step {
+  overflow: hidden;
+
+  border: 1px solid #e4e9ef;
+  border-radius: 11px;
+
+  background: #ffffff;
+
+  transition:
+    border-color 130ms ease,
+    box-shadow 130ms ease;
+}
+
+.execution-trace-step:hover {
+  border-color: #cbd5e1;
+
+  box-shadow:
+    0 3px 12px rgba(15, 23, 42, 0.035);
+}
+
+.execution-trace-step__toggle {
+  display: grid;
+
+  grid-template-columns:
+    minmax(180px, 1fr)
+    repeat(4, minmax(90px, auto));
+
+  align-items: center;
+  gap: 12px;
+
+  width: 100%;
+
+  padding: 14px 16px;
+
+  border: none;
+
+  background: #ffffff;
+  color: inherit;
+
+  font-family: inherit;
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.execution-trace-step__toggle:hover {
+  background: #fbfcfe;
+}
+
+.execution-trace-step__identity {
+  min-width: 0;
+}
+
+.execution-trace-step__identity strong {
+  display: block;
+
+  overflow: hidden;
+
+  color: var(--color-text-primary);
+
+  font-size: 11px;
+  font-weight: 700;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.execution-trace-step__identity span {
+  display: block;
+
+  margin-top: 3px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 9px;
+}
+
+.execution-trace-step__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: fit-content;
+
+  padding: 4px 7px;
+
+  border-radius: 999px;
+
+  background: #f1f5f9;
+
+  color: #475569;
+
+  font-size: 9px;
+  font-weight: 650;
+
+  white-space: nowrap;
+}
+
+.execution-trace-step__badge--completed,
+.execution-trace-step__badge--allow {
+  background: #ecfdf3;
+  color: #15803d;
+}
+
+.execution-trace-step__badge--running {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.execution-trace-step__badge--waiting,
+.execution-trace-step__badge--approval {
+  background: #fff7e6;
+  color: #b45309;
+}
+
+.execution-trace-step__badge--failed,
+.execution-trace-step__badge--deny {
+  background: #fff0f0;
+  color: #dc2626;
+}
+
+.execution-trace-step__meta {
+  color: var(--color-text-secondary);
+
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+.execution-trace-step__details {
+  display: grid;
+  gap: 18px;
+
+  padding: 16px;
+
+  border-top:
+    1px solid #edf0f4;
+
+  background: #fbfcfe;
+}
+
+.execution-trace-details-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(5, minmax(0, 1fr));
+
+  gap: 9px;
+}
+
+.execution-trace-detail {
+  min-width: 0;
+
+  padding: 10px;
+
+  border: 1px solid #e8edf3;
+  border-radius: 8px;
+
+  background: #ffffff;
+}
+
+.execution-trace-detail span {
+  display: block;
+
+  color: var(--color-text-secondary);
+
+  font-size: 8px;
+}
+
+.execution-trace-detail strong {
+  display: block;
+
+  overflow: hidden;
+
+  margin-top: 3px;
+
+  color: var(--color-text-primary);
+
+  font-size: 9px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.execution-trace-section > strong {
+  color: var(--color-text-primary);
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.execution-trace-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+
+  margin-top: 8px;
+}
+
+.execution-trace-tool {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 5px 8px;
+
+  border: 1px solid #e4e9ef;
+  border-radius: 6px;
+
+  background: #ffffff;
+
+  color: #475569;
+
+  font-size: 9px;
+}
+
+.execution-trace-tool--disabled {
+  opacity: 0.55;
+
+  text-decoration: line-through;
+}
+
+.execution-trace-logs {
+  display: grid;
+  gap: 6px;
+
+  margin-top: 8px;
+}
+
+.execution-trace-log {
+  display: grid;
+
+  grid-template-columns:
+    70px 145px minmax(0, 1fr);
+
+  gap: 8px;
+
+  padding: 8px 9px;
+
+  border: 1px solid #e8edf3;
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  font-size: 9px;
+}
+
+.execution-trace-log__level {
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.execution-trace-log__time {
+  color: var(--color-text-secondary);
+}
+
+.execution-trace-log__message {
+  color: #334155;
+
+  line-height: 1.5;
+}
+
+.execution-trace__loading,
+.execution-trace__empty {
+  padding: 18px;
+
+  border: 1px dashed var(--color-border);
+  border-radius: 10px;
+
+  background: #fafbfd;
+
+  color: var(--color-text-secondary);
+
+  font-size: 11px;
+  text-align: center;
+}
+
+/* =========================================================
+   Tool results
+   ========================================================= */
+
+.runtime-tool-results {
+  display: grid;
+  gap: 12px;
+}
+
+.runtime-tool-card {
+  overflow: hidden;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+
+  background: #ffffff;
+}
+
+.runtime-tool-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 16px;
+
+  padding: 14px 16px;
+
+  border-bottom: 1px solid #edf2f7;
+}
+
+.runtime-tool-card__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.runtime-tool-card__title strong {
+  display: block;
+
+  color: #0f172a;
+
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.runtime-tool-card__title span {
+  display: block;
+
+  margin-top: 2px;
+
+  color: #94a3b8;
+
+  font-size: 11px;
+}
+
+.runtime-tool-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 32px;
+  height: 32px;
+
+  border-radius: 9px;
+
+  background: #eff6ff;
+
+  color: #2563eb;
+}
+
+.runtime-tool-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  padding: 5px 8px;
+
+  border-radius: 999px;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.runtime-tool-status--success {
+  background: #ecfdf3;
+  color: #15803d;
+}
+
+.runtime-tool-status--failed {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.runtime-tool-card__section {
+  padding: 14px 16px;
+
+  border-bottom: 1px solid #edf2f7;
+}
+
+.runtime-tool-card__section:last-child {
+  border-bottom: 0;
+}
+
+.runtime-tool-card__label {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: #64748b;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.runtime-tool-card__section p {
+  margin: 0;
+
+  color: #334155;
+
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.runtime-tool-card__summary {
+  white-space: pre-wrap;
+}
+
+.runtime-tool-sources {
+  display: grid;
+  gap: 7px;
+}
+
+.runtime-tool-source {
+  display: flex;
+  align-items: center;
+
+  min-height: 36px;
+
+  gap: 9px;
+
+  padding: 7px 9px;
+
+  border-radius: 8px;
+
+  background: #f8fafc;
+
+  color: #334155;
+
+  text-decoration: none;
+}
+
+.runtime-tool-source > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+
+  border-radius: 6px;
+
+  background: #e2e8f0;
+
+  color: #475569;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.runtime-tool-source p {
+  flex: 1;
+
+  overflow: hidden;
+
+  margin: 0;
+
+  font-size: 12px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.runtime-tool-source--link:hover {
+  background: #eff6ff;
+
+  color: #2563eb;
+}
+
+/* =========================================================
    Approval Modal
-========================= */
+   ========================================================= */
 
 .approval-modal-backdrop {
   position: fixed;
@@ -657,6 +1407,7 @@
 
   display: flex;
   align-items: flex-start;
+
   gap: 12px;
 
   padding: 18px;
@@ -683,6 +1434,8 @@
 
 .approval-modal__header h2 {
   margin: 0;
+
+  color: var(--color-text-primary);
 
   font-size: 16px;
 }
@@ -743,7 +1496,6 @@
 
 .approval-summary {
   margin-top: 16px;
-
   padding: 12px;
 
   border: 1px solid #e8ecf2;
@@ -775,6 +1527,7 @@
 .approval-modal__actions {
   display: flex;
   justify-content: flex-end;
+
   gap: 8px;
 
   padding: 14px 18px;
@@ -789,6 +1542,7 @@
 .approval-approve-button {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
 
   height: 36px;
@@ -797,6 +1551,7 @@
 
   border-radius: 8px;
 
+  font-family: inherit;
   font-size: 10px;
   font-weight: 600;
 
@@ -823,6 +1578,10 @@
   background: var(--color-primary-hover);
 }
 
+/* =========================================================
+   Animation
+   ========================================================= */
+
 .runtime-spin {
   animation:
     runtime-spin 1s linear infinite;
@@ -834,9 +1593,21 @@
   }
 }
 
-/* =========================
+/* =========================================================
    Responsive
-========================= */
+   ========================================================= */
+
+@media (max-width: 1100px) {
+  .execution-trace__summary {
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr));
+  }
+
+  .execution-trace-details-grid {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+}
 
 @media (max-width: 1000px) {
   .runtime-info-grid {
@@ -846,162 +1617,133 @@
         minmax(0, 1fr)
       );
   }
+
+  .execution-trace-step__toggle {
+    grid-template-columns:
+      minmax(160px, 1fr)
+      repeat(2, minmax(90px, auto));
+  }
 }
 
 @media (max-width: 800px) {
+  .run-header {
+    flex-direction: column;
+  }
+
+  .run-header__actions {
+    width: 100%;
+  }
+
   .runtime-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns:
+      1fr;
   }
 
   .execution-timeline {
+    max-height: 320px;
+
     border-right: none;
 
     border-bottom:
       1px solid var(--color-border);
   }
+
+  .execution-trace__summary {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .execution-trace-details-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .execution-trace-step__toggle {
+    grid-template-columns:
+      minmax(0, 1fr) auto;
+  }
+
+  .execution-trace-step__toggle
+    > :nth-child(3),
+  .execution-trace-step__toggle
+    > :nth-child(4) {
+    display: none;
+  }
+
+  .execution-trace-log {
+    grid-template-columns:
+      70px minmax(0, 1fr);
+  }
+
+  .execution-trace-log__message {
+    grid-column:
+      1 / -1;
+  }
 }
 
-.runtime-tool-results {
-  display: grid;
-  gap: 12px;
-}
+@media (max-width: 560px) {
+  .workflow-runtime-page {
+    padding-bottom: 32px;
+  }
 
-.runtime-tool-card {
-  overflow: hidden;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  background: #ffffff;
-}
+  .run-header__title h1 {
+    font-size: 22px;
+  }
 
-.runtime-tool-card__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 14px 16px;
-  border-bottom: 1px solid #edf2f7;
-}
+  .runtime-controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
 
-.runtime-tool-card__title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+  .runtime-controls .runtime-button,
+  .runtime-controls
+    .runtime-button--danger {
+    width: 100%;
+  }
 
-.runtime-tool-card__title strong {
-  display: block;
-  color: #0f172a;
-  font-size: 14px;
-  font-weight: 700;
-}
+  .runtime-controls__message {
+    margin-left: 0;
+  }
 
-.runtime-tool-card__title span {
-  display: block;
-  margin-top: 2px;
-  color: #94a3b8;
-  font-size: 11px;
-}
+  .runtime-info-grid {
+    grid-template-columns:
+      1fr;
+  }
 
-.runtime-tool-card__icon {
-  display: flex;
-  width: 32px;
-  height: 32px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 9px;
-  background: #eff6ff;
-  color: #2563eb;
-}
+  .step-execution-panel {
+    padding: 16px;
+  }
 
-.runtime-tool-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 8px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 700;
-}
+  .step-runtime-header {
+    flex-direction: column;
+  }
 
-.runtime-tool-status--success {
-  background: #ecfdf3;
-  color: #15803d;
-}
+  .execution-trace__summary {
+    grid-template-columns:
+      1fr 1fr;
+  }
 
-.runtime-tool-status--failed {
-  background: #fef2f2;
-  color: #dc2626;
-}
+  .execution-trace-details-grid {
+    grid-template-columns:
+      1fr;
+  }
 
-.runtime-tool-card__section {
-  padding: 14px 16px;
-  border-bottom: 1px solid #edf2f7;
-}
+  .execution-trace-step__toggle {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
 
-.runtime-tool-card__section:last-child {
-  border-bottom: 0;
-}
+  .execution-trace-step__toggle
+    > :not(:first-child) {
+    display: none;
+  }
 
-.runtime-tool-card__label {
-  display: block;
-  margin-bottom: 7px;
-  color: #64748b;
-  font-size: 11px;
-  font-weight: 700;
-}
+  .approval-modal__actions {
+    flex-direction: column-reverse;
+  }
 
-.runtime-tool-card__section p {
-  margin: 0;
-  color: #334155;
-  font-size: 13px;
-  line-height: 1.6;
-}
-
-.runtime-tool-card__summary {
-  white-space: pre-wrap;
-}
-
-.runtime-tool-sources {
-  display: grid;
-  gap: 7px;
-}
-
-.runtime-tool-source {
-  display: flex;
-  min-height: 36px;
-  align-items: center;
-  gap: 9px;
-  padding: 7px 9px;
-  border-radius: 8px;
-  background: #f8fafc;
-  color: #334155;
-  text-decoration: none;
-}
-
-.runtime-tool-source > span {
-  display: flex;
-  width: 20px;
-  height: 20px;
-  flex: 0 0 20px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  background: #e2e8f0;
-  color: #475569;
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.runtime-tool-source p {
-  flex: 1;
-  overflow: hidden;
-  margin: 0;
-  font-size: 12px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.runtime-tool-source--link:hover {
-  background: #eff6ff;
-  color: #2563eb;
+  .approval-reject-button,
+  .approval-approve-button {
+    width: 100%;
+  }
 }

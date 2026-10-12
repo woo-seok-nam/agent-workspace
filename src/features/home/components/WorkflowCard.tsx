@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 
 import {
-  useNavigate,
+  Link,
 } from "react-router-dom";
 
 import type {
@@ -19,29 +19,34 @@ interface WorkflowCardProps {
 export function WorkflowCard({
   workflow,
 }: WorkflowCardProps) {
-  const navigate =
-    useNavigate();
-
   const agentCount =
     new Set(
       workflow.nodes
         .map(
-          (node) =>
+          (
+            node,
+          ) =>
             node.agentId,
         )
         .filter(
           (
             agentId,
           ): agentId is string =>
-            Boolean(agentId),
+            Boolean(
+              agentId,
+            ),
         ),
     ).size;
 
   return (
-    <article className="workflow-card">
+    <Link
+      to={`/workflows/${workflow.id}/builder`}
+      className="workflow-card"
+      aria-label={`${workflow.name} Workflow Builder 열기`}
+    >
       <div className="workflow-card__icon">
         <GitBranch
-          size={19}
+          size={18}
         />
       </div>
 
@@ -58,8 +63,9 @@ export function WorkflowCard({
         <div className="workflow-card__meta">
           <span>
             <GitBranch
-              size={11}
+              size={10}
             />
+
             {workflow.nodes.length}
             {" "}
             Steps
@@ -67,8 +73,9 @@ export function WorkflowCard({
 
           <span>
             <Bot
-              size={11}
+              size={10}
             />
+
             {agentCount}
             {" "}
             Agents
@@ -76,20 +83,14 @@ export function WorkflowCard({
         </div>
       </div>
 
-      <button
-        type="button"
+      <span
         className="workflow-card__action"
-        aria-label={`${workflow.name} Builder 열기`}
-        onClick={() => {
-          navigate(
-            `/workflows/${workflow.id}/builder`,
-          );
-        }}
+        aria-hidden="true"
       >
         <ArrowRight
-          size={15}
+          size={16}
         />
-      </button>
-    </article>
+      </span>
+    </Link>
   );
 }

@@ -17,6 +17,8 @@ import {
 interface StepSettingsPanelProps {
   node?: WorkflowNode;
 
+  nodes: WorkflowNode[];
+
   edges: WorkflowEdge[];
 
   onNodeChange: (
@@ -42,51 +44,38 @@ const CONDITION_OPERATORS: Array<{
   label: string;
 }> = [
   {
-    value:
-      "equals",
-    label:
-      "= Equals",
+    value: "equals",
+    label: "= Equals",
   },
   {
-    value:
-      "not_equals",
-    label:
-      "≠ Not Equals",
+    value: "not_equals",
+    label: "≠ Not Equals",
   },
   {
-    value:
-      "contains",
-    label:
-      "Contains",
+    value: "contains",
+    label: "Contains",
   },
   {
-    value:
-      "gt",
-    label:
-      "> Greater Than",
+    value: "gt",
+    label: "> Greater Than",
   },
   {
-    value:
-      "gte",
-    label:
-      "≥ Greater Than or Equal",
+    value: "gte",
+    label: "≥ Greater Than or Equal",
   },
   {
-    value:
-      "lt",
-    label:
-      "< Less Than",
+    value: "lt",
+    label: "< Less Than",
   },
   {
-    value:
-      "lte",
-    label:
-      "≤ Less Than or Equal",
+    value: "lte",
+    label: "≤ Less Than or Equal",
   },
 ];
 
 export function StepSettingsPanel({
   node,
+  nodes,
   edges,
   onNodeChange,
   onEdgeChange,
@@ -102,7 +91,7 @@ export function StepSettingsPanel({
         </div>
 
         <div className="step-settings__empty">
-          설정할 Node를 선택하세요.
+          Canvas에서 설정할 Node를 선택하세요.
         </div>
       </aside>
     );
@@ -243,10 +232,6 @@ export function StepSettingsPanel({
     if (
       fallback
     ) {
-      /*
-       * condition이 undefined인 Edge를
-       * Backend에서 fallback/default branch로 본다.
-       */
       onEdgeChange(
         edge.id,
         {
@@ -258,10 +243,6 @@ export function StepSettingsPanel({
       return;
     }
 
-    /*
-     * Default Branch를 해제하면
-     * 기본 condition을 생성한다.
-     */
     onEdgeChange(
       edge.id,
       {
@@ -279,6 +260,22 @@ export function StepSettingsPanel({
     );
   };
 
+  const getTargetNodeName = (
+    edge: WorkflowEdge,
+  ) => {
+    const targetNode =
+      nodes.find(
+        (
+          candidate,
+        ) =>
+          candidate.id ===
+          edge.target,
+      );
+
+    return targetNode?.name ??
+      edge.target;
+  };
+
   return (
     <aside className="step-settings">
       <div className="step-settings__header">
@@ -286,83 +283,92 @@ export function StepSettingsPanel({
           Step Settings
         </h2>
 
-        <span className="step-settings__node-id">
+        <span
+          className="step-settings__node-id"
+          title={
+            node.id
+          }
+        >
           {node.id}
         </span>
       </div>
 
-      <div className="step-settings__tabs">
-        <button
-          type="button"
-          className="step-settings__tab step-settings__tab--active"
-        >
-          General
-        </button>
-
-        <button
-          type="button"
-          className="step-settings__tab"
-        >
-          Input/Output
-        </button>
-
-        <button
-          type="button"
-          className="step-settings__tab"
-        >
-          Advanced
-        </button>
-      </div>
-
       <div className="step-settings__content">
-        <div className="settings-field">
-          <label>
-            Step Name
-          </label>
+        <section className="settings-section">
+          <div className="settings-section__header">
+            <strong>
+              General
+            </strong>
 
-          <input
-            type="text"
-            value={
-              node.name
-            }
-            onChange={(
-              event,
-            ) => {
-              onNodeChange(
-                node.id,
-                {
-                  name:
-                    event.target
-                      .value,
-                },
-              );
-            }}
-          />
-        </div>
+            <p>
+              Node의 기본 정보와 역할을 설정합니다.
+            </p>
+          </div>
 
-        <div className="settings-field">
-          <label>
-            Node Type
-          </label>
+          <div className="settings-field">
+            <label htmlFor="workflow-node-name">
+              Step Name
+            </label>
 
-          <input
-            type="text"
-            value={
-              node.type
-            }
-            readOnly
-          />
-        </div>
+            <input
+              id="workflow-node-name"
+              type="text"
+              value={
+                node.name
+              }
+              onChange={(
+                event,
+              ) => {
+                onNodeChange(
+                  node.id,
+                  {
+                    name:
+                      event.target.value,
+                  },
+                );
+              }}
+            />
+          </div>
+
+          <div className="settings-field">
+            <label htmlFor="workflow-node-type">
+              Node Type
+            </label>
+
+            <input
+              id="workflow-node-type"
+              type="text"
+              value={
+                formatNodeType(
+                  node.type,
+                )
+              }
+              readOnly
+            />
+          </div>
+        </section>
 
         {node.type ===
           "agent" && (
-          <>
+          <section className="settings-section">
+            <div className="settings-section__header">
+              <strong>
+                Agent Configuration
+              </strong>
+
+              <p>
+                실행할 Agent와 Model, 사용할 Tool을
+                지정합니다.
+              </p>
+            </div>
+
             <div className="settings-field">
-              <label>
+              <label htmlFor="workflow-node-agent">
                 Agent
               </label>
 
               <select
+                id="workflow-node-agent"
                 value={
                   node.agentId ??
                   ""
@@ -371,8 +377,7 @@ export function StepSettingsPanel({
                   event,
                 ) => {
                   const agentId =
-                    event.target
-                      .value ||
+                    event.target.value ||
                     undefined;
 
                   const selectedAgent =
@@ -420,21 +425,27 @@ export function StepSettingsPanel({
                         agent.id
                       }
                     >
-                      {
-                        agent.name
-                      }
+                      {agent.name}
                     </option>
                   ),
                 )}
               </select>
+
+              {agents.length ===
+                0 && (
+                <p className="settings-field__hint">
+                  현재 활성화된 Agent가 없습니다.
+                </p>
+              )}
             </div>
 
             <div className="settings-field">
-              <label>
+              <label htmlFor="workflow-node-model">
                 Model
               </label>
 
               <select
+                id="workflow-node-model"
                 value={
                   node.modelId ??
                   ""
@@ -446,8 +457,7 @@ export function StepSettingsPanel({
                     node.id,
                     {
                       modelId:
-                        event.target
-                          .value ||
+                        event.target.value ||
                         undefined,
                     },
                   );
@@ -469,13 +479,18 @@ export function StepSettingsPanel({
                         model.id
                       }
                     >
-                      {
-                        model.displayName
-                      }
+                      {model.displayName}
                     </option>
                   ),
                 )}
               </select>
+
+              {models.length ===
+                0 && (
+                <p className="settings-field__hint">
+                  현재 활성화된 Model이 없습니다.
+                </p>
+              )}
             </div>
 
             <div className="settings-field">
@@ -483,66 +498,77 @@ export function StepSettingsPanel({
                 Tools
               </label>
 
-              <div className="settings-tool-options">
-                {tools.map(
-                  (
-                    tool,
-                  ) => {
-                    const checked =
-                      node.toolIds
-                        ?.includes(
-                          tool.id,
-                        ) ??
-                      false;
+              {tools.length >
+              0 ? (
+                <div className="settings-tool-options">
+                  {tools.map(
+                    (
+                      tool,
+                    ) => {
+                      const checked =
+                        node.toolIds
+                          ?.includes(
+                            tool.id,
+                          ) ??
+                        false;
 
-                    return (
-                      <label
-                        key={
-                          tool.id
-                        }
-                        className="settings-tool-option"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={
-                            checked
+                      return (
+                        <label
+                          key={
+                            tool.id
                           }
-                          onChange={() =>
-                            handleToolToggle(
-                              tool.id,
-                            )
-                          }
-                        />
+                          className="settings-tool-option"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={
+                              checked
+                            }
+                            onChange={() => {
+                              handleToolToggle(
+                                tool.id,
+                              );
+                            }}
+                          />
 
-                        <span>
-                          {
-                            tool.name
-                          }
-                        </span>
-                      </label>
-                    );
-                  },
-                )}
-              </div>
+                          <span>
+                            {tool.name}
+                          </span>
+                        </label>
+                      );
+                    },
+                  )}
+                </div>
+              ) : (
+                <p className="settings-field__hint">
+                  현재 활성화된 Tool이 없습니다.
+                </p>
+              )}
             </div>
-          </>
+          </section>
         )}
 
         {node.type ===
           "condition" && (
-          <div className="settings-field">
-            <label>
-              Condition Branches
-            </label>
+          <section className="settings-section">
+            <div className="settings-section__header">
+              <strong>
+                Condition Branches
+              </strong>
+
+              <p>
+                Shared State 값을 기준으로 각 실행 경로의
+                조건을 설정합니다.
+              </p>
+            </div>
 
             {outgoingEdges.length ===
             0 ? (
-              <p>
-                이 Condition Node에서
-                나가는 Edge가 없습니다.
-                Canvas에서 Branch를
-                연결하세요.
-              </p>
+              <div className="builder-validation-item builder-validation-item--warning">
+                이 Condition Node에서 나가는 Edge가
+                없습니다. Canvas에서 다음 Node로
+                Branch를 연결하세요.
+              </div>
             ) : (
               outgoingEdges.map(
                 (
@@ -553,71 +579,32 @@ export function StepSettingsPanel({
                     !edge.condition;
 
                   return (
-                    <div
+                    <section
                       key={
                         edge.id
                       }
-                      style={{
-                        marginBottom:
-                          "16px",
-
-                        padding:
-                          "12px",
-
-                        border:
-                          "1px solid rgba(148, 163, 184, 0.25)",
-
-                        borderRadius:
-                          "8px",
-                      }}
+                      className="settings-section"
                     >
-                      <div
-                        style={{
-                          display:
-                            "flex",
-
-                          justifyContent:
-                            "space-between",
-
-                          alignItems:
-                            "center",
-
-                          marginBottom:
-                            "10px",
-                        }}
-                      >
+                      <div className="settings-section__header">
                         <strong>
                           Branch{" "}
-                          {
-                            index +
-                            1
-                          }
+                          {index +
+                            1}
                         </strong>
 
-                        <span
-                          style={{
-                            fontSize:
-                              "10px",
-
-                            opacity:
-                              0.65,
-                          }}
-                        >
-                          →
-                          {" "}
-                          {
+                        <p
+                          title={
                             edge.target
                           }
-                        </span>
+                        >
+                          Target:{" "}
+                          {getTargetNodeName(
+                            edge,
+                          )}
+                        </p>
                       </div>
 
-                      <label
-                        className="settings-tool-option"
-                        style={{
-                          marginBottom:
-                            "10px",
-                        }}
-                      >
+                      <label className="settings-tool-option">
                         <input
                           type="checkbox"
                           checked={
@@ -628,9 +615,7 @@ export function StepSettingsPanel({
                           ) => {
                             handleFallbackChange(
                               edge,
-                              event
-                                .target
-                                .checked,
+                              event.target.checked,
                             );
                           }}
                         />
@@ -640,14 +625,22 @@ export function StepSettingsPanel({
                         </span>
                       </label>
 
-                      {!isFallback && (
+                      {isFallback ? (
+                        <p className="settings-field__hint">
+                          다른 조건과 일치하는 Branch가
+                          없을 때 이 경로가 실행됩니다.
+                        </p>
+                      ) : (
                         <>
                           <div className="settings-field">
-                            <label>
+                            <label
+                              htmlFor={`condition-field-${edge.id}`}
+                            >
                               Field
                             </label>
 
                             <input
+                              id={`condition-field-${edge.id}`}
                               type="text"
                               placeholder="예: score"
                               value={
@@ -660,20 +653,26 @@ export function StepSettingsPanel({
                               ) => {
                                 handleConditionFieldChange(
                                   edge,
-                                  event
-                                    .target
-                                    .value,
+                                  event.target.value,
                                 );
                               }}
                             />
+
+                            <p className="settings-field__hint">
+                              비교할 Shared State Field를
+                              입력하세요.
+                            </p>
                           </div>
 
                           <div className="settings-field">
-                            <label>
+                            <label
+                              htmlFor={`condition-operator-${edge.id}`}
+                            >
                               Operator
                             </label>
 
                             <select
+                              id={`condition-operator-${edge.id}`}
                               value={
                                 edge.condition
                                   ?.operator ??
@@ -684,8 +683,7 @@ export function StepSettingsPanel({
                               ) => {
                                 handleConditionOperatorChange(
                                   edge,
-                                  event
-                                    .target
+                                  event.target
                                     .value as ConditionOperator,
                                 );
                               }}
@@ -702,9 +700,7 @@ export function StepSettingsPanel({
                                       operator.value
                                     }
                                   >
-                                    {
-                                      operator.label
-                                    }
+                                    {operator.label}
                                   </option>
                                 ),
                               )}
@@ -712,11 +708,14 @@ export function StepSettingsPanel({
                           </div>
 
                           <div className="settings-field">
-                            <label>
+                            <label
+                              htmlFor={`condition-value-${edge.id}`}
+                            >
                               Value
                             </label>
 
                             <input
+                              id={`condition-value-${edge.id}`}
                               type="text"
                               placeholder="예: 0.8"
                               value={
@@ -730,51 +729,47 @@ export function StepSettingsPanel({
                               ) => {
                                 handleConditionValueChange(
                                   edge,
-                                  event
-                                    .target
-                                    .value,
+                                  event.target.value,
                                 );
                               }}
                             />
+
+                            <p className="settings-field__hint">
+                              숫자와 true / false는 자동으로
+                              해당 타입으로 변환됩니다.
+                            </p>
                           </div>
                         </>
                       )}
-
-                      {isFallback && (
-                        <p
-                          style={{
-                            margin:
-                              0,
-
-                            fontSize:
-                              "11px",
-
-                            opacity:
-                              0.7,
-                          }}
-                        >
-                          다른 조건에 맞는
-                          Branch가 없을 때
-                          이 경로가 실행됩니다.
-                        </p>
-                      )}
-                    </div>
+                    </section>
                   );
                 },
               )
             )}
-          </div>
+          </section>
         )}
 
         {node.type !==
           "condition" && (
-          <>
+          <section className="settings-section">
+            <div className="settings-section__header">
+              <strong>
+                Execution
+              </strong>
+
+              <p>
+                Retry, Timeout 및 사용자 승인 정책을
+                설정합니다.
+              </p>
+            </div>
+
             <div className="settings-field">
-              <label>
+              <label htmlFor="workflow-node-retry">
                 Retry Count
               </label>
 
               <select
+                id="workflow-node-retry"
                 value={
                   node.config
                     ?.retryCount ??
@@ -791,9 +786,7 @@ export function StepSettingsPanel({
 
                         retryCount:
                           Number(
-                            event
-                              .target
-                              .value,
+                            event.target.value,
                           ),
                       },
                     },
@@ -819,11 +812,12 @@ export function StepSettingsPanel({
             </div>
 
             <div className="settings-field">
-              <label>
+              <label htmlFor="workflow-node-timeout">
                 Timeout
               </label>
 
               <select
+                id="workflow-node-timeout"
                 value={
                   node.config
                     ?.timeoutSeconds ??
@@ -840,9 +834,7 @@ export function StepSettingsPanel({
 
                         timeoutSeconds:
                           Number(
-                            event
-                              .target
-                              .value,
+                            event.target.value,
                           ),
                       },
                     },
@@ -874,13 +866,14 @@ export function StepSettingsPanel({
                 </strong>
 
                 <p>
-                  실행 후 사용자
-                  승인을 요청합니다.
+                  Node 완료 후 사용자의 승인을 받은 다음
+                  실행을 계속합니다.
                 </p>
               </div>
 
               <input
                 type="checkbox"
+                aria-label="Human Approval 사용"
                 checked={
                   node.config
                     ?.requireApproval ??
@@ -896,16 +889,32 @@ export function StepSettingsPanel({
                         ...node.config,
 
                         requireApproval:
-                          event.target
-                            .checked,
+                          event.target.checked,
                       },
                     },
                   );
                 }}
               />
             </div>
-          </>
+          </section>
         )}
+
+        <section className="settings-section">
+          <div className="settings-section__header">
+            <strong>
+              Node ID
+            </strong>
+
+            <p>
+              Workflow Runtime에서 사용하는 내부
+              식별자입니다.
+            </p>
+          </div>
+
+          <div className="tool-id-box">
+            {node.id}
+          </div>
+        </section>
 
         <button
           type="button"
@@ -926,9 +935,7 @@ export function StepSettingsPanel({
           }}
         >
           <Trash2
-            size={
-              14
-            }
+            size={14}
           />
 
           Node 삭제
@@ -936,6 +943,33 @@ export function StepSettingsPanel({
       </div>
     </aside>
   );
+}
+
+function formatNodeType(
+  type:
+    WorkflowNode["type"],
+) {
+  switch (
+    type
+  ) {
+    case "input":
+      return "Input";
+
+    case "agent":
+      return "Agent";
+
+    case "tool":
+      return "Tool";
+
+    case "condition":
+      return "Condition";
+
+    case "approval":
+      return "Human Approval";
+
+    case "output":
+      return "Output";
+  }
 }
 
 function parseConditionValue(
@@ -989,7 +1023,7 @@ function formatConditionValue(
 
   if (
     typeof value ===
-      "string"
+    "string"
   ) {
     return value;
   }

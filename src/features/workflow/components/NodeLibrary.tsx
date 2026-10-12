@@ -2,7 +2,8 @@ import {
   Bot,
   GitBranch,
   Hand,
-  PackageOpen,
+  Inbox,
+  PackageCheck,
   Wrench,
 } from "lucide-react";
 
@@ -17,53 +18,55 @@ interface NodeLibraryProps {
   ) => void;
 }
 
-const nodeItems: {
+interface NodeLibraryItem {
   type: WorkflowNodeType;
   label: string;
   description: string;
   icon: typeof Bot;
-}[] = [
+}
+
+const nodeItems: NodeLibraryItem[] = [
+  {
+    type: "input",
+    label: "Input",
+    description:
+      "Workflow에 전달할 사용자 입력을 정의합니다.",
+    icon: Inbox,
+  },
   {
     type: "agent",
     label: "Agent",
     description:
-      "AI Agent 작업 단계를 추가합니다.",
+      "AI Agent가 추론과 작업을 수행합니다.",
     icon: Bot,
   },
   {
     type: "tool",
     label: "Tool",
     description:
-      "Tool 실행 단계를 추가합니다.",
+      "외부 Tool 또는 기능을 실행합니다.",
     icon: Wrench,
-  },
-  {
-    type: "input",
-    label: "Input",
-    description:
-      "Workflow 입력을 추가합니다.",
-    icon: PackageOpen,
   },
   {
     type: "condition",
     label: "Condition",
     description:
-      "조건 분기를 추가합니다.",
+      "State 값에 따라 실행 경로를 분기합니다.",
     icon: GitBranch,
   },
   {
     type: "approval",
     label: "Human Approval",
     description:
-      "사용자 승인 단계를 추가합니다.",
+      "사용자 승인을 받을 때까지 실행을 대기합니다.",
     icon: Hand,
   },
   {
     type: "output",
     label: "Output",
     description:
-      "Workflow 출력을 추가합니다.",
-    icon: PackageOpen,
+      "Workflow의 최종 결과를 출력합니다.",
+    icon: PackageCheck,
   },
 ];
 
@@ -81,10 +84,15 @@ export function NodeLibrary({
 
       type,
 
-      name: getDefaultNodeName(type),
+      name:
+        getDefaultNodeName(
+          type,
+        ),
 
       description:
-        getDefaultDescription(type),
+        getDefaultDescription(
+          type,
+        ),
 
       position: {
         x: 300,
@@ -95,52 +103,75 @@ export function NodeLibrary({
         retryCount: 0,
         timeoutSeconds: 600,
         requireApproval:
-          type === "approval",
+          type ===
+          "approval",
       },
     };
 
-    onAddNode(node);
+    onAddNode(
+      node,
+    );
   };
 
   return (
     <aside className="node-library">
       <div className="node-library__header">
-        <h2>Nodes</h2>
+        <h2>
+          Nodes
+        </h2>
 
         <p>
-          클릭하여 Node를 추가합니다.
+          필요한 단계를 선택하여 Workflow Canvas에
+          추가하세요.
         </p>
       </div>
 
       <div className="node-library__items">
-        {nodeItems.map((item) => {
-          const Icon = item.icon;
+        {nodeItems.map(
+          (
+            item,
+          ) => {
+            const Icon =
+              item.icon;
 
-          return (
-            <button
-              key={item.type}
-              type="button"
-              className="node-library__item"
-              onClick={() =>
-                handleAddNode(
-                  item.type,
-                )
-              }
-            >
-              <Icon size={15} />
-
-              <div>
-                <strong>
-                  {item.label}
-                </strong>
-
-                <span>
-                  {item.description}
+            return (
+              <button
+                key={
+                  item.type
+                }
+                type="button"
+                className={[
+                  "node-library__item",
+                  `node-library__item--${item.type}`,
+                ].join(
+                  " ",
+                )}
+                title={`${item.label} Node 추가`}
+                onClick={() => {
+                  handleAddNode(
+                    item.type,
+                  );
+                }}
+              >
+                <span className="node-library__item-icon">
+                  <Icon
+                    size={14}
+                  />
                 </span>
-              </div>
-            </button>
-          );
-        })}
+
+                <div>
+                  <strong>
+                    {item.label}
+                  </strong>
+
+                  <span>
+                    {item.description}
+                  </span>
+                </div>
+              </button>
+            );
+          },
+        )}
       </div>
     </aside>
   );
@@ -149,7 +180,9 @@ export function NodeLibrary({
 function getDefaultNodeName(
   type: WorkflowNodeType,
 ) {
-  switch (type) {
+  switch (
+    type
+  ) {
     case "input":
       return "User Input";
 
@@ -173,7 +206,9 @@ function getDefaultNodeName(
 function getDefaultDescription(
   type: WorkflowNodeType,
 ) {
-  switch (type) {
+  switch (
+    type
+  ) {
     case "input":
       return "사용자 입력";
 

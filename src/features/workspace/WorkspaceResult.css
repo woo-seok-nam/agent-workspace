@@ -1,14 +1,25 @@
 .workspace-result-page {
+  width: 100%;
+  max-width: 1180px;
   min-height: 100%;
-  padding: 28px;
-  color: #0f172a;
+
+  margin: 0 auto;
+  padding: 28px 0 48px;
+
+  color: var(--color-text-primary);
 }
+
+/* =========================================================
+   Header
+   ========================================================= */
 
 .workspace-result-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+
   gap: 24px;
+
   margin-bottom: 24px;
 }
 
@@ -16,52 +27,83 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
+
   margin: 0 0 18px;
   padding: 0;
+
   border: 0;
+
   background: transparent;
-  color: #64748b;
+
+  color: var(--color-text-secondary);
+
   font: inherit;
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 600;
+
   cursor: pointer;
+
+  transition:
+    color 140ms ease;
 }
 
 .workspace-back-button:hover {
-  color: #2563eb;
+  color: var(--color-primary);
 }
 
 .workspace-result-heading > span,
 .workspace-result-eyebrow {
   display: block;
+
   margin-bottom: 7px;
-  color: #2563eb;
-  font-size: 12px;
-  font-weight: 700;
+
+  color: var(--color-primary);
+
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.025em;
 }
 
 .workspace-result-heading h1 {
   margin: 0;
-  color: #0f172a;
+
+  color: var(--color-text-primary);
+
   font-size: 28px;
+  font-weight: 750;
   line-height: 1.25;
+  letter-spacing: -0.6px;
 }
 
 .workspace-result-heading p {
   margin: 8px 0 0;
-  color: #64748b;
-  font-size: 14px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 13px;
+  line-height: 1.55;
 }
+
+/* =========================================================
+   Status
+   ========================================================= */
 
 .workspace-result-status {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 12px;
+
+  padding: 6px 10px;
+
   border-radius: 999px;
+
   background: #f1f5f9;
   color: #475569;
-  font-size: 12px;
+
+  font-size: 10px;
   font-weight: 700;
+
+  white-space: nowrap;
 }
 
 .workspace-result-status--completed {
@@ -85,86 +127,143 @@
   color: #c2410c;
 }
 
+.workspace-result-status--paused {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.workspace-result-status--queued,
+.workspace-result-status--idle {
+  background: #f3f4f6;
+  color: #64748b;
+}
+
 .workspace-result-notice {
   margin-bottom: 20px;
   padding: 12px 14px;
+
   border: 1px solid #fed7aa;
-  border-radius: 10px;
+  border-radius: 9px;
+
   background: #fff7ed;
+
   color: #9a3412;
-  font-size: 13px;
+
+  font-size: 12px;
+  line-height: 1.5;
 }
+
+/* =========================================================
+   Stats
+   ========================================================= */
 
 .workspace-result-stats {
   display: grid;
+
   grid-template-columns:
     repeat(
       4,
       minmax(0, 1fr)
     );
-  gap: 12px;
+
+  gap: 10px;
+
   margin-bottom: 20px;
 }
 
 .workspace-result-stat {
   display: flex;
-  min-width: 0;
   align-items: center;
-  gap: 11px;
-  padding: 15px;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
+
+  min-width: 0;
+
+  gap: 10px;
+
+  padding: 13px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+
   background: #ffffff;
+
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.02);
 }
 
 .workspace-result-stat__icon {
   display: flex;
-  width: 36px;
-  height: 36px;
-  flex: 0 0 36px;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
-  background: #eff6ff;
-  color: #2563eb;
+
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+
+  border-radius: 8px;
+
+  background: #eef4ff;
+
+  color: var(--color-primary);
 }
 
 .workspace-result-stat span {
   display: block;
+
   margin-bottom: 3px;
-  color: #64748b;
-  font-size: 11px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 9px;
+  font-weight: 600;
 }
 
 .workspace-result-stat strong {
   display: block;
+
   overflow: hidden;
-  color: #0f172a;
-  font-size: 13px;
+
+  color: var(--color-text-primary);
+
+  font-size: 11px;
+  font-weight: 700;
+
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+/* =========================================================
+   Main layout
+   ========================================================= */
+
 .workspace-result-layout {
   display: grid;
+
   grid-template-columns:
     minmax(0, 1fr)
     320px;
-  gap: 18px;
+
   align-items: start;
+
+  gap: 18px;
 }
 
 .workspace-result-main {
   display: grid;
-  gap: 18px;
+
   min-width: 0;
+
+  gap: 18px;
 }
 
 .workspace-result-card,
 .workspace-result-sidebar {
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 13px;
+
   background: #ffffff;
+
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.02);
 }
 
 .workspace-result-card {
@@ -175,109 +274,196 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   gap: 16px;
-  padding: 18px 20px;
-  border-bottom: 1px solid #edf2f7;
+
+  min-height: 61px;
+
+  padding: 15px 18px;
+
+  border-bottom:
+    1px solid #edf2f7;
 }
 
 .workspace-result-card__header h2 {
   margin: 0;
-  color: #0f172a;
-  font-size: 18px;
+
+  color: var(--color-text-primary);
+
+  font-size: 16px;
+  font-weight: 720;
+  letter-spacing: -0.2px;
 }
 
-.workspace-copy-button {
+/* =========================================================
+   Shared buttons
+   ========================================================= */
+
+.workspace-copy-button,
+.workspace-artifact-download {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+
   gap: 6px;
-  padding: 8px 11px;
+
+  min-height: 34px;
+
+  padding: 0 11px;
+
   border: 1px solid #dbe4f0;
-  border-radius: 9px;
+  border-radius: 8px;
+
   background: #ffffff;
+
   color: #334155;
+
   font: inherit;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 650;
+
+  text-decoration: none;
+
   cursor: pointer;
+
+  transition:
+    border-color 140ms ease,
+    background 140ms ease,
+    color 140ms ease,
+    box-shadow 140ms ease,
+    transform 100ms ease,
+    opacity 140ms ease;
 }
 
-.workspace-copy-button:hover:not(:disabled) {
+.workspace-copy-button:hover:not(:disabled),
+.workspace-artifact-download:hover:not(:disabled) {
   border-color: #bfdbfe;
+
   background: #eff6ff;
   color: #2563eb;
 }
 
-.workspace-copy-button:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
+.workspace-copy-button:active:not(:disabled),
+.workspace-artifact-download:active:not(:disabled) {
+  transform: translateY(1px);
 }
+
+.workspace-copy-button:disabled,
+.workspace-artifact-download:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.45;
+}
+
+/* =========================================================
+   Final Result
+   ========================================================= */
 
 .workspace-result-content {
   min-height: 280px;
-  padding: 24px;
+
+  padding: 22px;
+
   color: #334155;
-  font-size: 14px;
-  line-height: 1.85;
+
+  font-size: 13px;
+  line-height: 1.8;
+
   white-space: pre-wrap;
-  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .workspace-result-empty {
   display: flex;
-  min-height: 280px;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
+  flex-direction: column;
+
+  min-height: 280px;
+
   padding: 30px;
+
   color: #94a3b8;
+
   text-align: center;
 }
 
 .workspace-result-empty strong {
   margin-top: 12px;
+
   color: #475569;
+
+  font-size: 13px;
 }
 
 .workspace-result-empty p {
   max-width: 360px;
+
   margin: 6px 0 0;
-  font-size: 12px;
+
+  font-size: 11px;
   line-height: 1.6;
 }
 
 .workspace-result-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 20px;
-  padding: 12px 20px;
-  border-top: 1px solid #edf2f7;
+
+  gap: 8px 18px;
+
+  padding: 11px 18px;
+
+  border-top:
+    1px solid #edf2f7;
+
   background: #f8fafc;
+
   color: #64748b;
-  font-size: 11px;
+
+  font-size: 10px;
 }
 
 .workspace-result-meta strong {
   color: #334155;
 }
 
+/* =========================================================
+   Original Prompt
+   ========================================================= */
+
 .workspace-original-prompt {
-  padding: 20px;
+  padding: 18px;
+
   color: #334155;
-  font-size: 14px;
+
+  font-size: 12px;
   line-height: 1.7;
+
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
+
+/* =========================================================
+   Artifact
+   ========================================================= */
 
 .workspace-artifact-count {
   display: flex;
-  min-width: 26px;
-  height: 26px;
   align-items: center;
   justify-content: center;
+
+  min-width: 25px;
+  height: 25px;
+
+  padding: 0 7px;
+
   border-radius: 999px;
+
   background: #eff6ff;
+
   color: #2563eb;
-  font-size: 11px;
+
+  font-size: 10px;
   font-weight: 700;
 }
 
@@ -289,9 +475,20 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   gap: 20px;
-  padding: 16px 20px;
-  border-bottom: 1px solid #edf2f7;
+
+  padding: 14px 18px;
+
+  border-bottom:
+    1px solid #edf2f7;
+
+  transition:
+    background 130ms ease;
+}
+
+.workspace-artifact-item:hover {
+  background: #fbfcfe;
 }
 
 .workspace-artifact-item:last-child {
@@ -300,20 +497,26 @@
 
 .workspace-artifact-item__main {
   display: flex;
-  min-width: 0;
   align-items: center;
-  gap: 12px;
+
+  min-width: 0;
+
+  gap: 11px;
 }
 
 .workspace-artifact-item__icon {
   display: flex;
-  width: 40px;
-  height: 40px;
-  flex: 0 0 40px;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
+
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+
+  border-radius: 9px;
+
   background: #eff6ff;
+
   color: #2563eb;
 }
 
@@ -323,75 +526,164 @@
 
 .workspace-artifact-item__content strong {
   display: block;
+
   overflow: hidden;
-  color: #0f172a;
-  font-size: 13px;
+
+  color: var(--color-text-primary);
+
+  font-size: 12px;
+  font-weight: 700;
+
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .workspace-artifact-item__content span {
   display: block;
+
   margin-top: 4px;
-  color: #64748b;
-  font-size: 11px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 10px;
 }
 
 .workspace-artifact-item__content time {
   display: block;
+
   margin-top: 3px;
+
   color: #94a3b8;
-  font-size: 10px;
+
+  font-size: 9px;
 }
 
-.workspace-artifact-download {
-  display: inline-flex;
-  flex: 0 0 auto;
+/*
+ * STEP 51 Artifact reuse
+ *
+ * 현재 WorkspaceResultPage에서는
+ * 다운로드 버튼과 "새 작업에서 사용" 버튼이
+ * 같은 class를 사용한다.
+ *
+ * 추후 전용 class를 추가하더라도
+ * 기존 UI는 그대로 유지된다.
+ */
+
+.workspace-artifact-actions {
+  display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 11px;
-  border: 1px solid #dbe4f0;
-  border-radius: 9px;
-  background: #ffffff;
-  color: #334155;
-  font-size: 12px;
-  font-weight: 600;
-  text-decoration: none;
+  flex-wrap: wrap;
+
+  gap: 7px;
 }
 
-.workspace-artifact-download:hover {
-  border-color: #bfdbfe;
+.workspace-artifact-reuse {
+  border-color: #bfd0ff;
+
   background: #eff6ff;
   color: #2563eb;
 }
 
+.workspace-artifact-reuse:hover:not(:disabled) {
+  border-color: #93b4ff;
+
+  background: #e5efff;
+}
+
+/* =========================================================
+   Future artifact format states
+   PDF / HWP / DOCX etc.
+   ========================================================= */
+
+.workspace-artifact-format {
+  display: inline-flex;
+  align-items: center;
+
+  width: fit-content;
+
+  margin-top: 5px;
+  padding: 3px 6px;
+
+  border-radius: 5px;
+
+  background: #f1f5f9;
+
+  color: #475569;
+
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.workspace-artifact-format--markdown {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.workspace-artifact-format--pdf {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.workspace-artifact-format--hwp {
+  background: #eef2ff;
+  color: #4f46e5;
+}
+
+.workspace-artifact-format--docx {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.workspace-artifact-format--xlsx {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.workspace-artifact-format--pptx {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
 .workspace-artifact-empty {
   display: flex;
-  min-height: 150px;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
+  flex-direction: column;
+
+  min-height: 150px;
+
   padding: 24px;
+
   color: #94a3b8;
+
   text-align: center;
 }
 
 .workspace-artifact-empty strong {
   margin-top: 10px;
+
   color: #475569;
-  font-size: 13px;
+
+  font-size: 12px;
 }
 
 .workspace-artifact-empty p {
   max-width: 340px;
+
   margin: 5px 0 0;
-  font-size: 11px;
+
+  font-size: 10px;
   line-height: 1.6;
 }
+
+/* =========================================================
+   Sidebar
+   ========================================================= */
 
 .workspace-result-sidebar {
   position: sticky;
   top: 20px;
+
   overflow: hidden;
 }
 
@@ -399,26 +691,39 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px;
-  border-bottom: 1px solid #edf2f7;
+
+  min-height: 52px;
+
+  padding: 14px 15px;
+
+  border-bottom:
+    1px solid #edf2f7;
 }
 
 .workspace-result-sidebar__header span {
   color: #334155;
-  font-size: 13px;
+
+  font-size: 12px;
   font-weight: 700;
 }
 
 .workspace-result-sidebar__header strong {
   display: flex;
-  min-width: 25px;
-  height: 25px;
   align-items: center;
   justify-content: center;
+
+  min-width: 24px;
+  height: 24px;
+
+  padding: 0 6px;
+
   border-radius: 999px;
+
   background: #eff6ff;
+
   color: #2563eb;
-  font-size: 11px;
+
+  font-size: 10px;
 }
 
 .workspace-step-results {
@@ -426,8 +731,17 @@
 }
 
 .workspace-step-result {
-  padding: 14px 16px;
-  border-bottom: 1px solid #edf2f7;
+  padding: 13px 15px;
+
+  border-bottom:
+    1px solid #edf2f7;
+
+  transition:
+    background 130ms ease;
+}
+
+.workspace-step-result:hover {
+  background: #fbfcfe;
 }
 
 .workspace-step-result:last-child {
@@ -438,44 +752,61 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   gap: 8px;
 }
 
 .workspace-step-result__header > div {
   display: flex;
-  min-width: 0;
   align-items: center;
+
+  min-width: 0;
+
   gap: 7px;
+
   color: #16a34a;
 }
 
 .workspace-step-result__header strong {
   overflow: hidden;
-  color: #0f172a;
-  font-size: 12px;
+
+  color: var(--color-text-primary);
+
+  font-size: 11px;
+  font-weight: 700;
+
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .workspace-step-result__header > span {
   flex: 0 0 auto;
+
   color: #94a3b8;
-  font-size: 10px;
+
+  font-size: 9px;
 }
 
 .workspace-step-result__agent {
   margin: 7px 0 0;
-  color: #64748b;
-  font-size: 10px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 9px;
 }
 
 .workspace-step-result__preview {
   display: -webkit-box;
+
   overflow: hidden;
-  margin: 8px 0 0;
+
+  margin: 7px 0 0;
+
   color: #64748b;
-  font-size: 11px;
+
+  font-size: 10px;
   line-height: 1.55;
+
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
 }
@@ -483,10 +814,48 @@
 .workspace-result-sidebar__empty {
   margin: 0;
   padding: 24px 16px;
+
   color: #94a3b8;
+
+  font-size: 11px;
+  text-align: center;
+}
+
+/* =========================================================
+   Loading / Error
+   ========================================================= */
+
+.workspace-result-loading,
+.workspace-result-error {
+  display: grid;
+  place-items: center;
+
+  min-height: 220px;
+
+  padding: 30px;
+
+  border: 1px dashed var(--color-border);
+  border-radius: 12px;
+
+  background: #fafbfd;
+
+  color: var(--color-text-secondary);
+
   font-size: 12px;
   text-align: center;
 }
+
+.workspace-result-error {
+  border-color: #fecaca;
+
+  background: #fff7f7;
+
+  color: #b91c1c;
+}
+
+/* =========================================================
+   Responsive
+   ========================================================= */
 
 @media (
   max-width: 1100px
@@ -510,14 +879,20 @@
 }
 
 @media (
-  max-width: 640px
+  max-width: 720px
 ) {
   .workspace-result-page {
-    padding: 18px;
+    padding:
+      20px 0
+      32px;
   }
 
   .workspace-result-header {
     flex-direction: column;
+  }
+
+  .workspace-result-heading h1 {
+    font-size: 24px;
   }
 
   .workspace-result-stats {
@@ -525,13 +900,32 @@
       1fr;
   }
 
+  .workspace-result-card__header {
+    padding: 14px 16px;
+  }
+
+  .workspace-result-content {
+    padding: 18px;
+  }
+
+  .workspace-original-prompt {
+    padding: 16px;
+  }
+
   .workspace-artifact-item {
     align-items: flex-start;
     flex-direction: column;
+
+    gap: 12px;
+  }
+
+  .workspace-artifact-actions {
+    width: 100%;
   }
 
   .workspace-artifact-download {
+    flex: 1;
+
     width: 100%;
-    justify-content: center;
   }
 }

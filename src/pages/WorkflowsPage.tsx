@@ -5,6 +5,8 @@ import {
 } from "react";
 
 import {
+  AlertCircle,
+  ArrowRight,
   GitBranch,
   Plus,
   Search,
@@ -32,19 +34,25 @@ export function WorkflowsPage() {
     workflows,
     setWorkflows,
   ] =
-    useState<Workflow[]>([]);
+    useState<
+      Workflow[]
+    >([]);
 
   const [
     search,
     setSearch,
   ] =
-    useState("");
+    useState(
+      "",
+    );
 
   const [
     loading,
     setLoading,
   ] =
-    useState(true);
+    useState(
+      true,
+    );
 
   const [
     error,
@@ -52,90 +60,194 @@ export function WorkflowsPage() {
   ] =
     useState<
       string | null
-    >(null);
+    >(
+      null,
+    );
 
-  useEffect(() => {
-    async function loadWorkflows() {
-      try {
-        setLoading(true);
-        setError(null);
+  useEffect(
+    () => {
+      let cancelled =
+        false;
 
-        const data =
-          await fetchWorkflows();
+      async function loadWorkflows() {
+        try {
+          setLoading(
+            true,
+          );
 
-        setWorkflows(
-          data,
-        );
-      } catch (loadError) {
-        setError(
-          loadError instanceof Error
-            ? loadError.message
-            : "Workflow 목록을 불러오지 못했습니다.",
-        );
-      } finally {
-        setLoading(false);
+          setError(
+            null,
+          );
+
+          const data =
+            await fetchWorkflows();
+
+          if (
+            cancelled
+          ) {
+            return;
+          }
+
+          setWorkflows(
+            data,
+          );
+        } catch (
+          loadError
+        ) {
+          if (
+            cancelled
+          ) {
+            return;
+          }
+
+          setError(
+            loadError instanceof
+              Error
+              ? loadError.message
+              : "Workflow 목록을 불러오지 못했습니다.",
+          );
+        } finally {
+          if (
+            !cancelled
+          ) {
+            setLoading(
+              false,
+            );
+          }
+        }
       }
-    }
 
-    void loadWorkflows();
-  }, []);
+      void loadWorkflows();
+
+      return () => {
+        cancelled =
+          true;
+      };
+    },
+    [],
+  );
 
   const filteredWorkflows =
-    useMemo(() => {
-      const keyword =
-        search
-          .trim()
-          .toLowerCase();
+    useMemo(
+      () => {
+        const keyword =
+          search
+            .trim()
+            .toLowerCase();
 
-      if (!keyword) {
-        return workflows;
-      }
+        if (
+          !keyword
+        ) {
+          return workflows;
+        }
 
-      return workflows.filter(
-        (workflow) =>
-          workflow.name
-            .toLowerCase()
-            .includes(
-              keyword,
-            ) ||
+        return workflows.filter(
           (
-            workflow.description ??
-            ""
-          )
-            .toLowerCase()
-            .includes(
-              keyword,
-            ),
-      );
-    }, [
-      workflows,
-      search,
-    ]);
+            workflow,
+          ) =>
+            workflow.name
+              .toLowerCase()
+              .includes(
+                keyword,
+              ) ||
+            (
+              workflow.description ??
+              ""
+            )
+              .toLowerCase()
+              .includes(
+                keyword,
+              ),
+        );
+      },
+      [
+        workflows,
+        search,
+      ],
+    );
 
-  if (loading) {
+  if (
+    loading
+  ) {
     return (
       <div className="workflow-list-page">
-        Workflow 목록을 불러오는 중입니다...
+        <header className="workflow-list-header">
+          <div>
+            <span>
+              Agent Workspace
+            </span>
+
+            <h1>
+              Workflows
+            </h1>
+
+            <p>
+              저장된 Workflow를 불러오고 있습니다.
+            </p>
+          </div>
+        </header>
+
+        <div className="workflow-list-loading">
+          <div className="workflow-list-empty-icon">
+            <GitBranch
+              size={24}
+            />
+          </div>
+
+          <h2>
+            Workflow를 불러오는 중입니다
+          </h2>
+
+          <p>
+            저장된 Workflow와 구성 정보를 확인하고 있습니다.
+          </p>
+        </div>
       </div>
     );
   }
 
-  if (error) {
+  if (
+    error
+  ) {
     return (
       <div className="workflow-list-page">
-        <h1>
-          Workflows
-        </h1>
+        <header className="workflow-list-header">
+          <div>
+            <span>
+              Agent Workspace
+            </span>
 
-        <p>
-          {error}
-        </p>
+            <h1>
+              Workflows
+            </h1>
 
-        <p>
-          Backend 서버가
-          http://localhost:4000
-          에서 실행 중인지 확인하세요.
-        </p>
+            <p>
+              Workflow 정보를 불러오지 못했습니다.
+            </p>
+          </div>
+        </header>
+
+        <div className="workflow-list-error">
+          <AlertCircle
+            size={26}
+          />
+
+          <h2>
+            Workflow 연결 오류
+          </h2>
+
+          <p>
+            {error}
+          </p>
+
+          <p>
+            Backend 서버가
+            {" "}
+            http://localhost:4000
+            {" "}
+            에서 정상적으로 실행 중인지 확인하세요.
+          </p>
+        </div>
       </div>
     );
   }
@@ -153,8 +265,9 @@ export function WorkflowsPage() {
           </h1>
 
           <p>
-            저장된 Workflow를 확인하고
-            Builder에서 수정할 수 있습니다.
+            저장된 Workflow의 구조를 확인하고
+            Builder에서 Agent, Model, Tool과 실행 흐름을
+            수정할 수 있습니다.
           </p>
         </div>
 
@@ -167,7 +280,10 @@ export function WorkflowsPage() {
             );
           }}
         >
-          <Plus size={15} />
+          <Plus
+            size={14}
+          />
+
           New Workflow
         </button>
       </header>
@@ -195,10 +311,9 @@ export function WorkflowsPage() {
         </div>
 
         <span className="workflow-list-count">
-          {
-            filteredWorkflows.length
-          }{" "}
-          workflows
+          {search.trim()
+            ? `${filteredWorkflows.length} / ${workflows.length} workflows`
+            : `${workflows.length} workflows`}
         </span>
       </div>
 
@@ -206,124 +321,139 @@ export function WorkflowsPage() {
       0 ? (
         <div className="workflow-list-grid">
           {filteredWorkflows.map(
-            (workflow) => (
-              <article
-                key={
-                  workflow.id
-                }
-                className="workflow-list-card"
-              >
-                <div className="workflow-list-card__top">
-                  <div className="workflow-list-card__icon">
-                    <GitBranch
-                      size={18}
-                    />
+            (
+              workflow,
+            ) => {
+              const agentCount =
+                new Set(
+                  workflow.nodes
+                    .map(
+                      (
+                        node,
+                      ) =>
+                        node.agentId,
+                    )
+                    .filter(
+                      (
+                        agentId,
+                      ): agentId is string =>
+                        Boolean(
+                          agentId,
+                        ),
+                    ),
+                ).size;
+
+              return (
+                <article
+                  key={
+                    workflow.id
+                  }
+                  className="workflow-list-card"
+                >
+                  <div className="workflow-list-card__top">
+                    <div className="workflow-list-card__icon">
+                      <GitBranch
+                        size={18}
+                      />
+                    </div>
+
+                    <div>
+                      <h2
+                        title={
+                          workflow.name
+                        }
+                      >
+                        {workflow.name}
+                      </h2>
+
+                      <p>
+                        {workflow.description ??
+                          "Workflow 설명이 없습니다."}
+                      </p>
+                    </div>
                   </div>
 
-                  <div>
-                    <h2>
-                      {
-                        workflow.name
-                      }
-                    </h2>
+                  <div className="workflow-list-card__stats">
+                    <div>
+                      <span>
+                        Nodes
+                      </span>
 
-                    <p>
-                      {workflow.description ??
-                        "설명이 없습니다."}
-                    </p>
+                      <strong>
+                        {workflow.nodes.length}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>
+                        Connections
+                      </span>
+
+                      <strong>
+                        {workflow.edges.length}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>
+                        Agents
+                      </span>
+
+                      <strong>
+                        {agentCount}
+                      </strong>
+                    </div>
                   </div>
-                </div>
 
-                <div className="workflow-list-card__stats">
-                  <div>
+                  <div className="workflow-list-card__footer">
                     <span>
-                      Nodes
+                      Updated{" "}
+                      {formatDate(
+                        workflow.updatedAt,
+                      )}
                     </span>
 
-                    <strong>
-                      {
-                        workflow
-                          .nodes
-                          .length
-                      }
-                    </strong>
+                    <div className="workflow-list-card__footer-actions">
+                      <button
+                        type="button"
+                        className="workflow-list-edit-button"
+                        onClick={() => {
+                          navigate(
+                            `/workflows/${workflow.id}/builder`,
+                          );
+                        }}
+                      >
+                        Builder 열기
+
+                        <ArrowRight
+                          size={12}
+                        />
+                      </button>
+                    </div>
                   </div>
-
-                  <div>
-                    <span>
-                      Connections
-                    </span>
-
-                    <strong>
-                      {
-                        workflow
-                          .edges
-                          .length
-                      }
-                    </strong>
-                  </div>
-
-                  <div>
-                    <span>
-                      Agents
-                    </span>
-
-                    <strong>
-                      {
-                        new Set(
-                          workflow.nodes
-                            .map(
-                              (
-                                node,
-                              ) =>
-                                node.agentId,
-                            )
-                            .filter(
-                              Boolean,
-                            ),
-                        ).size
-                      }
-                    </strong>
-                  </div>
-                </div>
-
-                <div className="workflow-list-card__footer">
-                  <span>
-                    Updated{" "}
-                    {formatDate(
-                      workflow.updatedAt,
-                    )}
-                  </span>
-
-                  <button
-                    type="button"
-                    className="secondary-button"
-                    onClick={() => {
-                      navigate(
-                        `/workflows/${workflow.id}/builder`,
-                      );
-                    }}
-                  >
-                    Builder 열기
-                  </button>
-                </div>
-              </article>
-            ),
+                </article>
+              );
+            },
           )}
         </div>
       ) : (
         <div className="workflow-list-empty">
-          <GitBranch
-            size={26}
-          />
+          <div className="workflow-list-empty-icon">
+            <GitBranch
+              size={25}
+            />
+          </div>
 
           <h2>
-            Workflow가 없습니다.
+            {search.trim()
+              ? "검색 결과가 없습니다."
+              : "Workflow가 없습니다."}
           </h2>
 
           <p>
-            새로운 Workflow를 생성하거나
-            검색 조건을 변경해보세요.
+            {search.trim()
+              ? `"${search}"와 일치하는 Workflow를 찾지 못했습니다.`
+              : "새 작업에서 목표를 입력하면 추천 가이던스를 통해 Workflow를 생성할 수 있습니다."}
           </p>
         </div>
       )}
@@ -334,14 +464,30 @@ export function WorkflowsPage() {
 function formatDate(
   value: string,
 ) {
-  return new Date(
-    value,
-  ).toLocaleDateString(
+  const date =
+    new Date(
+      value,
+    );
+
+  if (
+    Number.isNaN(
+      date.getTime(),
+    )
+  ) {
+    return "-";
+  }
+
+  return date.toLocaleDateString(
     "ko-KR",
     {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
+      year:
+        "numeric",
+
+      month:
+        "2-digit",
+
+      day:
+        "2-digit",
     },
   );
 }

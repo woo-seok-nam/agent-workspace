@@ -54,20 +54,27 @@ function calculateWorkflowMatchScore(
   playbookName?: string,
   playbookDescription?: string,
 ) {
-  if (!playbookName) {
+  if (
+    !playbookName
+  ) {
     return 0;
   }
 
   const workflowText =
     [
       workflow.name,
-      workflow.description ?? "",
+      workflow.description ??
+        "",
       ...workflow.nodes.map(
-        (node) =>
+        (
+          node,
+        ) =>
           `${node.name} ${node.description ?? ""}`,
       ),
     ]
-      .join(" ")
+      .join(
+        " ",
+      )
       .toLowerCase();
 
   const playbookText =
@@ -80,11 +87,15 @@ function calculateWorkflowMatchScore(
         /[\s&→,/()-]+/,
       )
       .map(
-        (token) =>
+        (
+          token,
+        ) =>
           token.trim(),
       )
       .filter(
-        (token) =>
+        (
+          token,
+        ) =>
           token.length >=
           2,
       );
@@ -152,14 +163,18 @@ function findBestWorkflowForGuidance(
   const playbook =
     guidance?.selectedPlaybook;
 
-  if (!playbook) {
+  if (
+    !playbook
+  ) {
     return workflows[0];
   }
 
   const ranked =
     workflows
       .map(
-        (workflow) => ({
+        (
+          workflow,
+        ) => ({
           workflow,
 
           score:
@@ -220,6 +235,47 @@ function showGuidanceWarnings(
   );
 }
 
+/*
+ * STEP 51에서 Artifact를 재사용할 경우
+ * 실제 prompt 안에는 <artifact_context> 전체 내용이 포함된다.
+ *
+ * 추천 화면에서는 수천 자의 Artifact 원문을 그대로 보여주지 않고
+ * 실제 사용자 요청 부분만 표시한다.
+ *
+ * Backend로 전달되는 prompt 자체는 수정하지 않는다.
+ */
+function getPromptDisplayText(
+  prompt: string,
+) {
+  const artifactContextIndex =
+    prompt.indexOf(
+      "<artifact_context>",
+    );
+
+  if (
+    artifactContextIndex ===
+    -1
+  ) {
+    return prompt;
+  }
+
+  const visiblePrompt =
+    prompt
+      .slice(
+        0,
+        artifactContextIndex,
+      )
+      .trim();
+
+  return [
+    visiblePrompt,
+    "",
+    "이전 Workspace의 Artifact가 참고 자료로 연결되어 있습니다.",
+  ].join(
+    "\n",
+  );
+}
+
 export function WorkflowRecommendationPage() {
   const navigate =
     useNavigate();
@@ -236,6 +292,17 @@ export function WorkflowRecommendationPage() {
     state?.prompt ??
     "새로운 작업을 위한 Workflow를 추천합니다.";
 
+  const displayPrompt =
+    useMemo(
+      () =>
+        getPromptDisplayText(
+          prompt,
+        ),
+      [
+        prompt,
+      ],
+    );
+
   const [
     workflows,
     setWorkflows,
@@ -250,7 +317,9 @@ export function WorkflowRecommendationPage() {
   ] =
     useState<
       RecommendWorkflowResult | null
-    >(null);
+    >(
+      null,
+    );
 
   const [
     loading,
@@ -399,7 +468,9 @@ export function WorkflowRecommendationPage() {
           previewWorkflow,
 
           ...workflows.filter(
-            (workflow) =>
+            (
+              workflow,
+            ) =>
               workflow.id !==
               previewWorkflow.id,
           ),
@@ -416,8 +487,24 @@ export function WorkflowRecommendationPage() {
   ) {
     return (
       <div className="recommendation-page">
-        작업 목표를 분석하고
-        적합한 Workflow를 찾고 있습니다...
+        <header className="recommendation-header">
+          <span>
+            Guidance
+          </span>
+
+          <h1>
+            작업 목표를 분석하고 있습니다
+          </h1>
+
+          <p>
+            입력한 목표에 적합한 작업 방식과
+            Workflow 구조를 찾고 있습니다.
+          </p>
+        </header>
+
+        <div className="recommendation-status-message">
+          적합한 Workflow를 분석하는 중입니다...
+        </div>
       </div>
     );
   }
@@ -427,24 +514,38 @@ export function WorkflowRecommendationPage() {
   ) {
     return (
       <div className="recommendation-page">
-        <h1>
-          Workflow Recommendation
-        </h1>
+        <header className="recommendation-header">
+          <span>
+            Guidance
+          </span>
 
-        <p>
-          {error}
-        </p>
+          <h1>
+            Workflow 추천을 완료하지 못했습니다
+          </h1>
 
-        <button
-          type="button"
-          onClick={() => {
-            navigate(
-              "/new-task",
-            );
-          }}
-        >
-          다시 입력하기
-        </button>
+          <p>
+            작업 목표를 분석하는 과정에서
+            문제가 발생했습니다.
+          </p>
+        </header>
+
+        <section className="recommendation-empty">
+          <p>
+            {error}
+          </p>
+
+          <button
+            type="button"
+            className="primary-button"
+            onClick={() => {
+              navigate(
+                "/new-task",
+              );
+            }}
+          >
+            작업 다시 입력하기
+          </button>
+        </section>
       </div>
     );
   }
@@ -460,25 +561,39 @@ export function WorkflowRecommendationPage() {
   ) {
     return (
       <div className="recommendation-page">
-        <h1>
-          Workflow Recommendation
-        </h1>
+        <header className="recommendation-header">
+          <span>
+            Guidance
+          </span>
 
-        <p>
-          현재 작업에 사용할 추천 가이던스를
-          결정하지 못했습니다.
-        </p>
+          <h1>
+            추천 작업 흐름을 찾지 못했습니다
+          </h1>
 
-        <button
-          type="button"
-          onClick={() => {
-            navigate(
-              "/new-task",
-            );
-          }}
-        >
-          다시 입력하기
-        </button>
+          <p>
+            현재 입력으로 적절한 작업 방식을
+            결정하기 어렵습니다.
+          </p>
+        </header>
+
+        <section className="recommendation-empty">
+          <p>
+            작업 목표를 조금 더 구체적으로
+            입력한 뒤 다시 시도해주세요.
+          </p>
+
+          <button
+            type="button"
+            className="primary-button"
+            onClick={() => {
+              navigate(
+                "/new-task",
+              );
+            }}
+          >
+            작업 다시 입력하기
+          </button>
+        </section>
       </div>
     );
   }
@@ -509,6 +624,12 @@ export function WorkflowRecommendationPage() {
             goal:
               prompt,
 
+            /*
+             * 내부 도메인에서는 Playbook이라는
+             * 명칭을 계속 사용한다.
+             *
+             * 사용자 화면에만 "가이던스"로 표시한다.
+             */
             playbookId:
               selectedPlaybook.id,
           });
@@ -626,10 +747,9 @@ export function WorkflowRecommendationPage() {
         </h1>
 
         <p>
-          작업 목표를 분석하고
-          Reference Playbook을 기준으로
-          적합한 Workflow를
-          추천했습니다.
+          작업 목표를 분석하고 검증된 작업 패턴을
+          기준으로 적합한 Workflow와 실행 순서를
+          구성했습니다.
         </p>
       </header>
 
@@ -639,193 +759,119 @@ export function WorkflowRecommendationPage() {
         </span>
 
         <p>
-          {prompt}
+          {displayPrompt}
         </p>
       </section>
 
-      <section
-        style={{
-          display:
-            "grid",
+      <section className="guidance-summary-card">
+        <div className="guidance-summary-card__header">
+          <div>
+            <span className="guidance-summary-card__eyebrow">
+              추천 가이던스
+            </span>
 
-          gap:
-            "16px",
+            <h2>
+              {selectedPlaybook.name}
+            </h2>
 
-          padding:
-            "20px",
-
-          marginBottom:
-            "20px",
-
-          border:
-            "1px solid rgba(148, 163, 184, 0.2)",
-
-          borderRadius:
-            "12px",
-        }}
-      >
-        <div>
-          <span>
-            Recommended Playbook
-          </span>
-
-          <h2>
-            {
-              selectedPlaybook.name
-            }
-          </h2>
-
-          <p>
-            {
-              selectedPlaybook.description
-            }
-          </p>
+            <p>
+              {selectedPlaybook.description}
+            </p>
+          </div>
         </div>
 
-        <div
-          style={{
-            display:
-              "flex",
-
-            gap:
-              "12px",
-
-            flexWrap:
-              "wrap",
-          }}
-        >
-          <div>
-            <strong>
+        <div className="guidance-summary-metrics">
+          <div className="guidance-summary-metric">
+            <span>
               적합도
-            </strong>
+            </span>
 
-            <p>
-              {
-                recommendation?.confidence ??
-                0
-              }
+            <strong>
+              {recommendation?.confidence ??
+                0}
               %
-            </p>
+            </strong>
           </div>
 
-          <div>
-            <strong>
-              Category
-            </strong>
+          <div className="guidance-summary-metric">
+            <span>
+              작업 유형
+            </span>
 
-            <p>
-              {
-                selectedPlaybook.category
-              }
-            </p>
+            <strong>
+              {selectedPlaybook.category}
+            </strong>
           </div>
 
-          <div>
-            <strong>
-              Steps
-            </strong>
+          <div className="guidance-summary-metric">
+            <span>
+              작업 단계
+            </span>
 
-            <p>
-              {
-                selectedPlaybook.steps.length
-              }
-            </p>
+            <strong>
+              {selectedPlaybook.steps.length}
+              개
+            </strong>
           </div>
         </div>
 
         {recommendation &&
           recommendation.reasons.length >
             0 && (
-            <div>
+            <div className="guidance-reasons">
               <strong>
-                이 Workflow를 추천한 이유
+                이 작업 흐름을 추천한 이유
               </strong>
 
               <ul>
-                {
-                  recommendation.reasons.map(
-                    (
-                      reason,
-                    ) => (
-                      <li
-                        key={
-                          reason
-                        }
-                      >
-                        {
-                          reason
-                        }
-                      </li>
-                    ),
-                  )
-                }
+                {recommendation.reasons.map(
+                  (
+                    reason,
+                  ) => (
+                    <li
+                      key={
+                        reason
+                      }
+                    >
+                      {reason}
+                    </li>
+                  ),
+                )}
               </ul>
             </div>
           )}
 
-        <div>
+        <div className="guidance-flow">
           <strong>
-            Playbook 구조
+            추천 작업 흐름
           </strong>
 
-          <div
-            style={{
-              display:
-                "flex",
+          <div className="guidance-flow__steps">
+            {selectedPlaybook.steps.map(
+              (
+                step,
+                index,
+              ) => (
+                <div
+                  key={
+                    step.id
+                  }
+                  className="guidance-flow__step"
+                >
+                  <span className="guidance-flow__step-name">
+                    {step.name}
+                  </span>
 
-              alignItems:
-                "center",
-
-              gap:
-                "8px",
-
-              flexWrap:
-                "wrap",
-
-              marginTop:
-                "8px",
-            }}
-          >
-            {
-              selectedPlaybook.steps.map(
-                (
-                  step,
-                  index,
-                ) => (
-                  <div
-                    key={
-                      step.id
-                    }
-                    style={{
-                      display:
-                        "flex",
-
-                      alignItems:
-                        "center",
-
-                      gap:
-                        "8px",
-                    }}
-                  >
-                    <span>
-                      {
-                        step.name
-                      }
+                  {index <
+                    selectedPlaybook.steps.length -
+                      1 && (
+                    <span className="guidance-flow__arrow">
+                      →
                     </span>
-
-                    {
-                      index <
-                        selectedPlaybook.steps.length -
-                          1 && (
-                        <span>
-                          →
-                        </span>
-                      )
-                    }
-                  </div>
-                ),
-              )
-            }
+                  )}
+                </div>
+              ),
+            )}
           </div>
         </div>
       </section>
@@ -844,49 +890,27 @@ export function WorkflowRecommendationPage() {
             }}
           />
 
-          <p
-            style={{
-              marginTop:
-                "8px",
-            }}
-          >
-            위 Workflow는 구조 Preview입니다.
-            실행 또는 수정 시 추천 가이던스를 기반으로
-            새로운 Workflow가 생성됩니다.
+          <p className="recommendation-preview-notice">
+            위 Workflow는 추천 구조를 미리 보여주는
+            Preview입니다. 실행하거나 수정하면 현재
+            가이던스를 기준으로 새로운 Workflow가
+            생성됩니다.
           </p>
         </>
       )}
 
       {!previewWorkflow && (
-        <section
-          style={{
-            display:
-              "grid",
-
-            gap:
-              "12px",
-
-            marginTop:
-              "20px",
-          }}
-        >
+        <section className="recommendation-empty">
           <p>
-            기존 Workflow Preview는 없지만
-            추천 가이던스를 이용해 새 Workflow를
-            생성할 수 있습니다.
+            기존 Workflow 중 미리 보여줄 구조는
+            없지만, 현재 추천 가이던스를 기준으로
+            새로운 Workflow를 생성할 수 있습니다.
           </p>
 
-          <div
-            style={{
-              display:
-                "flex",
-
-              gap:
-                "8px",
-            }}
-          >
+          <div className="recommended-workflow-card__actions">
             <button
               type="button"
+              className="secondary-button"
               disabled={
                 creatingWorkflow ||
                 running
@@ -897,11 +921,12 @@ export function WorkflowRecommendationPage() {
             >
               {creatingWorkflow
                 ? "Workflow 생성 중..."
-                : "Customize"}
+                : "Builder에서 수정"}
             </button>
 
             <button
               type="button"
+              className="primary-button"
               disabled={
                 creatingWorkflow ||
                 running
@@ -912,23 +937,23 @@ export function WorkflowRecommendationPage() {
             >
               {running
                 ? "실행 준비 중..."
-                : "Run"}
+                : "바로 실행"}
             </button>
           </div>
         </section>
       )}
 
       {creatingWorkflow && (
-        <p>
-          추천 가이던스를 기반으로
-          Agent와 Tool을 배정하고 있습니다...
+        <p className="recommendation-status-message">
+          추천 가이던스를 기준으로 Agent와 Tool을
+          배정하고 Workflow를 생성하고 있습니다...
         </p>
       )}
 
       {running && (
-        <p>
-          추천 Workflow를 생성하고
-          실행을 준비하고 있습니다...
+        <p className="recommendation-status-message">
+          추천 Workflow를 생성하고 실행 환경을
+          준비하고 있습니다...
         </p>
       )}
 
@@ -943,100 +968,48 @@ export function WorkflowRecommendationPage() {
       {recommendation &&
         recommendation.alternatives.length >
           0 && (
-          <section
-            style={{
-              marginTop:
-                "24px",
-
-              marginBottom:
-                "24px",
-            }}
-          >
+          <section className="alternative-workflows">
             <h2>
-              다른 Playbook 후보
+              다른 가이던스 후보
             </h2>
 
-            <div
-              style={{
-                display:
-                  "grid",
+            <div className="alternative-workflows__grid">
+              {recommendation.alternatives.map(
+                (
+                  alternative,
+                ) => (
+                  <article
+                    key={
+                      alternative.playbook.id
+                    }
+                    className="alternative-workflow-card"
+                  >
+                    <h3>
+                      {alternative.playbook.name}
+                    </h3>
 
-                gap:
-                  "12px",
-              }}
-            >
-              {
-                recommendation.alternatives.map(
-                  (
-                    alternative,
-                  ) => (
-                    <article
-                      key={
-                        alternative.playbook.id
-                      }
-                      style={{
-                        padding:
-                          "16px",
+                    <p>
+                      {alternative.playbook.description}
+                    </p>
 
-                        border:
-                          "1px solid rgba(148, 163, 184, 0.2)",
+                    <span>
+                      적합도{" "}
+                      {alternative.score}
+                      %
+                    </span>
 
-                        borderRadius:
-                          "10px",
-                      }}
-                    >
-                      <div
-                        style={{
-                          display:
-                            "flex",
-
-                          alignItems:
-                            "center",
-
-                          justifyContent:
-                            "space-between",
-
-                          gap:
-                            "12px",
-                        }}
-                      >
-                        <strong>
-                          {
-                            alternative.playbook.name
-                          }
-                        </strong>
-
-                        <span>
-                          {
-                            alternative.score
-                          }
-                          %
-                        </span>
-                      </div>
-
+                    {alternative.matchedKeywords.length >
+                      0 && (
                       <p>
-                        {
-                          alternative.playbook.description
-                        }
+                        관련 키워드:{" "}
+                        {alternative.matchedKeywords.join(
+                          ", ",
+                        )}
                       </p>
-
-                      {
-                        alternative.matchedKeywords.length >
-                          0 && (
-                          <p>
-                            Matching:{" "}
-                            {
-                              alternative.matchedKeywords.join(
-                                ", ",
-                              )
-                            }
-                          </p>
-                        )
-                      }
-                    </article>
-                  ),
-                )
-              }
+                    )}
+                  </article>
+                ),
+              )}
             </div>
           </section>
         )}

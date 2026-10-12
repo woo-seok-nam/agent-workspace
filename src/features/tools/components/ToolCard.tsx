@@ -41,12 +41,20 @@ export function ToolCard({
           ? "tool-card--selected"
           : "",
       ]
-        .filter(Boolean)
-        .join(" ")}
-      onClick={onClick}
+        .filter(
+          Boolean,
+        )
+        .join(
+          " ",
+        )}
+      onClick={
+        onClick
+      }
     >
       <div className="tool-card__icon">
-        <Icon size={17} />
+        <Icon
+          size={17}
+        />
       </div>
 
       <div className="tool-card__content">
@@ -60,6 +68,7 @@ export function ToolCard({
               <CheckCircle2
                 size={10}
               />
+
               Active
             </span>
           ) : (
@@ -67,6 +76,7 @@ export function ToolCard({
               <CircleOff
                 size={10}
               />
+
               Disabled
             </span>
           )}
@@ -77,7 +87,14 @@ export function ToolCard({
             "설명이 없습니다."}
         </p>
 
-        <span className="tool-type">
+        <span
+          className={[
+            "tool-type",
+            `tool-type--${tool.type}`,
+          ].join(
+            " ",
+          )}
+        >
           {formatToolType(
             tool.type,
           )}
@@ -90,7 +107,9 @@ export function ToolCard({
 function getToolIcon(
   type: ToolType,
 ) {
-  switch (type) {
+  switch (
+    type
+  ) {
     case "web_search":
       return Globe2;
 
@@ -114,7 +133,9 @@ function getToolIcon(
 function formatToolType(
   type: ToolType,
 ) {
-  switch (type) {
+  switch (
+    type
+  ) {
     case "web_search":
       return "Web Search";
 

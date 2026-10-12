@@ -5,6 +5,7 @@ import {
 } from "react";
 
 import {
+  AlertCircle,
   Cpu,
   Search,
   Wrench,
@@ -43,148 +44,192 @@ export function ToolManagementPage() {
   const [
     providers,
     setProviders,
-  ] = useState<
-    ProviderConfig[]
-  >([]);
+  ] =
+    useState<
+      ProviderConfig[]
+    >([]);
 
   const [
     tools,
     setTools,
-  ] = useState<Tool[]>([]);
+  ] =
+    useState<
+      Tool[]
+    >([]);
 
   const [
     selectedToolId,
     setSelectedToolId,
-  ] = useState<
-    string | null
-  >(null);
+  ] =
+    useState<
+      string | null
+    >(
+      null,
+    );
 
   const [
     draftTool,
     setDraftTool,
-  ] = useState<
-    Tool | undefined
-  >();
+  ] =
+    useState<
+      Tool | undefined
+    >();
 
   const [
     search,
     setSearch,
-  ] = useState("");
+  ] =
+    useState(
+      "",
+    );
 
   const [
     loading,
     setLoading,
-  ] = useState(true);
+  ] =
+    useState(
+      true,
+    );
 
   const [
     error,
     setError,
-  ] = useState<
-    string | null
-  >(null);
+  ] =
+    useState<
+      string | null
+    >(
+      null,
+    );
 
-  useEffect(() => {
-    async function load() {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const [
-          providerData,
-          toolData,
-        ] =
-          await Promise.all([
-            fetchProviders(),
-            fetchTools(),
-          ]);
-
-        setProviders(
-          providerData,
-        );
-
-        setTools(
-          toolData,
-        );
-
-        const firstTool =
-          toolData[0];
-
-        if (firstTool) {
-          setSelectedToolId(
-            firstTool.id,
+  useEffect(
+    () => {
+      async function load() {
+        try {
+          setLoading(
+            true,
           );
 
-          setDraftTool(
-            structuredClone(
-              firstTool,
-            ),
+          setError(
+            null,
+          );
+
+          const [
+            providerData,
+            toolData,
+          ] =
+            await Promise.all([
+              fetchProviders(),
+              fetchTools(),
+            ]);
+
+          setProviders(
+            providerData,
+          );
+
+          setTools(
+            toolData,
+          );
+
+          const firstTool =
+            toolData[0];
+
+          if (
+            firstTool
+          ) {
+            setSelectedToolId(
+              firstTool.id,
+            );
+
+            setDraftTool(
+              structuredClone(
+                firstTool,
+              ),
+            );
+          }
+        } catch (
+          loadError
+        ) {
+          setError(
+            loadError instanceof
+              Error
+              ? loadError.message
+              : "Tools & Providers 정보를 불러오지 못했습니다.",
+          );
+        } finally {
+          setLoading(
+            false,
           );
         }
-      } catch (loadError) {
-        setError(
-          loadError instanceof Error
-            ? loadError.message
-            : "Tools & Providers 정보를 불러오지 못했습니다.",
-        );
-      } finally {
-        setLoading(false);
       }
-    }
 
-    void load();
-  }, []);
+      void load();
+    },
+    [],
+  );
 
-  useEffect(() => {
-    const selected =
-      tools.find(
-        (tool) =>
-          tool.id ===
-          selectedToolId,
+  useEffect(
+    () => {
+      const selected =
+        tools.find(
+          (
+            tool,
+          ) =>
+            tool.id ===
+            selectedToolId,
+        );
+
+      setDraftTool(
+        selected
+          ? structuredClone(
+              selected,
+            )
+          : undefined,
       );
-
-    setDraftTool(
-      selected
-        ? structuredClone(
-            selected,
-          )
-        : undefined,
-    );
-  }, [
-    selectedToolId,
-    tools,
-  ]);
+    },
+    [
+      selectedToolId,
+      tools,
+    ],
+  );
 
   const filteredTools =
-    useMemo(() => {
-      const keyword =
-        search
-          .trim()
-          .toLowerCase();
+    useMemo(
+      () => {
+        const keyword =
+          search
+            .trim()
+            .toLowerCase();
 
-      if (!keyword) {
-        return tools;
-      }
+        if (
+          !keyword
+        ) {
+          return tools;
+        }
 
-      return tools.filter(
-        (tool) =>
-          tool.name
-            .toLowerCase()
-            .includes(
-              keyword,
-            ) ||
+        return tools.filter(
           (
-            tool.description ??
-            ""
-          )
-            .toLowerCase()
-            .includes(
-              keyword,
-            ),
-      );
-    }, [
-      tools,
-      search,
-    ]);
+            tool,
+          ) =>
+            tool.name
+              .toLowerCase()
+              .includes(
+                keyword,
+              ) ||
+            (
+              tool.description ??
+              ""
+            )
+              .toLowerCase()
+              .includes(
+                keyword,
+              ),
+        );
+      },
+      [
+        tools,
+        search,
+      ],
+    );
 
   const handleProviderToggle =
     async (
@@ -193,12 +238,16 @@ export function ToolManagementPage() {
     ) => {
       const provider =
         providers.find(
-          (item) =>
+          (
+            item,
+          ) =>
             item.id ===
             providerId,
         );
 
-      if (!provider) {
+      if (
+        !provider
+      ) {
         return;
       }
 
@@ -213,27 +262,36 @@ export function ToolManagementPage() {
           );
 
         setProviders(
-          (current) =>
+          (
+            current,
+          ) =>
             current.map(
-              (item) =>
+              (
+                item,
+              ) =>
                 item.id ===
                 savedProvider.id
                   ? savedProvider
                   : item,
             ),
         );
-      } catch (updateError) {
+      } catch (
+        updateError
+      ) {
         window.alert(
-          updateError instanceof Error
-            ? updateError.message
-            : "Provider 수정에 실패했습니다.",
+          updateError instanceof
+            Error
+              ? updateError.message
+              : "Provider 수정에 실패했습니다.",
         );
       }
     };
 
   const handleSaveTool =
     async () => {
-      if (!draftTool) {
+      if (
+        !draftTool
+      ) {
         return;
       }
 
@@ -264,9 +322,13 @@ export function ToolManagementPage() {
           );
 
         setTools(
-          (current) =>
+          (
+            current,
+          ) =>
             current.map(
-              (tool) =>
+              (
+                tool,
+              ) =>
                 tool.id ===
                 savedTool.id
                   ? savedTool
@@ -283,39 +345,84 @@ export function ToolManagementPage() {
         window.alert(
           "Tool 설정이 저장되었습니다.",
         );
-      } catch (saveError) {
+      } catch (
+        saveError
+      ) {
         window.alert(
-          saveError instanceof Error
-            ? saveError.message
-            : "Tool 설정 저장에 실패했습니다.",
+          saveError instanceof
+            Error
+              ? saveError.message
+              : "Tool 설정 저장에 실패했습니다.",
         );
       }
     };
 
-  if (loading) {
+  if (
+    loading
+  ) {
     return (
       <div className="tool-management-page">
-        Tools & Providers 정보를 불러오는 중입니다...
+        <div className="tool-editor__empty">
+          <div className="tool-editor__empty-icon">
+            <Wrench
+              size={24}
+            />
+          </div>
+
+          <h2>
+            Tools & Providers를 불러오는 중입니다
+          </h2>
+
+          <p>
+            사용할 수 있는 AI Provider와 Tool 설정을
+            확인하고 있습니다.
+          </p>
+        </div>
       </div>
     );
   }
 
-  if (error) {
+  if (
+    error
+  ) {
     return (
       <div className="tool-management-page">
-        <h1>
-          Tools & Providers
-        </h1>
+        <header className="tool-management-header">
+          <div>
+            <span>
+              Agent Workspace
+            </span>
 
-        <p>
-          {error}
-        </p>
+            <h1>
+              Tools & Providers
+            </h1>
 
-        <p>
-          Backend 서버가
-          http://localhost:4000 에서
-          실행 중인지 확인하세요.
-        </p>
+            <p>
+              AI Provider와 Tool 정보를 불러오지 못했습니다.
+            </p>
+          </div>
+        </header>
+
+        <div className="tool-backend-notice">
+          <strong>
+            <AlertCircle
+              size={13}
+            />{" "}
+            연결 오류
+          </strong>
+
+          <p>
+            {error}
+          </p>
+
+          <p>
+            Backend 서버가
+            {" "}
+            http://localhost:4000
+            {" "}
+            에서 정상적으로 실행 중인지 확인하세요.
+          </p>
+        </div>
       </div>
     );
   }
@@ -333,9 +440,8 @@ export function ToolManagementPage() {
           </h1>
 
           <p>
-            Agent가 사용할 AI
-            Provider와 외부 Tool을
-            관리합니다.
+            Agent가 사용할 AI Provider와 외부 Tool의
+            활성 상태 및 기본 설정을 관리합니다.
           </p>
         </div>
       </header>
@@ -343,7 +449,9 @@ export function ToolManagementPage() {
       <section className="provider-section">
         <div className="management-section-heading">
           <div>
-            <Cpu size={16} />
+            <Cpu
+              size={16}
+            />
 
             <div>
               <h2>
@@ -351,9 +459,7 @@ export function ToolManagementPage() {
               </h2>
 
               <p>
-                Agent가 사용할 AI
-                모델 공급자를
-                관리합니다.
+                Agent가 사용할 AI 모델 공급자를 관리합니다.
               </p>
             </div>
           </div>
@@ -363,29 +469,46 @@ export function ToolManagementPage() {
           </span>
         </div>
 
-        <div className="provider-grid">
-          {providers.map(
-            (provider) => (
-              <ProviderCard
-                key={
-                  provider.id
-                }
-                provider={
-                  provider
-                }
-                onToggle={
-                  handleProviderToggle
-                }
-              />
-            ),
-          )}
-        </div>
+        {providers.length >
+        0 ? (
+          <div className="provider-grid">
+            {providers.map(
+              (
+                provider,
+              ) => (
+                <ProviderCard
+                  key={
+                    provider.id
+                  }
+                  provider={
+                    provider
+                  }
+                  onToggle={
+                    handleProviderToggle
+                  }
+                />
+              ),
+            )}
+          </div>
+        ) : (
+          <div className="tool-backend-notice">
+            <strong>
+              등록된 Provider가 없습니다.
+            </strong>
+
+            <p>
+              Provider 설정이 추가되면 이 영역에 표시됩니다.
+            </p>
+          </div>
+        )}
       </section>
 
       <section className="tools-section">
         <div className="management-section-heading">
           <div>
-            <Wrench size={16} />
+            <Wrench
+              size={16}
+            />
 
             <div>
               <h2>
@@ -393,7 +516,7 @@ export function ToolManagementPage() {
               </h2>
 
               <p>
-                Agent가 실행할 수 있는
+                Agent가 Workflow 실행 중 사용할 수 있는
                 기능을 관리합니다.
               </p>
             </div>
@@ -421,8 +544,7 @@ export function ToolManagementPage() {
                   event,
                 ) => {
                   setSearch(
-                    event.target
-                      .value,
+                    event.target.value,
                   );
                 }}
               />
@@ -432,7 +554,9 @@ export function ToolManagementPage() {
               {filteredTools.length >
               0 ? (
                 filteredTools.map(
-                  (tool) => (
+                  (
+                    tool,
+                  ) => (
                     <ToolCard
                       key={
                         tool.id
@@ -444,17 +568,19 @@ export function ToolManagementPage() {
                         tool.id ===
                         selectedToolId
                       }
-                      onClick={() =>
+                      onClick={() => {
                         setSelectedToolId(
                           tool.id,
-                        )
-                      }
+                        );
+                      }}
                     />
                   ),
                 )
               ) : (
                 <div className="tool-list__empty">
-                  검색 결과가 없습니다.
+                  {search.trim()
+                    ? "검색 결과가 없습니다."
+                    : "등록된 Tool이 없습니다."}
                 </div>
               )}
             </div>

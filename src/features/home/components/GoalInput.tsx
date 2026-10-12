@@ -14,6 +14,57 @@ import {
   Search,
 } from "lucide-react";
 
+interface QuickAction {
+  label: string;
+
+  prompt: string;
+
+  icon: typeof Search;
+}
+
+const QUICK_ACTIONS: QuickAction[] = [
+  {
+    label:
+      "웹 검색",
+
+    prompt:
+      "웹에서 최신 정보를 조사하고 핵심 내용을 정리해줘.",
+
+    icon:
+      Search,
+  },
+  {
+    label:
+      "문서 분석",
+
+    prompt:
+      "문서를 분석하고 핵심 내용과 중요한 내용을 정리해줘.",
+
+    icon:
+      FileText,
+  },
+  {
+    label:
+      "데이터 분석",
+
+    prompt:
+      "데이터를 분석하고 주요 패턴과 인사이트를 정리해줘.",
+
+    icon:
+      BarChart3,
+  },
+  {
+    label:
+      "코드 작업",
+
+    prompt:
+      "코드를 분석하고 필요한 수정 사항을 찾아 개선해줘.",
+
+    icon:
+      Code2,
+  },
+];
+
 export function GoalInput() {
   const navigate =
     useNavigate();
@@ -22,14 +73,18 @@ export function GoalInput() {
     prompt,
     setPrompt,
   ] =
-    useState("");
+    useState(
+      "",
+    );
 
   const handleSubmit =
     () => {
       const trimmedPrompt =
         prompt.trim();
 
-      if (!trimmedPrompt) {
+      if (
+        !trimmedPrompt
+      ) {
         return;
       }
 
@@ -44,6 +99,18 @@ export function GoalInput() {
       );
     };
 
+  const handleQuickAction = (
+    quickPrompt: string,
+  ) => {
+    setPrompt(
+      quickPrompt,
+    );
+  };
+
+  const canSubmit =
+    prompt.trim().length >
+    0;
+
   return (
     <section className="goal-input">
       <textarea
@@ -51,6 +118,8 @@ export function GoalInput() {
         value={
           prompt
         }
+        placeholder="하고 싶은 작업을 자연어로 입력하세요. 예: 경쟁사 AI Agent 플랫폼을 조사하고 비교 보고서를 작성해줘."
+        aria-label="작업 목표"
         onChange={(
           event,
         ) => {
@@ -62,7 +131,7 @@ export function GoalInput() {
           event,
         ) => {
           /*
-           * 한글 입력 조합 중 Enter가
+           * 한글 등 IME 입력 조합 중 Enter가
            * submit으로 처리되는 것을 방지한다.
            */
           if (
@@ -74,7 +143,7 @@ export function GoalInput() {
 
           /*
            * Shift + Enter
-           * → 기본 textarea 동작 유지
+           * → textarea 기본 동작 유지
            * → 줄바꿈
            */
           if (
@@ -87,8 +156,8 @@ export function GoalInput() {
 
           /*
            * Enter
-           * → 줄바꿈 방지
-           * → 기존 submit 로직 실행
+           * → 기본 줄바꿈 방지
+           * → 작업 목표 제출
            */
           if (
             event.key ===
@@ -103,67 +172,56 @@ export function GoalInput() {
 
       <div className="goal-input__footer">
         <div className="goal-input__actions">
-          <button
-            type="button"
-            className="quick-action"
-          >
-            <Search
-              size={
-                14
-              }
-            />
-            웹 검색
-          </button>
+          {QUICK_ACTIONS.map(
+            (
+              action,
+            ) => {
+              const Icon =
+                action.icon;
 
-          <button
-            type="button"
-            className="quick-action"
-          >
-            <FileText
-              size={
-                14
-              }
-            />
-            문서 분석
-          </button>
+              return (
+                <button
+                  key={
+                    action.label
+                  }
+                  type="button"
+                  className="quick-action"
+                  title={`${action.label} 예시 입력`}
+                  onClick={() => {
+                    handleQuickAction(
+                      action.prompt,
+                    );
+                  }}
+                >
+                  <Icon
+                    size={14}
+                  />
 
-          <button
-            type="button"
-            className="quick-action"
-          >
-            <BarChart3
-              size={
-                14
-              }
-            />
-            데이터 분석
-          </button>
-
-          <button
-            type="button"
-            className="quick-action"
-          >
-            <Code2
-              size={
-                14
-              }
-            />
-            코드 작업
-          </button>
+                  {action.label}
+                </button>
+              );
+            },
+          )}
         </div>
 
         <button
           type="button"
           className="goal-input__submit"
           aria-label="작업 시작"
+          title={
+            canSubmit
+              ? "추천 작업 흐름 찾기"
+              : "작업 목표를 입력하세요"
+          }
+          disabled={
+            !canSubmit
+          }
           onClick={
             handleSubmit
           }
         >
           <ArrowRight
-            size={
-              18
-            }
+            size={18}
           />
         </button>
       </div>

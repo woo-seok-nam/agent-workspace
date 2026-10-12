@@ -45,7 +45,10 @@ export function RunHistoryTable({
   onOpenResult,
   onDeleteRun,
 }: RunHistoryTableProps) {
-  if (runs.length === 0) {
+  if (
+    runs.length ===
+    0
+  ) {
     return (
       <div className="run-history-empty">
         조건에 맞는 실행 기록이 없습니다.
@@ -54,9 +57,12 @@ export function RunHistoryTable({
   }
 
   const allVisibleSelected =
-    runs.length > 0 &&
+    runs.length >
+      0 &&
     runs.every(
-      (run) =>
+      (
+        run,
+      ) =>
         selectedRunIds.has(
           run.id,
         ),
@@ -64,7 +70,9 @@ export function RunHistoryTable({
 
   const someVisibleSelected =
     runs.some(
-      (run) =>
+      (
+        run,
+      ) =>
         selectedRunIds.has(
           run.id,
         ),
@@ -99,19 +107,41 @@ export function RunHistoryTable({
               />
             </th>
 
-            <th>Run</th>
-            <th>Status</th>
-            <th>Duration</th>
-            <th>Tokens</th>
-            <th>Cost</th>
-            <th>Started</th>
-            <th />
+            <th>
+              Run
+            </th>
+
+            <th>
+              Status
+            </th>
+
+            <th>
+              Duration
+            </th>
+
+            <th>
+              Tokens
+            </th>
+
+            <th>
+              Cost
+            </th>
+
+            <th>
+              Started
+            </th>
+
+            <th>
+              Actions
+            </th>
           </tr>
         </thead>
 
         <tbody>
           {runs.map(
-            (run) => {
+            (
+              run,
+            ) => {
               const deleting =
                 deletingRunIds.has(
                   run.id,
@@ -163,15 +193,17 @@ export function RunHistoryTable({
                   <td>
                     <div className="run-history-name">
                       <strong>
-                        {
-                          run.name
-                        }
+                        {run.name}
                       </strong>
 
-                      <span>
-                        {
+                      <span
+                        title={
                           run.id
                         }
+                      >
+                        {shortenId(
+                          run.id,
+                        )}
                       </span>
                     </div>
                   </td>
@@ -203,9 +235,8 @@ export function RunHistoryTable({
                   </td>
 
                   <td>
-                    $
-                    {run.cost.toFixed(
-                      2,
+                    {formatCost(
+                      run.cost,
                     )}
                   </td>
 
@@ -220,20 +251,19 @@ export function RunHistoryTable({
                       <button
                         type="button"
                         className="run-history-icon-button"
+                        aria-label={`${run.name} Runtime 열기`}
                         title="Runtime 열기"
                         disabled={
                           deleting
                         }
-                        onClick={() =>
+                        onClick={() => {
                           onOpenRun(
                             run.id,
-                          )
-                        }
+                          );
+                        }}
                       >
                         <ExternalLink
-                          size={
-                            14
-                          }
+                          size={14}
                         />
                       </button>
 
@@ -242,20 +272,19 @@ export function RunHistoryTable({
                         <button
                           type="button"
                           className="run-history-icon-button"
+                          aria-label={`${run.name} 결과 보기`}
                           title="결과 보기"
                           disabled={
                             deleting
                           }
-                          onClick={() =>
+                          onClick={() => {
                             onOpenResult(
                               run.id,
-                            )
-                          }
+                            );
+                          }}
                         >
                           <FileText
-                            size={
-                              14
-                            }
+                            size={14}
                           />
                         </button>
                       )}
@@ -263,6 +292,7 @@ export function RunHistoryTable({
                       <button
                         type="button"
                         className="run-history-icon-button run-history-delete-button"
+                        aria-label={`${run.name} 실행 기록 삭제`}
                         title="실행 기록 삭제"
                         disabled={
                           deleting
@@ -275,16 +305,12 @@ export function RunHistoryTable({
                       >
                         {deleting ? (
                           <Loader2
-                            size={
-                              14
-                            }
+                            size={14}
                             className="run-history-spinner"
                           />
                         ) : (
                           <Trash2
-                            size={
-                              14
-                            }
+                            size={14}
                           />
                         )}
                       </button>
@@ -304,7 +330,9 @@ function getStatusLabel(
   status:
     WorkflowRun["status"],
 ) {
-  switch (status) {
+  switch (
+    status
+  ) {
     case "IDLE":
       return "대기";
 
@@ -335,11 +363,15 @@ function getRunDuration(
   startedAt?: string,
   completedAt?: string,
 ) {
-  if (!startedAt) {
+  if (
+    !startedAt
+  ) {
     return "-";
   }
 
-  if (!completedAt) {
+  if (
+    !completedAt
+  ) {
     return "진행 중";
   }
 
@@ -353,11 +385,23 @@ function getRunDuration(
       completedAt,
     ).getTime();
 
+  if (
+    Number.isNaN(
+      start,
+    ) ||
+    Number.isNaN(
+      end,
+    )
+  ) {
+    return "-";
+  }
+
   const seconds =
     Math.max(
       0,
       Math.round(
-        (end - start) /
+        (end -
+          start) /
           1000,
       ),
     );
@@ -379,19 +423,49 @@ function getRunDuration(
     seconds %
     60;
 
-  return `${minutes}분 ${remainingSeconds}초`;
+  if (
+    minutes <
+    60
+  ) {
+    return `${minutes}분 ${remainingSeconds}초`;
+  }
+
+  const hours =
+    Math.floor(
+      minutes /
+      60,
+    );
+
+  const remainingMinutes =
+    minutes %
+    60;
+
+  return `${hours}시간 ${remainingMinutes}분`;
 }
 
 function formatDate(
   date?: string,
 ) {
-  if (!date) {
+  if (
+    !date
+  ) {
     return "-";
   }
 
-  return new Date(
-    date,
-  ).toLocaleString(
+  const parsedDate =
+    new Date(
+      date,
+    );
+
+  if (
+    Number.isNaN(
+      parsedDate.getTime(),
+    )
+  ) {
+    return "-";
+  }
+
+  return parsedDate.toLocaleString(
     "ko-KR",
     {
       year:
@@ -410,4 +484,46 @@ function formatDate(
         "2-digit",
     },
   );
+}
+
+function formatCost(
+  cost: number,
+) {
+  if (
+    cost ===
+    0
+  ) {
+    return "$0.00";
+  }
+
+  if (
+    cost <
+    0.01
+  ) {
+    return `$${cost.toFixed(
+      4,
+    )}`;
+  }
+
+  return `$${cost.toFixed(
+    2,
+  )}`;
+}
+
+function shortenId(
+  id: string,
+) {
+  if (
+    id.length <=
+    18
+  ) {
+    return id;
+  }
+
+  return `${id.slice(
+    0,
+    8,
+  )}...${id.slice(
+    -6,
+  )}`;
 }

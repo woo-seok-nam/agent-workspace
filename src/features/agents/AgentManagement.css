@@ -3,11 +3,12 @@
   max-width: 1180px;
 
   margin: 0 auto;
+  padding-bottom: 48px;
 }
 
-/* =========================
+/* =========================================================
    Header
-========================= */
+   ========================================================= */
 
 .agent-management-header {
   display: flex;
@@ -20,36 +21,47 @@
 }
 
 .agent-management-header > div > span {
+  display: inline-flex;
+
   color: var(--color-primary);
 
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.025em;
 }
 
 .agent-management-header h1 {
   margin: 5px 0 0;
 
-  font-size: 26px;
+  color: var(--color-text-primary);
+
+  font-size: 27px;
+  font-weight: 750;
   letter-spacing: -0.6px;
 }
 
 .agent-management-header p {
+  max-width: 720px;
+
   margin: 7px 0 0;
 
   color: var(--color-text-secondary);
 
-  font-size: 11px;
+  font-size: 12px;
+  line-height: 1.55;
 }
 
 .agent-management-header > button {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+
   gap: 6px;
 }
 
-/* =========================
+/* =========================================================
    Layout
-========================= */
+   ========================================================= */
 
 .agent-management-layout {
   display: grid;
@@ -62,14 +74,17 @@
   overflow: hidden;
 
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: 13px;
 
   background: #ffffff;
+
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.025);
 }
 
-/* =========================
+/* =========================================================
    Agent List
-========================= */
+   ========================================================= */
 
 .agent-list-panel {
   min-width: 0;
@@ -96,17 +111,21 @@
 .agent-list-panel__header > div {
   display: flex;
   align-items: center;
+
   gap: 7px;
 
+  color: var(--color-text-primary);
+
   font-size: 11px;
+  font-weight: 700;
 }
 
 .agent-list-panel__header > span {
   display: grid;
   place-items: center;
 
-  min-width: 22px;
-  height: 22px;
+  min-width: 24px;
+  height: 24px;
 
   padding: 0 6px;
 
@@ -120,20 +139,20 @@
   font-weight: 700;
 }
 
-/* =========================
+/* =========================================================
    Search
-========================= */
+   ========================================================= */
 
 .agent-search {
   display: flex;
   align-items: center;
+
   gap: 7px;
 
+  height: 36px;
+
   margin: 10px;
-
-  padding: 0 9px;
-
-  height: 34px;
+  padding: 0 10px;
 
   border: 1px solid var(--color-border);
   border-radius: 8px;
@@ -141,6 +160,18 @@
   background: #ffffff;
 
   color: #94a3b8;
+
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.agent-search:focus-within {
+  border-color: #9bbcff;
+
+  box-shadow:
+    0 0 0 2px
+      rgba(37, 99, 235, 0.08);
 }
 
 .agent-search input {
@@ -153,12 +184,19 @@
 
   background: transparent;
 
+  color: var(--color-text-primary);
+
+  font-family: inherit;
   font-size: 10px;
 }
 
-/* =========================
+.agent-search input::placeholder {
+  color: #94a3b8;
+}
+
+/* =========================================================
    Agent Cards
-========================= */
+   ========================================================= */
 
 .agent-list {
   overflow-y: auto;
@@ -171,12 +209,12 @@
 .agent-card {
   display: flex;
   align-items: flex-start;
+
   gap: 10px;
 
   width: 100%;
 
   margin-bottom: 5px;
-
   padding: 11px;
 
   border: 1px solid transparent;
@@ -186,13 +224,15 @@
 
   color: var(--color-text-primary);
 
+  font-family: inherit;
   text-align: left;
 
   cursor: pointer;
 
   transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease;
+    background-color 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease;
 }
 
 .agent-card:hover {
@@ -205,6 +245,10 @@
   border-color: #b8cdfd;
 
   background: #eef4ff;
+
+  box-shadow:
+    inset 3px 0 0
+      var(--color-primary);
 }
 
 .agent-card__icon {
@@ -245,7 +289,10 @@
 .agent-card__title strong {
   overflow: hidden;
 
+  color: var(--color-text-primary);
+
   font-size: 10px;
+  font-weight: 700;
 
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -254,11 +301,12 @@
 .agent-card__status {
   display: inline-flex;
   align-items: center;
+
   gap: 3px;
 
   flex-shrink: 0;
 
-  padding: 3px 5px;
+  padding: 3px 6px;
 
   border-radius: 999px;
 
@@ -297,7 +345,9 @@
 .agent-card__meta {
   display: flex;
   align-items: center;
-  gap: 9px;
+  flex-wrap: wrap;
+
+  gap: 8px;
 
   color: #64748b;
 
@@ -307,6 +357,7 @@
 .agent-card__meta span {
   display: inline-flex;
   align-items: center;
+
   gap: 3px;
 }
 
@@ -316,13 +367,12 @@
   color: var(--color-text-secondary);
 
   font-size: 10px;
-
   text-align: center;
 }
 
-/* =========================
+/* =========================================================
    Editor
-========================= */
+   ========================================================= */
 
 .agent-editor {
   min-width: 0;
@@ -343,6 +393,8 @@
 
   border-bottom:
     1px solid var(--color-border);
+
+  background: #ffffff;
 }
 
 .agent-editor__header span {
@@ -355,17 +407,26 @@
 .agent-editor__header h2 {
   margin: 4px 0 0;
 
+  color: var(--color-text-primary);
+
   font-size: 16px;
+  font-weight: 720;
+  letter-spacing: -0.2px;
 }
 
 .agent-editor__header-actions {
   display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
   gap: 7px;
 }
 
 .agent-editor__header-actions button {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+
   gap: 5px;
 }
 
@@ -373,9 +434,69 @@
   padding: 20px;
 }
 
-/* =========================
+/* =========================================================
+   Global save / unsaved state
+   STEP 37 / 38
+   ========================================================= */
+
+.agent-save-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 16px;
+
+  margin-bottom: 16px;
+  padding: 11px 13px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 9px;
+
+  background: #fbfcfe;
+}
+
+.agent-save-bar--dirty {
+  border-color: #bfd0ff;
+
+  background: #f5f8ff;
+}
+
+.agent-save-bar__status {
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 10px;
+}
+
+.agent-save-bar--dirty
+  .agent-save-bar__status {
+  color: #1d4ed8;
+
+  font-weight: 650;
+}
+
+.agent-unsaved-badge {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 3px 6px;
+
+  border-radius: 999px;
+
+  background: #fff7ed;
+  color: #b45309;
+
+  font-size: 8px;
+  font-weight: 700;
+}
+
+/* =========================================================
    Empty Editor
-========================= */
+   ========================================================= */
 
 .agent-editor__empty {
   display: flex;
@@ -407,6 +528,8 @@
 .agent-editor__empty h2 {
   margin: 14px 0 0;
 
+  color: var(--color-text-primary);
+
   font-size: 15px;
 }
 
@@ -421,23 +544,22 @@
   line-height: 1.6;
 }
 
-/* =========================
+/* =========================================================
    Sections
-========================= */
+   ========================================================= */
 
 .agent-settings-section {
-  padding-bottom: 22px;
+  margin-bottom: 16px;
+  padding: 16px;
 
-  margin-bottom: 22px;
+  border: 1px solid #e8edf3;
+  border-radius: 10px;
 
-  border-bottom:
-    1px solid #edf0f4;
+  background: #ffffff;
 }
 
 .agent-settings-section:last-child {
   margin-bottom: 0;
-
-  border-bottom: none;
 }
 
 .agent-settings-section__heading {
@@ -447,20 +569,26 @@
 .agent-settings-section__heading h3 {
   margin: 0;
 
+  color: var(--color-text-primary);
+
   font-size: 12px;
+  font-weight: 700;
 }
 
 .agent-settings-section__heading p {
+  max-width: 680px;
+
   margin: 4px 0 0;
 
   color: var(--color-text-secondary);
 
   font-size: 9px;
+  line-height: 1.5;
 }
 
-/* =========================
+/* =========================================================
    Forms
-========================= */
+   ========================================================= */
 
 .agent-form-grid {
   display: grid;
@@ -477,18 +605,22 @@
 .agent-form-field {
   display: flex;
   flex-direction: column;
+
   gap: 6px;
+
+  min-width: 0;
 }
 
 .agent-form-field--full {
-  grid-column: 1 / -1;
+  grid-column:
+    1 / -1;
 }
 
 .agent-form-field > label {
   color: #374151;
 
   font-size: 9px;
-  font-weight: 600;
+  font-weight: 650;
 }
 
 .agent-form-field input,
@@ -503,9 +635,15 @@
 
   color: var(--color-text-primary);
 
+  font-family: inherit;
   font-size: 10px;
 
   outline: none;
+
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    background 140ms ease;
 }
 
 .agent-form-field > input,
@@ -516,13 +654,19 @@
 }
 
 .agent-form-field textarea {
-  min-height: 90px;
+  min-height: 100px;
 
   padding: 9px 10px;
 
   resize: vertical;
 
-  line-height: 1.5;
+  line-height: 1.55;
+}
+
+.agent-form-field input:hover,
+.agent-form-field select:hover,
+.agent-form-field textarea:hover {
+  border-color: #cbd5e1;
 }
 
 .agent-form-field input:focus,
@@ -535,23 +679,89 @@
       rgba(37, 99, 235, 0.08);
 }
 
-/* =========================
+.agent-form-field input:disabled,
+.agent-form-field select:disabled,
+.agent-form-field textarea:disabled {
+  background: #f8fafc;
+
+  color: #94a3b8;
+
+  cursor: not-allowed;
+}
+
+.agent-form-hint {
+  color: var(--color-text-secondary);
+
+  font-size: 8px;
+  line-height: 1.45;
+}
+
+/* =========================================================
+   Execution config
+   ========================================================= */
+
+.agent-execution-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+
+  gap: 10px;
+}
+
+.agent-execution-card {
+  min-width: 0;
+
+  padding: 10px;
+
+  border: 1px solid #e8edf3;
+  border-radius: 8px;
+
+  background: #fbfcfe;
+}
+
+.agent-execution-card label {
+  display: block;
+
+  color: var(--color-text-secondary);
+
+  font-size: 8px;
+  font-weight: 650;
+}
+
+/* =========================================================
    Enabled
-========================= */
+   ========================================================= */
 
 .agent-enabled-control {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
 
-  min-height: 58px;
+  gap: 9px;
 
-  padding: 10px;
+  min-height: 60px;
+
+  padding: 11px;
 
   border: 1px solid var(--color-border);
   border-radius: 8px;
 
+  background: #ffffff;
+
   cursor: pointer;
+
+  transition:
+    border-color 140ms ease,
+    background 140ms ease;
+}
+
+.agent-enabled-control:hover {
+  border-color: #cbd5e1;
+
+  background: #fbfcfe;
 }
 
 .agent-enabled-control input {
@@ -561,6 +771,9 @@
   height: 14px;
 
   margin-top: 2px;
+
+  accent-color:
+    var(--color-primary);
 }
 
 .agent-enabled-control > div {
@@ -569,6 +782,8 @@
 }
 
 .agent-enabled-control strong {
+  color: var(--color-text-primary);
+
   font-size: 9px;
 }
 
@@ -578,12 +793,12 @@
   color: var(--color-text-secondary);
 
   font-size: 8px;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
-/* =========================
+/* =========================================================
    Tools
-========================= */
+   ========================================================= */
 
 .agent-tool-grid {
   display: grid;
@@ -600,6 +815,7 @@
 .agent-tool-card {
   display: flex;
   align-items: flex-start;
+
   gap: 8px;
 
   padding: 10px;
@@ -607,11 +823,14 @@
   border: 1px solid var(--color-border);
   border-radius: 8px;
 
+  background: #ffffff;
+
   cursor: pointer;
 
   transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease;
+    background-color 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease;
 }
 
 .agent-tool-card:hover {
@@ -622,6 +841,10 @@
   border-color: #9bbcff;
 
   background: #f5f8ff;
+
+  box-shadow:
+    inset 3px 0 0
+      var(--color-primary);
 }
 
 .agent-tool-card input {
@@ -631,6 +854,9 @@
   height: 13px;
 
   margin-top: 1px;
+
+  accent-color:
+    var(--color-primary);
 }
 
 .agent-tool-card > div {
@@ -641,6 +867,8 @@
 }
 
 .agent-tool-card strong {
+  color: var(--color-text-primary);
+
   font-size: 9px;
 }
 
@@ -653,9 +881,21 @@
   line-height: 1.4;
 }
 
-/* =========================
+.agent-tool-card--disabled {
+  opacity: 0.45;
+
+  cursor: not-allowed;
+}
+
+.agent-tool-card--disabled:hover {
+  background: transparent;
+
+  box-shadow: none;
+}
+
+/* =========================================================
    Agent ID
-========================= */
+   ========================================================= */
 
 .agent-id-box {
   padding: 10px;
@@ -673,15 +913,124 @@
     monospace;
 
   font-size: 9px;
+  line-height: 1.5;
 
   word-break: break-all;
 }
 
-/* =========================
-   Responsive
-========================= */
+/* =========================================================
+   Shared agent buttons
+   ========================================================= */
 
-@media (max-width: 900px) {
+.agent-primary-button,
+.agent-secondary-button,
+.agent-danger-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
+
+  height: 36px;
+
+  padding: 0 12px;
+
+  border-radius: 8px;
+
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 650;
+
+  cursor: pointer;
+
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 100ms ease,
+    opacity 140ms ease;
+}
+
+.agent-primary-button {
+  border: 1px solid var(--color-primary);
+
+  background: var(--color-primary);
+
+  color: #ffffff;
+}
+
+.agent-primary-button:hover:not(:disabled) {
+  filter: brightness(0.96);
+
+  box-shadow:
+    0 4px 12px
+      rgba(37, 99, 235, 0.14);
+}
+
+.agent-secondary-button {
+  border: 1px solid var(--color-border);
+
+  background: #ffffff;
+
+  color: var(--color-text-primary);
+}
+
+.agent-secondary-button:hover:not(:disabled) {
+  border-color: #cbd5e1;
+
+  background: #f8fafc;
+}
+
+.agent-danger-button {
+  border: 1px solid #fecaca;
+
+  background: #ffffff;
+
+  color: #dc2626;
+}
+
+.agent-danger-button:hover:not(:disabled) {
+  background: #fff7f7;
+}
+
+.agent-primary-button:active:not(:disabled),
+.agent-secondary-button:active:not(:disabled),
+.agent-danger-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.agent-primary-button:disabled,
+.agent-secondary-button:disabled,
+.agent-danger-button:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.5;
+}
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media (
+  max-width: 1000px
+) {
+  .agent-management-layout {
+    grid-template-columns:
+      260px minmax(0, 1fr);
+  }
+
+  .agent-execution-grid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+}
+
+@media (
+  max-width: 900px
+) {
   .agent-management-layout {
     grid-template-columns:
       240px minmax(0, 1fr);
@@ -698,12 +1047,60 @@
   }
 }
 
-.agent-tool-card--disabled {
-  opacity: 0.45;
+@media (
+  max-width: 720px
+) {
+  .agent-management-page {
+    padding-bottom: 32px;
+  }
 
-  cursor: not-allowed;
-}
+  .agent-management-header {
+    flex-direction: column;
+  }
 
-.agent-tool-card--disabled:hover {
-  background: transparent;
+  .agent-management-header > button {
+    width: 100%;
+  }
+
+  .agent-management-layout {
+    grid-template-columns:
+      1fr;
+  }
+
+  .agent-list-panel {
+    border-right: none;
+    border-bottom:
+      1px solid var(--color-border);
+  }
+
+  .agent-list {
+    max-height: 320px;
+  }
+
+  .agent-editor__header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .agent-editor__header-actions {
+    width: 100%;
+  }
+
+  .agent-editor__header-actions button {
+    flex: 1;
+  }
+
+  .agent-editor__body {
+    padding: 16px;
+  }
+
+  .agent-execution-grid {
+    grid-template-columns:
+      1fr;
+  }
+
+  .agent-save-bar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }

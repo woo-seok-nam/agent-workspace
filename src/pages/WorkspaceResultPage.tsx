@@ -80,7 +80,9 @@ export function WorkspaceResultPage() {
   ] =
     useState<
       WorkflowRun | null
-    >(null);
+    >(
+      null,
+    );
 
   const [
     workflow,
@@ -88,7 +90,9 @@ export function WorkspaceResultPage() {
   ] =
     useState<
       Workflow | null
-    >(null);
+    >(
+      null,
+    );
 
   const [
     artifacts,
@@ -124,12 +128,6 @@ export function WorkspaceResultPage() {
       false,
     );
 
-  /*
-   * STEP 51
-   *
-   * 현재 새 작업 Context로 변환 중인 Artifact.
-   * 중복 클릭을 방지하기 위해 Artifact ID를 저장한다.
-   */
   const [
     reusingArtifactId,
     setReusingArtifactId,
@@ -355,15 +353,6 @@ export function WorkspaceResultPage() {
     }
   }
 
-  /*
-   * STEP 51
-   *
-   * 선택한 Artifact의 실제 내용을 Backend에서 읽은 뒤
-   * 새로운 작업의 Context로 변환한다.
-   *
-   * Artifact 내부 문자열은 사용자 명령이 아니라
-   * 참고 자료임을 명확히 구분해서 Prompt에 포함한다.
-   */
   async function handleReuseArtifact(
     artifact: Artifact,
   ) {
@@ -434,7 +423,9 @@ export function WorkspaceResultPage() {
   ) {
     return (
       <div className="workspace-result-page">
-        결과를 불러오는 중입니다...
+        <div className="workspace-result-loading">
+          Workspace 결과를 불러오는 중입니다...
+        </div>
       </div>
     );
   }
@@ -444,13 +435,12 @@ export function WorkspaceResultPage() {
   ) {
     return (
       <div className="workspace-result-page">
-        <h1>
-          Workspace
-        </h1>
-
-        <p>
+        <div
+          className="workspace-result-error"
+          role="alert"
+        >
           {error}
-        </p>
+        </div>
       </div>
     );
   }
@@ -461,7 +451,9 @@ export function WorkspaceResultPage() {
   ) {
     return (
       <div className="workspace-result-page">
-        실행 결과를 찾을 수 없습니다.
+        <div className="workspace-result-error">
+          실행 결과를 찾을 수 없습니다.
+        </div>
       </div>
     );
   }
@@ -486,7 +478,7 @@ export function WorkspaceResultPage() {
             }}
           >
             <ArrowLeft
-              size={16}
+              size={15}
             />
 
             Runtime으로 돌아가기
@@ -494,7 +486,7 @@ export function WorkspaceResultPage() {
 
           <div className="workspace-result-heading">
             <span>
-              Workspace Result
+              Workspace
             </span>
 
             <h1>
@@ -516,7 +508,7 @@ export function WorkspaceResultPage() {
           )}
         >
           <CheckCircle2
-            size={15}
+            size={14}
           />
 
           {getStatusLabel(
@@ -601,7 +593,7 @@ export function WorkspaceResultPage() {
                 }}
               >
                 <Copy
-                  size={15}
+                  size={14}
                 />
 
                 {copied
@@ -626,8 +618,7 @@ export function WorkspaceResultPage() {
 
                 <p>
                   Workflow가 완료되면 마지막
-                  Step의 결과가 여기에
-                  표시됩니다.
+                  Step의 결과가 여기에 표시됩니다.
                 </p>
               </div>
             )}
@@ -733,9 +724,9 @@ export function WorkspaceResultPage() {
                 </strong>
 
                 <p>
-                  새로 완료되는 Workflow부터
-                  최종 결과가 report.md로
-                  저장됩니다.
+                  Workflow 결과가 Artifact로 저장되면
+                  이 영역에서 다운로드하거나 다음 작업에
+                  재사용할 수 있습니다.
                 </p>
               </div>
             )}
@@ -795,7 +786,7 @@ export function WorkspaceResultPage() {
                       <div className="workspace-step-result__header">
                         <div>
                           <CheckCircle2
-                            size={14}
+                            size={13}
                           />
 
                           <strong>
@@ -868,6 +859,11 @@ function ArtifactItem({
       artifact,
     );
 
+  const format =
+    getArtifactFormat(
+      artifact,
+    );
+
   return (
     <article className="workspace-artifact-item">
       <div className="workspace-artifact-item__main">
@@ -894,6 +890,17 @@ function ArtifactItem({
             )}
           </span>
 
+          <span
+            className={[
+              "workspace-artifact-format",
+              `workspace-artifact-format--${format.className}`,
+            ].join(
+              " ",
+            )}
+          >
+            {format.label}
+          </span>
+
           <time>
             {new Date(
               artifact.createdAt,
@@ -904,25 +911,11 @@ function ArtifactItem({
         </div>
       </div>
 
-      <div
-        style={{
-          display:
-            "flex",
-
-          alignItems:
-            "center",
-
-          gap:
-            "8px",
-
-          flexWrap:
-            "wrap",
-        }}
-      >
+      <div className="workspace-artifact-actions">
         {reusable && (
           <button
             type="button"
-            className="workspace-artifact-download"
+            className="workspace-artifact-download workspace-artifact-reuse"
             disabled={
               reuseDisabled
             }
@@ -933,7 +926,7 @@ function ArtifactItem({
             }}
           >
             <Plus
-              size={15}
+              size={14}
             />
 
             {reusing
@@ -949,7 +942,7 @@ function ArtifactItem({
           )}
         >
           <Download
-            size={15}
+            size={14}
           />
 
           다운로드
@@ -977,7 +970,7 @@ function ResultStat({
     <article className="workspace-result-stat">
       <div className="workspace-result-stat__icon">
         <Icon
-          size={17}
+          size={16}
         />
       </div>
 
@@ -1212,7 +1205,120 @@ function isReusableArtifact(
     return true;
   }
 
+  /*
+   * PDF / HWP는 향후 Parser가 추가되면
+   * 여기에서 true로 확장한다.
+   */
   return false;
+}
+
+function getArtifactFormat(
+  artifact: Artifact,
+) {
+  const name =
+    artifact.name.toLowerCase();
+
+  if (
+    name.endsWith(
+      ".pdf",
+    ) ||
+    artifact.mimeType ===
+      "application/pdf"
+  ) {
+    return {
+      label:
+        "PDF",
+
+      className:
+        "pdf",
+    };
+  }
+
+  if (
+    name.endsWith(
+      ".hwp",
+    ) ||
+    artifact.mimeType ===
+      "application/x-hwp" ||
+    artifact.mimeType ===
+      "application/haansofthwp"
+  ) {
+    return {
+      label:
+        "HWP",
+
+      className:
+        "hwp",
+    };
+  }
+
+  if (
+    name.endsWith(
+      ".docx",
+    )
+  ) {
+    return {
+      label:
+        "DOCX",
+
+      className:
+        "docx",
+    };
+  }
+
+  if (
+    name.endsWith(
+      ".xlsx",
+    )
+  ) {
+    return {
+      label:
+        "XLSX",
+
+      className:
+        "xlsx",
+    };
+  }
+
+  if (
+    name.endsWith(
+      ".pptx",
+    )
+  ) {
+    return {
+      label:
+        "PPTX",
+
+      className:
+        "pptx",
+    };
+  }
+
+  if (
+    artifact.type ===
+      "markdown" ||
+    artifact.mimeType ===
+      "text/markdown" ||
+    name.endsWith(
+      ".md",
+    )
+  ) {
+    return {
+      label:
+        "MARKDOWN",
+
+      className:
+        "markdown",
+    };
+  }
+
+  return {
+    label:
+      artifact.type.toUpperCase(),
+
+    className:
+      "default",
+  };
 }
 
 function getArtifactTypeLabel(
@@ -1224,21 +1330,61 @@ function getArtifactTypeLabel(
     artifact.mimeType ===
       "text/markdown"
   ) {
-    return "Markdown";
+    return "Markdown 문서";
   }
 
   if (
     artifact.mimeType ===
     "application/pdf"
   ) {
-    return "PDF";
+    return "PDF 문서";
   }
 
   if (
     artifact.mimeType ===
     "application/json"
   ) {
-    return "JSON";
+    return "JSON 데이터";
+  }
+
+  if (
+    artifact.name
+      .toLowerCase()
+      .endsWith(
+        ".hwp",
+      )
+  ) {
+    return "한글 문서";
+  }
+
+  if (
+    artifact.name
+      .toLowerCase()
+      .endsWith(
+        ".docx",
+      )
+  ) {
+    return "Word 문서";
+  }
+
+  if (
+    artifact.name
+      .toLowerCase()
+      .endsWith(
+        ".xlsx",
+      )
+  ) {
+    return "Excel 문서";
+  }
+
+  if (
+    artifact.name
+      .toLowerCase()
+      .endsWith(
+        ".pptx",
+      )
+  ) {
+    return "PowerPoint 문서";
   }
 
   return artifact.type;

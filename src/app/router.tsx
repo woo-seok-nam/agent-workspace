@@ -12,10 +12,6 @@ import {
 } from "../pages/HomePage";
 
 import {
-  PlaceholderPage,
-} from "../pages/PlaceholderPage";
-
-import {
   WorkflowRecommendationPage,
 } from "../pages/WorkflowRecommendationPage";
 
@@ -77,8 +73,12 @@ export const router =
         {
           path: "new-task",
 
-          element:
-            <PlaceholderPage />,
+          element: (
+            <Navigate
+              to="/home"
+              replace
+            />
+          ),
         },
 
         {
@@ -122,8 +122,12 @@ export const router =
         {
           path: "workspace",
 
-          element:
-            <PlaceholderPage />,
+          element: (
+            <Navigate
+              to="/runs"
+              replace
+            />
+          ),
         },
 
         {
@@ -151,8 +155,12 @@ export const router =
         {
           path: "settings",
 
-          element:
-            <PlaceholderPage />,
+          element: (
+            <Navigate
+              to="/tools"
+              replace
+            />
+          ),
         },
       ],
     },

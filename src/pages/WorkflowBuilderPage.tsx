@@ -5,6 +5,13 @@ import {
 } from "react";
 
 import {
+  AlertCircle,
+  CheckCircle2,
+  GitBranch,
+  TriangleAlert,
+} from "lucide-react";
+
+import {
   useNavigate,
   useParams,
 } from "react-router-dom";
@@ -51,6 +58,7 @@ import "../features/workflow/WorkflowBuilder.css";
 
 interface ValidationAgent {
   id: string;
+
   enabled: boolean;
 }
 
@@ -130,91 +138,120 @@ export function WorkflowBuilderPage() {
     removeNode,
     addEdge,
     updateEdge,
+    removeEdge,
     markSaved,
   } =
     useWorkflowBuilderStore();
 
-  useEffect(() => {
-    if (
-      !workflowId
-    ) {
-      setError(
-        "Workflow ID가 없습니다.",
-      );
-
-      setLoading(
-        false,
-      );
-
-      return;
-    }
-
-    const currentWorkflowId =
-      workflowId;
-
-    async function loadWorkflow() {
-      try {
-        setLoading(
-          true,
-        );
-
-        setError(
-          null,
-        );
-
-        const [
-          workflow,
-          agents,
-        ] =
-          await Promise.all([
-            fetchWorkflow(
-              currentWorkflowId,
-            ),
-
-            fetchAgents(),
-          ]);
-
-        setDescription(
-          workflow.description,
-        );
-
-        setValidationAgents(
-          agents.map(
-            (
-              agent,
-            ) => ({
-              id:
-                agent.id,
-
-              enabled:
-                agent.enabled,
-            }),
-          ),
-        );
-
-        initializeWorkflow(
-          workflow,
-        );
-      } catch (
-        loadError
+  useEffect(
+    () => {
+      if (
+        !workflowId
       ) {
         setError(
-          loadError instanceof Error
-            ? loadError.message
-            : "Workflow를 불러오지 못했습니다.",
+          "Workflow ID가 없습니다.",
         );
-      } finally {
+
         setLoading(
           false,
         );
-      }
-    }
 
-    void loadWorkflow();
-  }, [
-    workflowId,
-    initializeWorkflow,
-  ]);
+        return;
+      }
+
+      const currentWorkflowId =
+        workflowId;
+
+      let cancelled =
+        false;
+
+      async function loadWorkflow() {
+        try {
+          setLoading(
+            true,
+          );
+
+          setError(
+            null,
+          );
+
+          const [
+            workflow,
+            agents,
+          ] =
+            await Promise.all([
+              fetchWorkflow(
+                currentWorkflowId,
+              ),
+
+              fetchAgents(),
+            ]);
+
+          if (
+            cancelled
+          ) {
+            return;
+          }
+
+          setDescription(
+            workflow.description,
+          );
+
+          setValidationAgents(
+            agents.map(
+              (
+                agent,
+              ) => ({
+                id:
+                  agent.id,
+
+                enabled:
+                  agent.enabled,
+              }),
+            ),
+          );
+
+          initializeWorkflow(
+            workflow,
+          );
+        } catch (
+          loadError
+        ) {
+          if (
+            cancelled
+          ) {
+            return;
+          }
+
+          setError(
+            loadError instanceof
+              Error
+              ? loadError.message
+              : "Workflow를 불러오지 못했습니다.",
+          );
+        } finally {
+          if (
+            !cancelled
+          ) {
+            setLoading(
+              false,
+            );
+          }
+        }
+      }
+
+      void loadWorkflow();
+
+      return () => {
+        cancelled =
+          true;
+      };
+    },
+    [
+      workflowId,
+      initializeWorkflow,
+    ],
+  );
 
   const selectedNode =
     useMemo(
@@ -330,7 +367,8 @@ export function WorkflowBuilderPage() {
         saveError
       ) {
         window.alert(
-          saveError instanceof Error
+          saveError instanceof
+            Error
             ? saveError.message
             : "Workflow 저장에 실패했습니다.",
         );
@@ -428,7 +466,8 @@ export function WorkflowBuilderPage() {
           validationError
         ) {
           window.alert(
-            validationError instanceof Error
+            validationError instanceof
+              Error
               ? validationError.message
               : "저장된 Workflow를 검증하지 못했습니다.",
           );
@@ -502,7 +541,8 @@ export function WorkflowBuilderPage() {
         runError
       ) {
         window.alert(
-          runError instanceof Error
+          runError instanceof
+            Error
             ? runError.message
             : "Workflow Run 생성에 실패했습니다.",
         );
@@ -522,8 +562,17 @@ export function WorkflowBuilderPage() {
         `edge-${crypto.randomUUID()}`,
 
       source,
+
       target,
     });
+  };
+
+  const handleEdgeDelete = (
+    edgeId: string,
+  ) => {
+    removeEdge(
+      edgeId,
+    );
   };
 
   if (
@@ -531,7 +580,20 @@ export function WorkflowBuilderPage() {
   ) {
     return (
       <div className="workflow-builder-page">
-        Workflow를 불러오는 중입니다...
+        <div className="builder-loading">
+          <GitBranch
+            size={28}
+          />
+
+          <strong>
+            Workflow를 불러오는 중입니다
+          </strong>
+
+          <span>
+            Node, 연결 정보와 Agent 구성을
+            준비하고 있습니다.
+          </span>
+        </div>
       </div>
     );
   }
@@ -541,22 +603,46 @@ export function WorkflowBuilderPage() {
   ) {
     return (
       <div className="workflow-builder-page">
-        <h1>
-          Workflow Builder
-        </h1>
+        <div className="builder-error">
+          <AlertCircle
+            size={28}
+          />
 
-        <p>
-          {error}
-        </p>
+          <strong>
+            Workflow를 불러오지 못했습니다
+          </strong>
 
-        <p>
-          Backend 서버가
-          http://localhost:4000
-          에서 실행 중인지 확인하세요.
-        </p>
+          <span>
+            {error}
+          </span>
+
+          <span>
+            Backend 서버가
+            {" "}
+            http://localhost:4000
+            {" "}
+            에서 실행 중인지 확인하세요.
+          </span>
+        </div>
       </div>
     );
   }
+
+  const validationIssues =
+    validationResult.errors.length >
+    0
+      ? validationResult.errors
+      : validationResult.warnings;
+
+  const validationState =
+    validationResult.errors.length >
+    0
+      ? "error"
+      : validationResult
+            .warnings.length >
+          0
+        ? "warning"
+        : "valid";
 
   return (
     <div className="workflow-builder-page">
@@ -581,161 +667,122 @@ export function WorkflowBuilderPage() {
         }}
       />
 
-      <div
-        style={{
-          padding:
-            "0 20px",
-        }}
-      >
-        {validationResult
-          .errors.length >
-        0 ? (
-          <div
-            style={{
-              marginBottom:
-                "12px",
-
-              padding:
-                "10px 12px",
-
-              border:
-                "1px solid rgba(220, 38, 38, 0.25)",
-
-              borderRadius:
-                "8px",
-
-              background:
-                "rgba(220, 38, 38, 0.06)",
-
-              fontSize:
-                "12px",
-            }}
-          >
+      <div className="builder-validation">
+        <div className="builder-validation__summary">
+          <div>
             <strong>
               Workflow Validation
-              {" · "}
-              {
-                validationResult
-                  .errors
-                  .length
-              }
-              개 오류
             </strong>
-
-            <div
-              style={{
-                marginTop:
-                  "6px",
-              }}
-            >
-              {validationResult
-                .errors
-                .slice(
-                  0,
-                  3,
-                )
-                .map(
-                  (
-                    issue,
-                  ) => (
-                    <div
-                      key={`${issue.code}-${issue.nodeId ?? issue.edgeId ?? issue.message}`}
-                    >
-                      •{" "}
-                      {
-                        issue.message
-                      }
-                    </div>
-                  ),
-                )}
-
-              {validationResult
-                .errors
-                .length >
-                3 && (
-                <div>
-                  외{" "}
-                  {validationResult
-                    .errors
-                    .length -
-                    3}
-                  개 오류가 있습니다.
-                </div>
-              )}
-            </div>
           </div>
-        ) : validationResult
-            .warnings
-            .length >
-          0 ? (
-          <div
-            style={{
-              marginBottom:
-                "12px",
 
-              padding:
-                "10px 12px",
+          <div className="builder-validation__counts">
+            {validationState ===
+              "valid" && (
+              <span className="builder-validation-badge builder-validation-badge--valid">
+                <CheckCircle2
+                  size={10}
+                />
 
-              border:
-                "1px solid rgba(217, 119, 6, 0.25)",
+                Valid
+              </span>
+            )}
 
-              borderRadius:
-                "8px",
+            {validationResult
+              .warnings.length >
+              0 && (
+              <span className="builder-validation-badge builder-validation-badge--warning">
+                <TriangleAlert
+                  size={10}
+                />
 
-              background:
-                "rgba(217, 119, 6, 0.06)",
+                {
+                  validationResult
+                    .warnings
+                    .length
+                }{" "}
+                Warnings
+              </span>
+            )}
 
-              fontSize:
-                "12px",
-            }}
-          >
-            <strong>
-              Workflow Validation
-              {" · "}
-              {
-                validationResult
-                  .warnings
-                  .length
-              }
-              개 경고
-            </strong>
+            {validationResult
+              .errors.length >
+              0 && (
+              <span className="builder-validation-badge builder-validation-badge--error">
+                <AlertCircle
+                  size={10}
+                />
 
-            <div
-              style={{
-                marginTop:
-                  "6px",
-              }}
-            >
-              {
-                validationResult
-                  .warnings[0]
-                  ?.message
-              }
-            </div>
+                {
+                  validationResult
+                    .errors
+                    .length
+                }{" "}
+                Errors
+              </span>
+            )}
+          </div>
+        </div>
+
+        {validationState ===
+        "valid" ? (
+          <div className="builder-validation-item">
+            Workflow 구조가 정상입니다.
+            저장하거나 실행할 수 있습니다.
           </div>
         ) : (
-          <div
-            style={{
-              marginBottom:
-                "12px",
+          <div className="builder-validation__list">
+            {validationIssues
+              .slice(
+                0,
+                3,
+              )
+              .map(
+                (
+                  issue,
+                ) => (
+                  <div
+                    key={`${issue.code}-${issue.nodeId ?? issue.edgeId ?? issue.message}`}
+                    className={[
+                      "builder-validation-item",
 
-              padding:
-                "8px 12px",
+                      validationState ===
+                      "error"
+                        ? "builder-validation-item--error"
+                        : "builder-validation-item--warning",
+                    ].join(
+                      " ",
+                    )}
+                  >
+                    {issue.message}
+                  </div>
+                ),
+              )}
 
-              border:
-                "1px solid rgba(22, 163, 74, 0.2)",
+            {validationIssues.length >
+              3 && (
+              <div
+                className={[
+                  "builder-validation-item",
 
-              borderRadius:
-                "8px",
-
-              background:
-                "rgba(22, 163, 74, 0.05)",
-
-              fontSize:
-                "12px",
-            }}
-          >
-            Workflow 구조가 정상입니다.
+                  validationState ===
+                  "error"
+                    ? "builder-validation-item--error"
+                    : "builder-validation-item--warning",
+                ].join(
+                  " ",
+                )}
+              >
+                외{" "}
+                {validationIssues.length -
+                  3}
+                개의{" "}
+                {validationState ===
+                "error"
+                  ? "오류"
+                  : "경고"}
+                가 있습니다.
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -766,11 +813,17 @@ export function WorkflowBuilderPage() {
           onEdgeCreate={
             handleEdgeCreate
           }
+          onEdgeDelete={
+            handleEdgeDelete
+          }
         />
 
         <StepSettingsPanel
           node={
             selectedNode
+          }
+          nodes={
+            nodes
           }
           edges={
             edges

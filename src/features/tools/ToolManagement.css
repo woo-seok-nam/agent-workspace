@@ -3,41 +3,58 @@
   max-width: 1180px;
 
   margin: 0 auto;
+  padding-bottom: 48px;
 }
+
+/* =========================================================
+   Header
+   ========================================================= */
 
 .tool-management-header {
   margin-bottom: 24px;
 }
 
 .tool-management-header > div > span {
+  display: inline-flex;
+
   color: var(--color-primary);
 
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.025em;
 }
 
 .tool-management-header h1 {
   margin: 5px 0 0;
 
-  font-size: 26px;
+  color: var(--color-text-primary);
 
+  font-size: 27px;
+  font-weight: 750;
   letter-spacing: -0.6px;
 }
 
 .tool-management-header p {
+  max-width: 720px;
+
   margin: 7px 0 0;
 
   color: var(--color-text-secondary);
 
-  font-size: 11px;
+  font-size: 12px;
+  line-height: 1.55;
 }
 
-/* =========================
+/* =========================================================
    Section Heading
-========================= */
+   ========================================================= */
 
 .provider-section {
   margin-bottom: 28px;
+}
+
+.tools-section {
+  margin-bottom: 30px;
 }
 
 .management-section-heading {
@@ -45,19 +62,25 @@
   align-items: center;
   justify-content: space-between;
 
+  gap: 16px;
+
   margin-bottom: 12px;
 }
 
 .management-section-heading > div {
   display: flex;
   align-items: flex-start;
+
   gap: 8px;
 }
 
 .management-section-heading h2 {
   margin: 0;
 
+  color: var(--color-text-primary);
+
   font-size: 14px;
+  font-weight: 720;
 }
 
 .management-section-heading p {
@@ -66,14 +89,15 @@
   color: var(--color-text-secondary);
 
   font-size: 9px;
+  line-height: 1.5;
 }
 
 .management-section-heading > span {
   display: grid;
   place-items: center;
 
-  min-width: 22px;
-  height: 22px;
+  min-width: 24px;
+  height: 24px;
 
   padding: 0 6px;
 
@@ -87,9 +111,9 @@
   font-weight: 700;
 }
 
-/* =========================
+/* =========================================================
    Providers
-========================= */
+   ========================================================= */
 
 .provider-grid {
   display: grid;
@@ -110,11 +134,26 @@
   border-radius: 11px;
 
   background: #ffffff;
+
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.02);
+
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.provider-card:hover {
+  border-color: #cbd5e1;
+
+  box-shadow:
+    0 4px 14px rgba(15, 23, 42, 0.04);
 }
 
 .provider-card__top {
   display: flex;
   align-items: flex-start;
+
   gap: 10px;
 
   padding: 14px;
@@ -145,11 +184,16 @@
 .provider-card__title > div {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+
   gap: 7px;
 }
 
 .provider-card__title strong {
+  color: var(--color-text-primary);
+
   font-size: 11px;
+  font-weight: 700;
 }
 
 .provider-card__title p {
@@ -161,12 +205,17 @@
   line-height: 1.5;
 }
 
+/* =========================================================
+   Provider Status
+   ========================================================= */
+
 .provider-status {
   display: inline-flex;
   align-items: center;
+
   gap: 3px;
 
-  padding: 3px 5px;
+  padding: 3px 6px;
 
   border-radius: 999px;
 
@@ -192,9 +241,9 @@
   color: #dc2626;
 }
 
-/* =========================
+/* =========================================================
    Provider Toggle
-========================= */
+   ========================================================= */
 
 .provider-toggle {
   position: relative;
@@ -223,7 +272,7 @@
   background: #cbd5e1;
 
   transition:
-    background-color 0.2s ease;
+    background-color 160ms ease;
 }
 
 .provider-toggle span::after {
@@ -241,8 +290,11 @@
 
   content: "";
 
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.15);
+
   transition:
-    transform 0.2s ease;
+    transform 160ms ease;
 }
 
 .provider-toggle
@@ -258,25 +310,38 @@
     translateX(16px);
 }
 
-/* =========================
+.provider-toggle
+  input:focus-visible
+  + span {
+  box-shadow:
+    0 0 0 2px
+      rgba(37, 99, 235, 0.15);
+}
+
+/* =========================================================
    Provider Models
-========================= */
+   ========================================================= */
 
 .provider-card__models {
   padding: 10px 14px;
 
-  border-top: 1px solid #edf0f4;
+  border-top:
+    1px solid #edf0f4;
+
+  background: #fbfcfe;
 }
 
 .provider-card__models > span {
   color: var(--color-text-secondary);
 
   font-size: 8px;
+  font-weight: 600;
 }
 
 .provider-card__models > div {
   display: flex;
   flex-wrap: wrap;
+
   gap: 5px;
 
   margin-top: 6px;
@@ -285,13 +350,15 @@
 .provider-model-chip {
   padding: 4px 6px;
 
+  border: 1px solid #e8edf3;
   border-radius: 5px;
 
-  background: #f1f5f9;
+  background: #ffffff;
 
   color: #475569;
 
   font-size: 8px;
+  font-weight: 550;
 }
 
 .provider-card__models p {
@@ -305,22 +372,20 @@
 .provider-card__notice {
   padding: 7px 14px;
 
-  border-top: 1px solid #edf0f4;
+  border-top:
+    1px solid #edf0f4;
 
-  background: #fbfcfe;
+  background: #f8fafc;
 
   color: var(--color-text-secondary);
 
   font-size: 8px;
+  line-height: 1.5;
 }
 
-/* =========================
-   Tools
-========================= */
-
-.tools-section {
-  margin-bottom: 30px;
-}
+/* =========================================================
+   Tool Layout
+   ========================================================= */
 
 .tool-management-layout {
   display: grid;
@@ -333,9 +398,12 @@
   overflow: hidden;
 
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: 13px;
 
   background: #ffffff;
+
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.025);
 }
 
 .tool-list-panel {
@@ -345,16 +413,20 @@
   background: #fbfcfe;
 }
 
+/* =========================================================
+   Search
+   ========================================================= */
+
 .tool-search {
   display: flex;
   align-items: center;
+
   gap: 7px;
 
-  height: 35px;
+  height: 36px;
 
   margin: 10px;
-
-  padding: 0 9px;
+  padding: 0 10px;
 
   border: 1px solid var(--color-border);
   border-radius: 8px;
@@ -362,6 +434,18 @@
   background: #ffffff;
 
   color: #94a3b8;
+
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.tool-search:focus-within {
+  border-color: #9bbcff;
+
+  box-shadow:
+    0 0 0 2px
+      rgba(37, 99, 235, 0.08);
 }
 
 .tool-search input {
@@ -370,27 +454,41 @@
   min-width: 0;
 
   border: none;
-
   outline: none;
 
   background: transparent;
 
+  color: var(--color-text-primary);
+
+  font-family: inherit;
   font-size: 10px;
 }
 
+.tool-search input::placeholder {
+  color: #94a3b8;
+}
+
+/* =========================================================
+   Tool Cards
+   ========================================================= */
+
 .tool-list {
+  overflow-y: auto;
+
+  max-height: 520px;
+
   padding: 0 8px 10px;
 }
 
 .tool-card {
   display: flex;
   align-items: flex-start;
+
   gap: 9px;
 
   width: 100%;
 
   margin-bottom: 5px;
-
   padding: 10px;
 
   border: 1px solid transparent;
@@ -400,9 +498,15 @@
 
   color: var(--color-text-primary);
 
+  font-family: inherit;
   text-align: left;
 
   cursor: pointer;
+
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease;
 }
 
 .tool-card:hover {
@@ -415,6 +519,10 @@
   border-color: #b8cdfd;
 
   background: #eef4ff;
+
+  box-shadow:
+    inset 3px 0 0
+      var(--color-primary);
 }
 
 .tool-card__icon {
@@ -453,26 +561,42 @@
 }
 
 .tool-card__title strong {
+  overflow: hidden;
+
+  color: var(--color-text-primary);
+
   font-size: 10px;
+  font-weight: 700;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tool-card__content p {
+  display: -webkit-box;
+
+  overflow: hidden;
+
   margin: 4px 0 6px;
 
   color: var(--color-text-secondary);
 
   font-size: 8px;
   line-height: 1.4;
+
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .tool-status {
   display: inline-flex;
   align-items: center;
+
   gap: 3px;
 
   flex-shrink: 0;
 
-  padding: 3px 5px;
+  padding: 3px 6px;
 
   border-radius: 999px;
 
@@ -493,9 +617,21 @@
 }
 
 .tool-type {
+  display: inline-flex;
+  align-items: center;
+
+  width: fit-content;
+
+  padding: 3px 5px;
+
+  border-radius: 5px;
+
+  background: #f1f5f9;
+
   color: #64748b;
 
   font-size: 7px;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -505,22 +641,59 @@
   color: var(--color-text-secondary);
 
   font-size: 10px;
-
   text-align: center;
 }
 
-/* =========================
+/* =========================================================
+   Future Tool Type visual states
+   ========================================================= */
+
+.tool-type--web_search {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.tool-type--browser {
+  background: #eef2ff;
+  color: #4f46e5;
+}
+
+.tool-type--file {
+  background: #f8fafc;
+  color: #475569;
+}
+
+.tool-type--api {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.tool-type--code {
+  background: #f5f3ff;
+  color: #7c3aed;
+}
+
+.tool-type--document_parser {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+/* =========================================================
    Tool Editor
-========================= */
+   ========================================================= */
 
 .tool-editor {
   min-width: 0;
+
+  background: #ffffff;
 }
 
 .tool-editor__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+
+  gap: 18px;
 
   min-height: 68px;
 
@@ -540,18 +713,28 @@
 .tool-editor__header h2 {
   margin: 4px 0 0;
 
+  color: var(--color-text-primary);
+
   font-size: 16px;
+  font-weight: 720;
+  letter-spacing: -0.2px;
 }
 
 .tool-editor__header button {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+
   gap: 5px;
 }
 
 .tool-editor__body {
   padding: 20px;
 }
+
+/* =========================================================
+   Empty Editor
+   ========================================================= */
 
 .tool-editor__empty {
   display: flex;
@@ -560,6 +743,8 @@
   justify-content: center;
 
   min-height: 530px;
+
+  padding: 30px;
 
   text-align: center;
 }
@@ -581,27 +766,39 @@
 .tool-editor__empty h2 {
   margin: 13px 0 0;
 
+  color: var(--color-text-primary);
+
   font-size: 14px;
+  font-weight: 700;
 }
 
 .tool-editor__empty p {
+  max-width: 330px;
+
   margin: 6px 0 0;
 
   color: var(--color-text-secondary);
 
   font-size: 9px;
+  line-height: 1.6;
 }
 
-/* =========================
+/* =========================================================
    Settings
-========================= */
+   ========================================================= */
 
 .tool-settings-section {
-  margin-bottom: 22px;
+  margin-bottom: 16px;
+  padding: 16px;
 
-  padding-bottom: 22px;
+  border: 1px solid #e8edf3;
+  border-radius: 10px;
 
-  border-bottom: 1px solid #edf0f4;
+  background: #ffffff;
+}
+
+.tool-settings-section:last-child {
+  margin-bottom: 0;
 }
 
 .tool-settings-section__heading {
@@ -611,34 +808,50 @@
 .tool-settings-section__heading h3 {
   margin: 0;
 
+  color: var(--color-text-primary);
+
   font-size: 12px;
+  font-weight: 700;
 }
 
 .tool-settings-section__heading p {
+  max-width: 680px;
+
   margin: 4px 0 0;
 
   color: var(--color-text-secondary);
 
   font-size: 9px;
+  line-height: 1.5;
 }
+
+/* =========================================================
+   Forms
+   ========================================================= */
 
 .tool-form-field {
   display: flex;
   flex-direction: column;
+
   gap: 6px;
 
   margin-bottom: 14px;
+}
+
+.tool-form-field:last-child {
+  margin-bottom: 0;
 }
 
 .tool-form-field label {
   color: #374151;
 
   font-size: 9px;
-  font-weight: 600;
+  font-weight: 650;
 }
 
 .tool-form-field input,
-.tool-form-field textarea {
+.tool-form-field textarea,
+.tool-form-field select {
   width: 100%;
 
   border: 1px solid var(--color-border);
@@ -648,34 +861,66 @@
 
   color: var(--color-text-primary);
 
+  font-family: inherit;
   font-size: 10px;
 
   outline: none;
+
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    background 140ms ease;
 }
 
-.tool-form-field input {
+.tool-form-field input,
+.tool-form-field select {
   height: 36px;
 
   padding: 0 10px;
 }
 
 .tool-form-field textarea {
-  min-height: 90px;
+  min-height: 100px;
 
   padding: 9px 10px;
 
   resize: vertical;
+
+  line-height: 1.55;
+}
+
+.tool-form-field input:hover:not([readonly]),
+.tool-form-field textarea:hover,
+.tool-form-field select:hover {
+  border-color: #cbd5e1;
+}
+
+.tool-form-field input:focus,
+.tool-form-field textarea:focus,
+.tool-form-field select:focus {
+  border-color: #9bbcff;
+
+  box-shadow:
+    0 0 0 2px
+      rgba(37, 99, 235, 0.08);
 }
 
 .tool-form-field input[readonly] {
   background: #f8fafc;
 
   color: var(--color-text-secondary);
+
+  cursor: default;
 }
+
+/* =========================================================
+   Enabled
+   ========================================================= */
 
 .tool-enabled-control {
   display: flex;
   align-items: flex-start;
+
   gap: 9px;
 
   padding: 11px;
@@ -683,11 +928,29 @@
   border: 1px solid var(--color-border);
   border-radius: 8px;
 
+  background: #ffffff;
+
   cursor: pointer;
+
+  transition:
+    border-color 140ms ease,
+    background 140ms ease;
+}
+
+.tool-enabled-control:hover {
+  border-color: #cbd5e1;
+
+  background: #fbfcfe;
 }
 
 .tool-enabled-control input {
+  width: 14px;
+  height: 14px;
+
   margin-top: 2px;
+
+  accent-color:
+    var(--color-primary);
 }
 
 .tool-enabled-control > div {
@@ -696,6 +959,8 @@
 }
 
 .tool-enabled-control strong {
+  color: var(--color-text-primary);
+
   font-size: 9px;
 }
 
@@ -705,7 +970,12 @@
   color: var(--color-text-secondary);
 
   font-size: 8px;
+  line-height: 1.45;
 }
+
+/* =========================================================
+   Tool ID
+   ========================================================= */
 
 .tool-id-box {
   padding: 10px;
@@ -718,11 +988,19 @@
   color: #64748b;
 
   font-family:
+    "SFMono-Regular",
     Consolas,
     monospace;
 
   font-size: 9px;
+  line-height: 1.5;
+
+  word-break: break-all;
 }
+
+/* =========================================================
+   Backend Notice
+   ========================================================= */
 
 .tool-backend-notice {
   padding: 12px;
@@ -737,6 +1015,7 @@
   color: #1d4ed8;
 
   font-size: 9px;
+  font-weight: 700;
 }
 
 .tool-backend-notice p {
@@ -748,13 +1027,229 @@
   line-height: 1.6;
 }
 
+/* =========================================================
+   Policy / Capability
+   STEP 49 확장 대비
+   ========================================================= */
+
+.tool-policy-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+
+  gap: 8px;
+}
+
+.tool-policy-card {
+  min-width: 0;
+
+  padding: 10px;
+
+  border: 1px solid #e8edf3;
+  border-radius: 8px;
+
+  background: #fbfcfe;
+}
+
+.tool-policy-card span {
+  display: block;
+
+  color: var(--color-text-secondary);
+
+  font-size: 8px;
+  font-weight: 600;
+}
+
+.tool-policy-card strong {
+  display: block;
+
+  overflow: hidden;
+
+  margin-top: 3px;
+
+  color: var(--color-text-primary);
+
+  font-size: 9px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tool-risk-badge {
+  display: inline-flex;
+  align-items: center;
+
+  width: fit-content;
+
+  margin-top: 5px;
+  padding: 3px 6px;
+
+  border-radius: 999px;
+
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.tool-risk-badge--low {
+  background: #ecfdf3;
+  color: #15803d;
+}
+
+.tool-risk-badge--medium {
+  background: #fff7ed;
+  color: #b45309;
+}
+
+.tool-risk-badge--high {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.tool-risk-badge--critical {
+  background: #450a0a;
+  color: #ffffff;
+}
+
+/* =========================================================
+   Shared buttons
+   ========================================================= */
+
+.tool-primary-button,
+.tool-secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
+
+  height: 36px;
+
+  padding: 0 12px;
+
+  border-radius: 8px;
+
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 650;
+
+  cursor: pointer;
+
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 100ms ease,
+    opacity 140ms ease;
+}
+
+.tool-primary-button {
+  border: 1px solid var(--color-primary);
+
+  background: var(--color-primary);
+
+  color: #ffffff;
+}
+
+.tool-primary-button:hover:not(:disabled) {
+  filter: brightness(0.96);
+
+  box-shadow:
+    0 4px 12px
+      rgba(37, 99, 235, 0.14);
+}
+
+.tool-secondary-button {
+  border: 1px solid var(--color-border);
+
+  background: #ffffff;
+
+  color: var(--color-text-primary);
+}
+
+.tool-secondary-button:hover:not(:disabled) {
+  border-color: #cbd5e1;
+
+  background: #f8fafc;
+}
+
+.tool-primary-button:active:not(:disabled),
+.tool-secondary-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.tool-primary-button:disabled,
+.tool-secondary-button:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.5;
+}
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media (max-width: 1000px) {
+  .tool-management-layout {
+    grid-template-columns:
+      270px minmax(0, 1fr);
+  }
+
+  .tool-policy-grid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+}
+
 @media (max-width: 900px) {
   .provider-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns:
+      1fr;
   }
 
   .tool-management-layout {
     grid-template-columns:
       250px minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .tool-management-page {
+    padding-bottom: 32px;
+  }
+
+  .tool-management-layout {
+    grid-template-columns:
+      1fr;
+  }
+
+  .tool-list-panel {
+    border-right: none;
+    border-bottom:
+      1px solid var(--color-border);
+  }
+
+  .tool-list {
+    max-height: 300px;
+  }
+
+  .tool-editor__header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .tool-editor__body {
+    padding: 16px;
+  }
+
+  .tool-policy-grid {
+    grid-template-columns:
+      1fr;
   }
 }

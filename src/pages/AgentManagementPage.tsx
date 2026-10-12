@@ -77,7 +77,9 @@ export function AgentManagementPage() {
     search,
     setSearch,
   ] =
-    useState("");
+    useState(
+      "",
+    );
 
   const [
     loading,
@@ -115,91 +117,104 @@ export function AgentManagementPage() {
       null,
     );
 
-  useEffect(() => {
-    async function load() {
-      try {
-        setLoading(
-          true,
-        );
+  useEffect(
+    () => {
+      async function load() {
+        try {
+          setLoading(
+            true,
+          );
 
-        setError(
-          null,
-        );
-
-        const data =
-          await fetchAgents();
-
-        setAgents(
-          data,
-        );
-
-        setDraftAgents(
-          structuredClone(
-            data,
-          ),
-        );
-
-        setSelectedAgentId(
-          data[0]?.id ??
+          setError(
             null,
-        );
-      } catch (loadError) {
-        setError(
-          loadError instanceof Error
-            ? loadError.message
-            : "Agent 목록을 불러오지 못했습니다.",
-        );
-      } finally {
-        setLoading(
-          false,
-        );
-      }
-    }
+          );
 
-    void load();
-  }, []);
+          const data =
+            await fetchAgents();
+
+          setAgents(
+            data,
+          );
+
+          setDraftAgents(
+            structuredClone(
+              data,
+            ),
+          );
+
+          setSelectedAgentId(
+            data[0]?.id ??
+              null,
+          );
+        } catch (
+          loadError
+        ) {
+          setError(
+            loadError instanceof
+              Error
+              ? loadError.message
+              : "Agent 목록을 불러오지 못했습니다.",
+          );
+        } finally {
+          setLoading(
+            false,
+          );
+        }
+      }
+
+      void load();
+    },
+    [],
+  );
 
   /*
    * 서버 원본과 현재 Draft를 비교해서
    * 실제로 변경된 Agent를 계산한다.
    */
   const dirtyAgentIds =
-    useMemo(() => {
-      const ids =
-        new Set<string>();
+    useMemo(
+      () => {
+        const ids =
+          new Set<string>();
 
-      for (
-        const draftAgent
-        of draftAgents
-      ) {
-        const savedAgent =
-          agents.find(
-            (agent) =>
-              agent.id ===
-              draftAgent.id,
-          );
-
-        if (!savedAgent) {
-          continue;
-        }
-
-        if (
-          !isSameAgentConfiguration(
-            savedAgent,
-            draftAgent,
-          )
+        for (
+          const draftAgent
+          of draftAgents
         ) {
-          ids.add(
-            draftAgent.id,
-          );
-        }
-      }
+          const savedAgent =
+            agents.find(
+              (
+                agent,
+              ) =>
+                agent.id ===
+                draftAgent.id,
+            );
 
-      return ids;
-    }, [
-      agents,
-      draftAgents,
-    ]);
+          if (
+            !savedAgent
+          ) {
+            continue;
+          }
+
+          if (
+            !isSameAgentConfiguration(
+              savedAgent,
+              draftAgent,
+            )
+          ) {
+            ids.add(
+              draftAgent.id,
+            );
+          }
+        }
+
+        return ids;
+      },
+      [
+        agents,
+        draftAgents,
+      ],
+    );
 
   const hasUnsavedChanges =
     dirtyAgentIds.size >
@@ -207,9 +222,6 @@ export function AgentManagementPage() {
 
   /*
    * React Router 내부 페이지 이동 Guard.
-   *
-   * createBrowserRouter를 사용하고 있기 때문에
-   * useBlocker를 사용할 수 있다.
    */
   const blocker =
     useBlocker(
@@ -217,69 +229,79 @@ export function AgentManagementPage() {
         !saving,
     );
 
-  useEffect(() => {
-    if (
-      blocker.state !==
-      "blocked"
-    ) {
-      return;
-    }
+  useEffect(
+    () => {
+      if (
+        blocker.state !==
+        "blocked"
+      ) {
+        return;
+      }
 
-    const confirmed =
-      window.confirm(
-        "저장하지 않은 변경사항이 있습니다.\n페이지를 이동하시겠습니까?",
-      );
+      const confirmed =
+        window.confirm(
+          "저장하지 않은 변경사항이 있습니다.\n페이지를 이동하시겠습니까?",
+        );
 
-    if (confirmed) {
-      blocker.proceed();
+      if (
+        confirmed
+      ) {
+        blocker.proceed();
 
-      return;
-    }
+        return;
+      }
 
-    blocker.reset();
-  }, [
-    blocker,
-  ]);
+      blocker.reset();
+    },
+    [
+      blocker,
+    ],
+  );
 
   /*
    * 브라우저 새로고침 / 탭 닫기 Guard.
    */
-  useEffect(() => {
-    if (
-      !hasUnsavedChanges
-    ) {
-      return;
-    }
+  useEffect(
+    () => {
+      if (
+        !hasUnsavedChanges
+      ) {
+        return;
+      }
 
-    function handleBeforeUnload(
-      event: BeforeUnloadEvent,
-    ) {
-      event.preventDefault();
+      function handleBeforeUnload(
+        event: BeforeUnloadEvent,
+      ) {
+        event.preventDefault();
 
-      event.returnValue =
-        "";
-    }
+        event.returnValue =
+          "";
+      }
 
-    window.addEventListener(
-      "beforeunload",
-      handleBeforeUnload,
-    );
-
-    return () => {
-      window.removeEventListener(
+      window.addEventListener(
         "beforeunload",
         handleBeforeUnload,
       );
-    };
-  }, [
-    hasUnsavedChanges,
-  ]);
+
+      return () => {
+        window.removeEventListener(
+          "beforeunload",
+          handleBeforeUnload,
+        );
+      };
+    },
+    [
+      hasUnsavedChanges,
+    ],
+  );
 
   const selectedAgent =
     useMemo(
       () =>
         draftAgents.find(
-          (agent) =>
+          (
+            agent,
+          ) =>
             agent.id ===
             selectedAgentId,
         ),
@@ -290,44 +312,55 @@ export function AgentManagementPage() {
     );
 
   const filteredAgents =
-    useMemo(() => {
-      const keyword =
-        search
-          .trim()
-          .toLowerCase();
+    useMemo(
+      () => {
+        const keyword =
+          search
+            .trim()
+            .toLowerCase();
 
-      if (!keyword) {
-        return draftAgents;
-      }
+        if (
+          !keyword
+        ) {
+          return draftAgents;
+        }
 
-      return draftAgents.filter(
-        (agent) =>
-          agent.name
-            .toLowerCase()
-            .includes(
-              keyword,
-            ) ||
+        return draftAgents.filter(
           (
-            agent.description ??
-            ""
-          )
-            .toLowerCase()
-            .includes(
-              keyword,
-            ),
-      );
-    }, [
-      draftAgents,
-      search,
-    ]);
+            agent,
+          ) =>
+            agent.name
+              .toLowerCase()
+              .includes(
+                keyword,
+              ) ||
+            (
+              agent.description ??
+              ""
+            )
+              .toLowerCase()
+              .includes(
+                keyword,
+              ),
+        );
+      },
+      [
+        draftAgents,
+        search,
+      ],
+    );
 
   function handleAgentChange(
     changedAgent: Agent,
   ) {
     setDraftAgents(
-      (current) =>
+      (
+        current,
+      ) =>
         current.map(
-          (agent) =>
+          (
+            agent,
+          ) =>
             agent.id ===
             changedAgent.id
               ? changedAgent
@@ -345,7 +378,9 @@ export function AgentManagementPage() {
       const defaultModel =
         getEnabledModels()[0];
 
-      if (!defaultModel) {
+      if (
+        !defaultModel
+      ) {
         window.alert(
           "사용 가능한 Model이 없습니다.",
         );
@@ -388,17 +423,19 @@ export function AgentManagementPage() {
           });
 
         setAgents(
-          (current) => [
+          (
+            current,
+          ) => [
             ...current,
-
             newAgent,
           ],
         );
 
         setDraftAgents(
-          (current) => [
+          (
+            current,
+          ) => [
             ...current,
-
             structuredClone(
               newAgent,
             ),
@@ -408,9 +445,12 @@ export function AgentManagementPage() {
         setSelectedAgentId(
           newAgent.id,
         );
-      } catch (createError) {
+      } catch (
+        createError
+      ) {
         window.alert(
-          createError instanceof Error
+          createError instanceof
+            Error
             ? createError.message
             : "Agent 생성에 실패했습니다.",
         );
@@ -428,7 +468,9 @@ export function AgentManagementPage() {
 
       const changedAgents =
         draftAgents.filter(
-          (agent) =>
+          (
+            agent,
+          ) =>
             dirtyAgentIds.has(
               agent.id,
             ),
@@ -436,11 +478,15 @@ export function AgentManagementPage() {
 
       const invalidAgent =
         changedAgents.find(
-          (agent) =>
+          (
+            agent,
+          ) =>
             !agent.name.trim(),
         );
 
-      if (invalidAgent) {
+      if (
+        invalidAgent
+      ) {
         setSelectedAgentId(
           invalidAgent.id,
         );
@@ -454,7 +500,9 @@ export function AgentManagementPage() {
 
       const invalidTemperature =
         changedAgents.find(
-          (agent) =>
+          (
+            agent,
+          ) =>
             !Number.isFinite(
               agent.temperature,
             ) ||
@@ -464,7 +512,9 @@ export function AgentManagementPage() {
               2,
         );
 
-      if (invalidTemperature) {
+      if (
+        invalidTemperature
+      ) {
         setSelectedAgentId(
           invalidTemperature.id,
         );
@@ -478,7 +528,9 @@ export function AgentManagementPage() {
 
       const invalidMaxTokens =
         changedAgents.find(
-          (agent) =>
+          (
+            agent,
+          ) =>
             !Number.isInteger(
               agent.maxTokens,
             ) ||
@@ -486,7 +538,9 @@ export function AgentManagementPage() {
               0,
         );
 
-      if (invalidMaxTokens) {
+      if (
+        invalidMaxTokens
+      ) {
         setSelectedAgentId(
           invalidMaxTokens.id,
         );
@@ -500,7 +554,9 @@ export function AgentManagementPage() {
 
       const invalidRetryCount =
         changedAgents.find(
-          (agent) =>
+          (
+            agent,
+          ) =>
             !Number.isInteger(
               agent.retryCount,
             ) ||
@@ -508,7 +564,9 @@ export function AgentManagementPage() {
               0,
         );
 
-      if (invalidRetryCount) {
+      if (
+        invalidRetryCount
+      ) {
         setSelectedAgentId(
           invalidRetryCount.id,
         );
@@ -522,7 +580,9 @@ export function AgentManagementPage() {
 
       const invalidTimeout =
         changedAgents.find(
-          (agent) =>
+          (
+            agent,
+          ) =>
             !Number.isInteger(
               agent.timeoutSeconds,
             ) ||
@@ -530,7 +590,9 @@ export function AgentManagementPage() {
               0,
         );
 
-      if (invalidTimeout) {
+      if (
+        invalidTimeout
+      ) {
         setSelectedAgentId(
           invalidTimeout.id,
         );
@@ -643,9 +705,13 @@ export function AgentManagementPage() {
           0
         ) {
           setAgents(
-            (current) =>
+            (
+              current,
+            ) =>
               current.map(
-                (agent) =>
+                (
+                  agent,
+                ) =>
                   savedAgents.get(
                     agent.id,
                   ) ??
@@ -654,9 +720,13 @@ export function AgentManagementPage() {
           );
 
           setDraftAgents(
-            (current) =>
+            (
+              current,
+            ) =>
               current.map(
-                (agent) =>
+                (
+                  agent,
+                ) =>
                   savedAgents.get(
                     agent.id,
                   ) ??
@@ -679,9 +749,12 @@ export function AgentManagementPage() {
         window.alert(
           `${savedAgents.size}개의 Agent 변경사항이 저장되었습니다.`,
         );
-      } catch (saveAllError) {
+      } catch (
+        saveAllError
+      ) {
         setSaveError(
-          saveAllError instanceof Error
+          saveAllError instanceof
+            Error
             ? saveAllError.message
             : "Agent 저장에 실패했습니다.",
         );
@@ -705,7 +778,9 @@ export function AgentManagementPage() {
           `"${selectedAgent.name}" Agent를 삭제하시겠습니까?`,
         );
 
-      if (!confirmed) {
+      if (
+        !confirmed
+      ) {
         return;
       }
 
@@ -716,14 +791,18 @@ export function AgentManagementPage() {
 
         const nextAgents =
           agents.filter(
-            (agent) =>
+            (
+              agent,
+            ) =>
               agent.id !==
               selectedAgent.id,
           );
 
         const nextDraftAgents =
           draftAgents.filter(
-            (agent) =>
+            (
+              agent,
+            ) =>
               agent.id !==
               selectedAgent.id,
           );
@@ -741,39 +820,68 @@ export function AgentManagementPage() {
             ?.id ??
             null,
         );
-      } catch (deleteError) {
+      } catch (
+        deleteError
+      ) {
         window.alert(
-          deleteError instanceof Error
+          deleteError instanceof
+            Error
             ? deleteError.message
             : "Agent 삭제에 실패했습니다.",
         );
       }
     };
 
-  if (loading) {
+  if (
+    loading
+  ) {
     return (
       <div className="agent-management-page">
-        Agent 목록을 불러오는 중입니다...
+        <div className="agent-editor__empty">
+          <div className="agent-editor__empty-icon">
+            <Bot
+              size={24}
+            />
+          </div>
+
+          <h2>
+            Agent를 불러오는 중입니다
+          </h2>
+
+          <p>
+            저장된 Agent와 실행 설정을 확인하고 있습니다.
+          </p>
+        </div>
       </div>
     );
   }
 
-  if (error) {
+  if (
+    error
+  ) {
     return (
       <div className="agent-management-page">
-        <h1>
-          Agents
-        </h1>
+        <header className="agent-management-header">
+          <div>
+            <span>
+              Agent Workspace
+            </span>
 
-        <p>
-          {error}
-        </p>
+            <h1>
+              Agents
+            </h1>
 
-        <p>
-          Backend 서버가
-          http://localhost:4000 에서
-          실행 중인지 확인하세요.
-        </p>
+            <p>
+              Agent 정보를 불러오지 못했습니다.
+            </p>
+          </div>
+        </header>
+
+        <div className="agent-save-bar">
+          <div className="agent-save-bar__status">
+            {error}
+          </div>
+        </div>
       </div>
     );
   }
@@ -791,99 +899,108 @@ export function AgentManagementPage() {
           </h1>
 
           <p>
-            Workflow에서 사용할
-            AI Agent와 Model,
-            Tool 구성을 관리합니다.
+            Workflow에서 사용할 AI Agent의 역할,
+            Model, Tool과 실행 설정을 관리합니다.
           </p>
-
-          {hasUnsavedChanges && (
-            <p>
-              저장되지 않은 변경사항이{" "}
-
-              <strong>
-                {
-                  dirtyAgentIds.size
-                }
-                개
-              </strong>
-
-              {" "}
-              있습니다.
-            </p>
-          )}
-
-          {saveError && (
-            <p>
-              {saveError}
-            </p>
-          )}
         </div>
 
-        <div
-          style={{
-            display:
-              "flex",
-
-            alignItems:
-              "center",
-
-            gap:
-              "8px",
+        <button
+          type="button"
+          className="agent-primary-button"
+          disabled={
+            saving
+          }
+          onClick={() => {
+            void handleCreateAgent();
           }}
         >
-          <button
-            type="button"
-            className="primary-button"
-            disabled={
-              !hasUnsavedChanges ||
-              saving
-            }
-            onClick={() => {
-              void handleSaveAll();
-            }}
-          >
-            <Save
-              size={
-                15
-              }
-            />
+          <Plus
+            size={14}
+          />
 
-            {saving
-              ? "저장 중..."
-              : hasUnsavedChanges
-                ? `변경사항 저장 (${dirtyAgentIds.size})`
-                : "변경사항 저장"}
-          </button>
-
-          <button
-            type="button"
-            className="primary-button"
-            disabled={
-              saving
-            }
-            onClick={() => {
-              void handleCreateAgent();
-            }}
-          >
-            <Plus
-              size={
-                15
-              }
-            />
-
-            New Agent
-          </button>
-        </div>
+          New Agent
+        </button>
       </header>
+
+      <section
+        className={[
+          "agent-save-bar",
+          hasUnsavedChanges
+            ? "agent-save-bar--dirty"
+            : "",
+        ]
+          .filter(
+            Boolean,
+          )
+          .join(
+            " ",
+          )}
+      >
+        <div className="agent-save-bar__status">
+          {hasUnsavedChanges ? (
+            <>
+              <span className="agent-unsaved-badge">
+                저장 필요
+              </span>
+
+              <span>
+                변경된 Agent가{" "}
+                <strong>
+                  {dirtyAgentIds.size}개
+                </strong>{" "}
+                있습니다.
+              </span>
+            </>
+          ) : (
+            <span>
+              모든 Agent 변경사항이 저장되어 있습니다.
+            </span>
+          )}
+        </div>
+
+        <button
+          type="button"
+          className="agent-primary-button"
+          disabled={
+            !hasUnsavedChanges ||
+            saving
+          }
+          onClick={() => {
+            void handleSaveAll();
+          }}
+        >
+          <Save
+            size={14}
+          />
+
+          {saving
+            ? "저장 중..."
+            : hasUnsavedChanges
+              ? `변경사항 저장 (${dirtyAgentIds.size})`
+              : "변경사항 저장"}
+        </button>
+      </section>
+
+      {saveError && (
+        <section className="agent-save-bar agent-save-bar--dirty">
+          <div className="agent-save-bar__status">
+            <span className="agent-unsaved-badge">
+              저장 오류
+            </span>
+
+            <span>
+              {saveError}
+            </span>
+          </div>
+        </section>
+      )}
 
       <div className="agent-management-layout">
         <aside className="agent-list-panel">
           <div className="agent-list-panel__header">
             <div>
               <Bot
-                size={
-                  15
-                }
+                size={15}
               />
 
               <strong>
@@ -892,17 +1009,13 @@ export function AgentManagementPage() {
             </div>
 
             <span>
-              {
-                draftAgents.length
-              }
+              {draftAgents.length}
             </span>
           </div>
 
           <div className="agent-search">
             <Search
-              size={
-                14
-              }
+              size={14}
             />
 
             <input
@@ -915,8 +1028,7 @@ export function AgentManagementPage() {
                 event,
               ) => {
                 setSearch(
-                  event.target
-                    .value,
+                  event.target.value,
                 );
               }}
             />
@@ -926,15 +1038,13 @@ export function AgentManagementPage() {
             {filteredAgents.length >
             0 ? (
               filteredAgents.map(
-                (agent) => (
+                (
+                  agent,
+                ) => (
                   <div
                     key={
                       agent.id
                     }
-                    style={{
-                      position:
-                        "relative",
-                    }}
                   >
                     <AgentCard
                       agent={
@@ -944,41 +1054,22 @@ export function AgentManagementPage() {
                         agent.id ===
                         selectedAgentId
                       }
-                      onClick={() =>
+                      onClick={() => {
                         setSelectedAgentId(
                           agent.id,
-                        )
-                      }
+                        );
+                      }}
                     />
 
                     {dirtyAgentIds.has(
                       agent.id,
                     ) && (
-                      <span
+                      <div
                         title="저장되지 않은 변경사항"
-                        style={{
-                          position:
-                            "absolute",
-
-                          top:
-                            "8px",
-
-                          right:
-                            "8px",
-
-                          width:
-                            "7px",
-
-                          height:
-                            "7px",
-
-                          borderRadius:
-                            "999px",
-
-                          background:
-                            "#f59e0b",
-                        }}
-                      />
+                        className="agent-unsaved-badge"
+                      >
+                        저장되지 않음
+                      </div>
                     )}
                   </div>
                 ),
@@ -1068,10 +1159,14 @@ function isSameStringArray(
   }
 
   const firstSorted =
-    [...first].sort();
+    [
+      ...first,
+    ].sort();
 
   const secondSorted =
-    [...second].sort();
+    [
+      ...second,
+    ].sort();
 
   return firstSorted.every(
     (
