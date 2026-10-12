@@ -20,6 +20,7 @@
   margin-bottom: 7px;
 
   color: var(--color-primary);
+
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -29,6 +30,7 @@
   margin: 0;
 
   color: var(--color-text-primary);
+
   font-size: 30px;
   font-weight: 750;
   letter-spacing: -0.8px;
@@ -41,6 +43,7 @@
   margin: 10px 0 0;
 
   color: var(--color-text-secondary);
+
   font-size: 14px;
   line-height: 1.65;
 }
@@ -55,6 +58,8 @@
   margin-bottom: 20px;
   padding: 17px 18px;
 
+  overflow: hidden;
+
   border: 1px solid var(--color-border);
   border-radius: 12px;
 
@@ -63,6 +68,7 @@
 
 .recommendation-prompt::before {
   position: absolute;
+
   top: 0;
   bottom: 0;
   left: 0;
@@ -80,6 +86,7 @@
   display: block;
 
   color: var(--color-text-secondary);
+
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -89,6 +96,7 @@
   margin: 6px 0 0;
 
   color: var(--color-text-primary);
+
   font-size: 14px;
   line-height: 1.65;
 
@@ -97,13 +105,194 @@
 }
 
 /* =========================================================
+   Guidance summary
+   ========================================================= */
+
+.guidance-summary-card {
+  display: grid;
+
+  gap: 18px;
+
+  margin-bottom: 20px;
+  padding: 20px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.02);
+}
+
+.guidance-summary-card__header {
+  display: flex;
+
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 20px;
+}
+
+.guidance-summary-card__eyebrow {
+  display: inline-flex;
+
+  color: var(--color-primary);
+
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.guidance-summary-card__header h2 {
+  margin: 6px 0 0;
+
+  color: var(--color-text-primary);
+
+  font-size: 19px;
+  font-weight: 720;
+  letter-spacing: -0.3px;
+}
+
+.guidance-summary-card__header p {
+  max-width: 720px;
+
+  margin: 7px 0 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.guidance-summary-metrics {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 10px;
+}
+
+.guidance-summary-metric {
+  padding: 12px 13px;
+
+  border: 1px solid #edf0f4;
+  border-radius: 9px;
+
+  background: #fafbfd;
+}
+
+.guidance-summary-metric > span {
+  display: block;
+
+  color: var(--color-text-secondary);
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.guidance-summary-metric > strong {
+  display: block;
+
+  margin-top: 4px;
+
+  color: var(--color-text-primary);
+
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.guidance-reasons {
+  padding-top: 2px;
+}
+
+.guidance-reasons > strong {
+  color: var(--color-text-primary);
+
+  font-size: 12px;
+}
+
+.guidance-reasons ul {
+  display: grid;
+
+  gap: 6px;
+
+  margin: 9px 0 0;
+  padding-left: 18px;
+}
+
+.guidance-reasons li {
+  color: var(--color-text-secondary);
+
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.guidance-flow {
+  padding-top: 2px;
+}
+
+.guidance-flow > strong {
+  color: var(--color-text-primary);
+
+  font-size: 12px;
+}
+
+.guidance-flow__steps {
+  display: flex;
+
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 7px;
+
+  margin-top: 10px;
+}
+
+.guidance-flow__step {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 7px;
+}
+
+.guidance-flow__step-name {
+  display: inline-flex;
+
+  align-items: center;
+
+  min-height: 29px;
+
+  padding: 5px 9px;
+
+  border: 1px solid #e5eaf0;
+  border-radius: 7px;
+
+  background: #f8fafc;
+
+  color: var(--color-text-primary);
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.guidance-flow__arrow {
+  color: #94a3b8;
+
+  font-size: 13px;
+}
+
+/* =========================================================
    Recommended workflow
    ========================================================= */
 
 .recommended-workflow-card {
   display: flex;
+
   align-items: center;
   justify-content: space-between;
+
   gap: 28px;
 
   padding: 22px;
@@ -123,11 +312,17 @@
     0 8px 28px rgba(37, 99, 235, 0.04);
 }
 
+.recommended-workflow-card__content {
+  min-width: 0;
+}
+
 .recommended-workflow-card__label {
   display: inline-flex;
+
   align-items: center;
 
   color: var(--color-primary);
+
   font-size: 11px;
   font-weight: 750;
   letter-spacing: 0.025em;
@@ -137,6 +332,7 @@
   margin: 7px 0 0;
 
   color: var(--color-text-primary);
+
   font-size: 21px;
   font-weight: 720;
   letter-spacing: -0.4px;
@@ -148,22 +344,28 @@
   margin: 9px 0 15px;
 
   color: var(--color-text-secondary);
+
   font-size: 13px;
   line-height: 1.6;
 }
 
 .recommended-workflow-card__meta {
   display: flex;
+
   flex-wrap: wrap;
+
   gap: 7px;
 }
 
 .recommended-workflow-card__meta span {
   display: inline-flex;
+
   align-items: center;
+
   gap: 5px;
 
   min-height: 27px;
+
   padding: 5px 9px;
 
   border: 1px solid #e5eaf0;
@@ -172,13 +374,16 @@
   background: rgba(255, 255, 255, 0.78);
 
   color: var(--color-text-secondary);
+
   font-size: 11px;
   font-weight: 550;
 }
 
 .recommended-workflow-card__actions {
   display: flex;
+
   flex-shrink: 0;
+
   gap: 8px;
 }
 
@@ -189,8 +394,10 @@
 .primary-button,
 .secondary-button {
   display: inline-flex;
+
   align-items: center;
   justify-content: center;
+
   gap: 6px;
 
   height: 38px;
@@ -252,7 +459,21 @@
 .primary-button:disabled,
 .secondary-button:disabled {
   cursor: not-allowed;
+
   opacity: 0.55;
+}
+
+/* =========================================================
+   Preview notice
+   ========================================================= */
+
+.recommendation-preview-notice {
+  margin: 9px 0 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: 11px;
+  line-height: 1.5;
 }
 
 /* =========================================================
@@ -284,6 +505,7 @@
   align-items: center;
 
   min-height: 70px;
+
   padding: 15px 17px;
 
   border-bottom: 1px solid #edf1f5;
@@ -302,6 +524,7 @@
 
 .recommendation-step__number {
   display: grid;
+
   place-items: center;
 
   width: 30px;
@@ -319,9 +542,15 @@
     0 2px 6px rgba(37, 99, 235, 0.15);
 }
 
+.recommendation-step__main {
+  min-width: 0;
+}
+
 .recommendation-step__title {
   display: flex;
+
   align-items: center;
+
   gap: 8px;
 }
 
@@ -329,33 +558,35 @@
   margin: 0;
 
   color: var(--color-text-primary);
+
   font-size: 13px;
   font-weight: 680;
-}
-
-.recommendation-step__main {
-  min-width: 0;
 }
 
 .recommendation-step__main p {
   margin: 5px 0 0;
 
   color: var(--color-text-secondary);
+
   font-size: 11px;
   line-height: 1.5;
 }
 
 .recommendation-step__meta {
   display: flex;
+
   flex-wrap: wrap;
   justify-content: flex-end;
+
   gap: 6px;
 }
 
 .recommendation-step__meta span,
 .approval-label {
   display: inline-flex;
+
   align-items: center;
+
   gap: 4px;
 
   padding: 4px 7px;
@@ -366,6 +597,7 @@
   background: #f6f8fa;
 
   color: var(--color-text-secondary);
+
   font-size: 10px;
   font-weight: 550;
 
@@ -380,7 +612,7 @@
 }
 
 /* =========================================================
-   Alternative workflows
+   Guidance alternatives
    ========================================================= */
 
 .alternative-workflows {
@@ -391,6 +623,7 @@
   margin: 0 0 13px;
 
   color: var(--color-text-primary);
+
   font-size: 17px;
   font-weight: 700;
   letter-spacing: -0.25px;
@@ -434,6 +667,7 @@
   margin: 0;
 
   color: var(--color-text-primary);
+
   font-size: 13px;
   font-weight: 680;
 }
@@ -444,188 +678,222 @@
   margin: 7px 0 11px;
 
   color: var(--color-text-secondary);
+
   font-size: 11px;
   line-height: 1.55;
 }
 
-.alternative-workflow-card span {
+.alternative-workflow-card > span {
   color: var(--color-text-secondary);
+
   font-size: 10px;
   font-weight: 550;
 }
 
 /* =========================================================
-   STEP 52
-   Guidance information cards
-
-   WorkflowRecommendationPage에서 현재 inline style로
-   표현하고 있는 추천 정보 영역에도 사용할 수 있도록
-   공통 class를 미리 정의한다.
-   다음 작업에서 TSX의 inline style을 제거하면서 연결한다.
+   Saved Alternative Workflows
    ========================================================= */
 
-.guidance-summary-card {
-  display: grid;
-  gap: 18px;
-
-  margin-bottom: 20px;
-  padding: 20px;
-
-  border: 1px solid var(--color-border);
-  border-radius: 14px;
-
-  background: #ffffff;
-
-  box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.02);
+.alternative-workflows--saved {
+  margin-top: 30px;
 }
 
-.guidance-summary-card__header {
+.alternative-workflows__header {
   display: flex;
-  align-items: flex-start;
+
+  align-items: flex-end;
   justify-content: space-between;
-  gap: 20px;
+
+  gap: 24px;
+
+  margin-bottom: 12px;
 }
 
-.guidance-summary-card__eyebrow {
-  display: inline-flex;
+.alternative-workflows__header > div {
+  min-width: 0;
+}
+
+.alternative-workflows__eyebrow {
+  display: block;
+
+  margin-bottom: 4px;
 
   color: var(--color-primary);
-  font-size: 11px;
+
+  font-size: 10px;
   font-weight: 750;
+  letter-spacing: 0.025em;
 }
 
-.guidance-summary-card__header h2 {
-  margin: 6px 0 0;
+.alternative-workflows__header h2 {
+  margin: 0;
 
   color: var(--color-text-primary);
-  font-size: 19px;
-  font-weight: 720;
-  letter-spacing: -0.3px;
+
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.25px;
 }
 
-.guidance-summary-card__header p {
-  max-width: 720px;
+.alternative-workflows__header p {
+  max-width: 360px;
 
-  margin: 7px 0 0;
+  margin: 0;
 
   color: var(--color-text-secondary);
-  font-size: 12px;
-  line-height: 1.6;
+
+  font-size: 11px;
+  line-height: 1.5;
+
+  text-align: right;
 }
 
-.guidance-summary-metrics {
+.alternative-workflows__list {
   display: grid;
 
   grid-template-columns:
     repeat(3, minmax(0, 1fr));
 
-  gap: 10px;
+  gap: 11px;
 }
 
-.guidance-summary-metric {
-  padding: 12px 13px;
-
-  border: 1px solid #edf0f4;
-  border-radius: 9px;
-
-  background: #fafbfd;
-}
-
-.guidance-summary-metric > span {
-  display: block;
-
-  color: var(--color-text-secondary);
-  font-size: 10px;
-  font-weight: 600;
-}
-
-.guidance-summary-metric > strong {
-  display: block;
-
-  margin-top: 4px;
-
-  color: var(--color-text-primary);
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.guidance-reasons {
-  padding-top: 2px;
-}
-
-.guidance-reasons > strong {
-  color: var(--color-text-primary);
-  font-size: 12px;
-}
-
-.guidance-reasons ul {
+.alternative-workflow-card--saved {
   display: grid;
-  gap: 6px;
 
-  margin: 9px 0 0;
-  padding-left: 18px;
-}
+  grid-template-columns:
+    34px minmax(0, 1fr) 32px;
 
-.guidance-reasons li {
-  color: var(--color-text-secondary);
-  font-size: 12px;
-  line-height: 1.55;
-}
-
-.guidance-flow {
-  padding-top: 2px;
-}
-
-.guidance-flow > strong {
-  color: var(--color-text-primary);
-  font-size: 12px;
-}
-
-.guidance-flow__steps {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 7px;
-
-  margin-top: 10px;
-}
-
-.guidance-flow__step {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.guidance-flow__step-name {
-  display: inline-flex;
   align-items: center;
 
-  min-height: 29px;
+  gap: 11px;
 
-  padding: 5px 9px;
+  width: 100%;
+  min-width: 0;
+
+  padding: 13px 13px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 11px;
+
+  background: #ffffff;
+
+  font-family: inherit;
+  text-align: left;
+
+  cursor: pointer;
+
+  appearance: none;
+}
+
+.alternative-workflow-card--saved:hover {
+  border-color: #bfd4ff;
+
+  background: #fbfdff;
+
+  box-shadow:
+    0 5px 16px rgba(15, 23, 42, 0.05);
+
+  transform: translateY(-1px);
+}
+
+.alternative-workflow-card--saved:focus-visible {
+  outline: 2px solid rgba(37, 99, 235, 0.26);
+  outline-offset: 2px;
+}
+
+.alternative-workflow-card__icon {
+  display: grid;
+
+  place-items: center;
+
+  width: 34px;
+  height: 34px;
 
   border: 1px solid #e5eaf0;
-  border-radius: 7px;
+  border-radius: 8px;
 
   background: #f8fafc;
 
-  color: var(--color-text-primary);
-  font-size: 11px;
-  font-weight: 600;
+  color: var(--color-primary);
 }
 
-.guidance-flow__arrow {
-  color: #94a3b8;
-  font-size: 13px;
+.alternative-workflow-card__content {
+  display: flex;
+
+  min-width: 0;
+
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.alternative-workflow-card__content strong {
+  display: block;
+
+  min-width: 0;
+
+  overflow: hidden;
+
+  color: var(--color-text-primary);
+
+  font-size: 12px;
+  font-weight: 680;
+  line-height: 1.35;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.alternative-workflow-card__content span {
+  display: block;
+
+  color: var(--color-text-secondary);
+
+  font-size: 10px;
+  font-weight: 550;
+  line-height: 1.35;
+}
+
+.alternative-workflow-card__action {
+  display: grid;
+
+  place-items: center;
+
+  width: 30px;
+  height: 30px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  color: var(--color-primary);
+
+  transition:
+    border-color 140ms ease,
+    background 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
+}
+
+.alternative-workflow-card--saved:hover
+  .alternative-workflow-card__action {
+  border-color: #bfd4ff;
+
+  background: #f8fbff;
+
+  color: var(--color-primary-hover);
+
+  transform: translateX(2px);
 }
 
 /* =========================================================
-   Recommendation processing / notices
+   Processing / empty state
    ========================================================= */
 
 .recommendation-status-message {
   margin: 14px 0;
+
   padding: 12px 14px;
 
   border: 1px solid #dbeafe;
@@ -634,21 +902,16 @@
   background: #eff6ff;
 
   color: #1d4ed8;
+
   font-size: 12px;
-  line-height: 1.5;
-}
-
-.recommendation-preview-notice {
-  margin: 9px 0 0;
-
-  color: var(--color-text-secondary);
-  font-size: 11px;
   line-height: 1.5;
 }
 
 .recommendation-empty {
   display: grid;
+
   place-items: center;
+
   gap: 12px;
 
   min-height: 220px;
@@ -667,6 +930,7 @@
   margin: 0;
 
   color: var(--color-text-secondary);
+
   font-size: 13px;
   line-height: 1.6;
 }
@@ -678,6 +942,7 @@
 @media (max-width: 900px) {
   .recommended-workflow-card {
     align-items: flex-start;
+
     flex-direction: column;
   }
 
@@ -689,7 +954,8 @@
     flex: 1;
   }
 
-  .alternative-workflows__grid {
+  .alternative-workflows__grid,
+  .alternative-workflows__list {
     grid-template-columns:
       repeat(2, minmax(0, 1fr));
   }
@@ -724,9 +990,24 @@
     justify-content: flex-start;
   }
 
-  .alternative-workflows__grid {
+  .alternative-workflows__grid,
+  .alternative-workflows__list {
     grid-template-columns:
       1fr;
+  }
+
+  .alternative-workflows__header {
+    align-items: flex-start;
+
+    flex-direction: column;
+
+    gap: 6px;
+  }
+
+  .alternative-workflows__header p {
+    max-width: none;
+
+    text-align: left;
   }
 
   .guidance-summary-card {
@@ -744,6 +1025,7 @@
 
   .guidance-flow__steps {
     align-items: flex-start;
+
     flex-direction: column;
   }
 

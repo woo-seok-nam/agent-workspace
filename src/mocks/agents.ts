@@ -55,7 +55,7 @@ export const mockAgents: Agent[] = [
       "웹 검색 및 자료 수집을 담당합니다.",
 
     modelId:
-      "claude-3-5-sonnet",
+      "gpt-4o",
 
     toolIds: [
       "web-search",
@@ -182,7 +182,7 @@ export const mockAgents: Agent[] = [
       "생성된 결과를 검토하고 품질을 확인합니다.",
 
     modelId:
-      "claude-3-5-sonnet",
+      "gpt-4o",
 
     toolIds:
       [],

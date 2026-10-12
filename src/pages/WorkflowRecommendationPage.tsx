@@ -539,7 +539,7 @@ export function WorkflowRecommendationPage() {
             className="primary-button"
             onClick={() => {
               navigate(
-                "/new-task",
+                "/home",
               );
             }}
           >
@@ -587,7 +587,7 @@ export function WorkflowRecommendationPage() {
             className="primary-button"
             onClick={() => {
               navigate(
-                "/new-task",
+                "/home",
               );
             }}
           >
@@ -645,7 +645,8 @@ export function WorkflowRecommendationPage() {
         createError
       ) {
         window.alert(
-          createError instanceof Error
+          createError instanceof
+            Error
             ? createError.message
             : "추천 Workflow 생성에 실패했습니다.",
         );
@@ -724,7 +725,8 @@ export function WorkflowRecommendationPage() {
         runError
       ) {
         window.alert(
-          runError instanceof Error
+          runError instanceof
+            Error
             ? runError.message
             : "Workflow 실행 시작에 실패했습니다.",
         );
@@ -743,7 +745,7 @@ export function WorkflowRecommendationPage() {
         </span>
 
         <h1>
-          추천 워크플로우
+          추천 작업 흐름
         </h1>
 
         <p>
@@ -805,7 +807,7 @@ export function WorkflowRecommendationPage() {
 
           <div className="guidance-summary-metric">
             <span>
-              작업 단계
+              가이던스 단계
             </span>
 
             <strong>

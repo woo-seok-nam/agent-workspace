@@ -26,71 +26,101 @@ export function AlternativeWorkflows({
 
   const alternatives =
     workflows.filter(
-      (workflow) =>
+      (
+        workflow,
+      ) =>
         workflow.id !==
         currentWorkflowId,
     );
 
   if (
-    alternatives.length === 0
+    alternatives.length ===
+    0
   ) {
     return null;
   }
 
   return (
-    <section className="alternative-workflows">
+    <section className="alternative-workflows alternative-workflows--saved">
       <div className="alternative-workflows__header">
-        <h2>
-          Alternative Workflows
-        </h2>
+        <div>
+          <span className="alternative-workflows__eyebrow">
+            Saved Workflows
+          </span>
+
+          <h2>
+            Alternative Workflows
+          </h2>
+        </div>
 
         <p>
-          다른 Workflow도 선택할 수
-          있습니다.
+          기존에 저장된 다른 Workflow를
+          Builder에서 확인할 수 있습니다.
         </p>
       </div>
 
       <div className="alternative-workflows__list">
         {alternatives.map(
-          (workflow) => (
-            <button
-              key={
-                workflow.id
-              }
-              type="button"
-              className="alternative-workflow-card"
-              onClick={() => {
-                navigate(
-                  `/workflows/${workflow.id}/builder`,
-                );
-              }}
-            >
-              <div className="alternative-workflow-card__icon">
-                <GitBranch
-                  size={15}
-                />
-              </div>
+          (
+            workflow,
+          ) => {
+            const executionStepCount =
+              workflow.nodes.filter(
+                (
+                  node,
+                ) =>
+                  node.type !==
+                    "input" &&
+                  node.type !==
+                    "output",
+              ).length;
 
-              <div className="alternative-workflow-card__content">
-                <strong>
-                  {workflow.name}
-                </strong>
+            return (
+              <button
+                key={
+                  workflow.id
+                }
+                type="button"
+                className="alternative-workflow-card alternative-workflow-card--saved"
+                onClick={() => {
+                  navigate(
+                    `/workflows/${workflow.id}/builder`,
+                  );
+                }}
+                aria-label={`${workflow.name} Workflow를 Builder에서 열기`}
+              >
+                <div className="alternative-workflow-card__icon">
+                  <GitBranch
+                    size={16}
+                  />
+                </div>
 
-                <span>
-                  {
-                    workflow.nodes
-                      .length
-                  }
-                  {" "}
-                  Steps
+                <div className="alternative-workflow-card__content">
+                  <strong>
+                    {workflow.name}
+                  </strong>
+
+                  <span>
+                    {executionStepCount}{" "}
+                    Execution{" "}
+                    {executionStepCount ===
+                    1
+                      ? "Step"
+                      : "Steps"}
+                  </span>
+                </div>
+
+                <span
+                  className="alternative-workflow-card__action"
+                  aria-hidden="true"
+                >
+                  <ArrowRight
+                    size={15}
+                  />
                 </span>
-              </div>
-
-              <ArrowRight
-                size={14}
-              />
-            </button>
-          ),
+              </button>
+            );
+          },
         )}
       </div>
     </section>
