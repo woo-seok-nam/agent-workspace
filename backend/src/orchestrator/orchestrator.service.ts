@@ -24,6 +24,10 @@ import type {
 } from "../modules/runs/run.types.js";
 
 import {
+  getTools,
+} from "../modules/tools/tool.service.js";
+
+import {
   getWorkflow,
 } from "../modules/workflows/workflow.service.js";
 
@@ -31,6 +35,10 @@ import type {
   Workflow,
   WorkflowNode,
 } from "../modules/workflows/workflow.types.js";
+
+import {
+  evaluateExecutionPolicy,
+} from "../policy/policy.service.js";
 
 import {
   buildNextRecoveryState,
@@ -264,18 +272,7 @@ async function canContinueNodeExecution(
 /*
  * STEP 47
  *
- * Supervisor가 RECOVER 결정을 내린 경우
- * 실패한 Step을 다시 실행 가능한 상태로 되돌린다.
- *
- * 중요한 순서:
- *
- * 1. Recovery 횟수를 Durable Shared State에 먼저 저장
- * 2. FAILED Step을 PENDING으로 되돌림
- * 3. Orchestrator loop가 DAG를 다시 평가
- *
- * Recovery 횟수를 먼저 저장하는 이유는
- * Step Reset 뒤 서버가 죽더라도 Recovery 횟수가
- * 사라져 무한 Recovery가 발생하지 않도록 하기 위해서다.
+ * Supervisor Recovery 실행부.
  */
 async function recoverFailedStep(
   run: WorkflowRun,
@@ -310,12 +307,6 @@ async function recoverFailedStep(
     return;
   }
 
-  /*
-   * Recovery 직전 최신 Run을 다시 읽는다.
-   *
-   * Pause / Cancel 같은 사용자 제어가
-   * 중간에 들어왔을 수 있기 때문이다.
-   */
   const latestRun =
     await getRun(
       run.id,
@@ -349,10 +340,6 @@ async function recoverFailedStep(
       latestFailedStep,
     );
 
-  /*
-   * 현재 Shared State를 기준으로
-   * Supervisor Recovery 횟수를 +1 한다.
-   */
   const nextRecoveryState =
     buildNextRecoveryState(
       latestRun.state,
@@ -360,45 +347,18 @@ async function recoverFailedStep(
       failureMessage,
     );
 
-  /*
-   * 기존 __supervisor metadata가 있을 수 있으므로
-   * recovery 부분만 안전하게 갱신한 값을 만든다.
-   */
   const supervisorState =
     buildSupervisorStateValue(
       latestRun.state,
       nextRecoveryState,
     );
 
-  /*
-   * STEP 43에서 만든 Durable Shared State API를 사용한다.
-   *
-   * 최종 DB 구조:
-   *
-   * {
-   *   "...node output...": {...},
-   *   "__supervisor": {
-   *     "recovery": {
-   *       "steps": {
-   *         "node-id": {
-   *           "attempts": 1,
-   *           ...
-   *         }
-   *       }
-   *     }
-   *   }
-   * }
-   */
   await setRunStateValue(
     run.id,
     "__supervisor",
     supervisorState,
   );
 
-  /*
-   * Recovery State 저장 중 Pause/Cancel이
-   * 발생했는지 다시 확인한다.
-   */
   const beforeReset =
     await getRun(
       run.id,
@@ -438,14 +398,6 @@ async function recoverFailedStep(
     decision.recoveryMaxAttempts ??
     0;
 
-  /*
-   * 실패 실행에서 생성된 output / token / cost는
-   * 다음 Recovery 실행의 결과로 간주하면 안 되므로
-   * 초기화한다.
-   *
-   * 기존 로그는 보존하여
-   * 왜 Recovery가 발생했는지 추적할 수 있게 한다.
-   */
   await editStepRun(
     run.id,
     nodeId,
@@ -479,6 +431,207 @@ async function recoverFailedStep(
           "warning",
         ),
       ],
+    },
+  );
+}
+
+/*
+ * STEP 49
+ *
+ * Policy에서 DENY된 Node를 처리한다.
+ *
+ * 일반적인 Agent 실패와 달리
+ * Permission / Capability 위반은 Retry나
+ * Supervisor Recovery로 해결되는 문제가 아니다.
+ *
+ * 따라서 해당 Step과 Run을 즉시 FAILED 처리한다.
+ */
+async function denyWorkflowNode(
+  runId: string,
+  node: WorkflowNode,
+  reasons: string[],
+) {
+  const latestRun =
+    await getRun(
+      runId,
+    );
+
+  if (
+    !latestRun ||
+    latestRun.status !==
+      "RUNNING"
+  ) {
+    return;
+  }
+
+  const stepRun =
+    latestRun.stepRuns.find(
+      (step) =>
+        step.nodeId ===
+        node.id,
+    );
+
+  if (
+    !stepRun ||
+    stepRun.status !==
+      "PENDING"
+  ) {
+    return;
+  }
+
+  const reasonText =
+    reasons.length >
+    0
+      ? reasons.join(
+          " ",
+        )
+      : "실행 정책에 의해 차단되었습니다.";
+
+  await editStepRun(
+    runId,
+    node.id,
+    {
+      status:
+        "FAILED",
+
+      completedAt:
+        new Date().toISOString(),
+
+      logs: [
+        ...stepRun.logs,
+
+        createLog(
+          `Policy가 "${node.name}" Step 실행을 차단했습니다.`,
+          "error",
+        ),
+
+        createLog(
+          reasonText,
+          "error",
+        ),
+      ],
+    },
+  );
+
+  const beforeFailRun =
+    await getRun(
+      runId,
+    );
+
+  if (
+    !beforeFailRun ||
+    beforeFailRun.status !==
+      "RUNNING"
+  ) {
+    return;
+  }
+
+  await editRun(
+    runId,
+    {
+      status:
+        "FAILED",
+
+      completedAt:
+        new Date().toISOString(),
+    },
+  );
+}
+
+/*
+ * STEP 49
+ *
+ * Policy Approval을 WAITING_APPROVAL 상태로 전환한다.
+ *
+ * 기존 requireApproval과 동일한 StepRun 구조를 사용한다.
+ * 따라서 기존 승인/거절 API를 그대로 재사용할 수 있다.
+ */
+async function waitForPolicyApproval(
+  runId: string,
+  node: WorkflowNode,
+  reasons: string[],
+  riskLevel: string,
+) {
+  const latestRun =
+    await getRun(
+      runId,
+    );
+
+  if (
+    !latestRun ||
+    latestRun.status !==
+      "RUNNING"
+  ) {
+    return;
+  }
+
+  const stepRun =
+    latestRun.stepRuns.find(
+      (step) =>
+        step.nodeId ===
+        node.id,
+    );
+
+  if (
+    !stepRun ||
+    stepRun.status !==
+      "PENDING"
+  ) {
+    return;
+  }
+
+  const reasonText =
+    reasons.length >
+    0
+      ? reasons.join(
+          " ",
+        )
+      : "사용자 승인이 필요한 작업입니다.";
+
+  await editStepRun(
+    runId,
+    node.id,
+    {
+      status:
+        "WAITING_APPROVAL",
+
+      approvalStatus:
+        "PENDING",
+
+      logs: [
+        ...stepRun.logs,
+
+        createLog(
+          `Policy 평가 결과 사용자 승인이 필요합니다. 위험도: ${riskLevel}.`,
+          "warning",
+        ),
+
+        createLog(
+          reasonText,
+          "warning",
+        ),
+      ],
+    },
+  );
+
+  const afterStepUpdate =
+    await getRun(
+      runId,
+    );
+
+  if (
+    !afterStepUpdate ||
+    afterStepUpdate.status !==
+      "RUNNING"
+  ) {
+    return;
+  }
+
+  await editRun(
+    runId,
+    {
+      status:
+        "WAITING_APPROVAL",
     },
   );
 }
@@ -582,9 +735,6 @@ export async function continueWorkflowRun(
       );
     }
 
-    /*
-     * Supervisor가 현재 Workflow Run 전체를 평가한다.
-     */
     const supervisorDecision =
       superviseRun(
         run,
@@ -593,30 +743,14 @@ export async function continueWorkflowRun(
     switch (
       supervisorDecision.action
     ) {
-      /*
-       * 이미 완료 / 실패 / 취소된 Run.
-       */
       case "STOP": {
         return;
       }
 
-      /*
-       * Pause / Approval / 실행 중 Step.
-       */
       case "WAIT": {
         return;
       }
 
-      /*
-       * STEP 47
-       *
-       * 실패한 Step을 Workflow 수준에서
-       * Recovery한 뒤 loop 처음으로 돌아간다.
-       *
-       * 다음 loop에서는 Supervisor가
-       * PENDING Step을 보고 CONTINUE를 반환하고,
-       * DAG Engine이 다시 실행 가능 Node를 계산한다.
-       */
       case "RECOVER": {
         await recoverFailedStep(
           run,
@@ -626,9 +760,6 @@ export async function continueWorkflowRun(
         continue;
       }
 
-      /*
-       * Recovery 가능 횟수를 모두 사용한 실패.
-       */
       case "FAIL": {
         const latestRun =
           await getRun(
@@ -657,9 +788,6 @@ export async function continueWorkflowRun(
         return;
       }
 
-      /*
-       * 모든 Step이 종료됨.
-       */
       case "COMPLETE": {
         const workflow =
           await getWorkflow(
@@ -680,9 +808,6 @@ export async function continueWorkflowRun(
         return;
       }
 
-      /*
-       * 실행 가능한 PENDING Step이 존재한다.
-       */
       case "CONTINUE": {
         break;
       }
@@ -720,10 +845,6 @@ export async function continueWorkflowRun(
       continue;
     }
 
-    /*
-     * Condition 분기 때문에 더 이상
-     * 도달할 수 없는 Step을 SKIPPED 처리한다.
-     */
     const skippableSteps =
       pendingSteps.filter(
         (stepRun) =>
@@ -823,9 +944,6 @@ export async function continueWorkflowRun(
       continue;
     }
 
-    /*
-     * DAG 기준으로 현재 실행 가능한 Node 계산.
-     */
     const executableSteps =
       pendingSteps.filter(
         (stepRun) =>
@@ -836,12 +954,6 @@ export async function continueWorkflowRun(
           ),
       );
 
-    /*
-     * PENDING은 존재하는데 실행 가능한 Step이 없다.
-     *
-     * 최신 상태를 다시 Supervisor에게 확인한 뒤
-     * 여전히 CONTINUE라면 DAG Deadlock으로 판단한다.
-     */
     if (
       executableSteps.length ===
       0
@@ -886,11 +998,19 @@ export async function continueWorkflowRun(
     }
 
     /*
-     * Human Approval이 필요한 실행 가능 Step 확인.
+     * STEP 49
+     *
+     * 실행 가능한 Node가 결정된 뒤
+     * 실제 Agent/Tool 실행 전에 Policy를 평가한다.
      */
-    const approvalStep =
-      executableSteps.find(
-        (stepRun) => {
+    const tools =
+      await getTools();
+
+    const policyResults =
+      executableSteps.map(
+        (
+          stepRun,
+        ) => {
           const node =
             workflow.nodes.find(
               (
@@ -900,98 +1020,226 @@ export async function continueWorkflowRun(
                 stepRun.nodeId,
             );
 
-          return (
-            node?.config
-              ?.requireApproval ===
-              true &&
-            stepRun.approvalStatus !==
-              "APPROVED"
-          );
+          if (!node) {
+            return {
+              stepRun,
+
+              node:
+                undefined,
+
+              policy:
+                undefined,
+            };
+          }
+
+          return {
+            stepRun,
+
+            node,
+
+            policy:
+              evaluateExecutionPolicy({
+                node,
+
+                tools,
+              }),
+          };
         },
+      );
+
+    /*
+     * Node 자체가 사라진 비정상 상태부터 처리한다.
+     */
+    const missingNode =
+      policyResults.find(
+        (
+          result,
+        ) =>
+          !result.node,
       );
 
     if (
-      approvalStep
+      missingNode
     ) {
-      const beforeApproval =
+      const latestRun =
         await getRun(
           runId,
         );
 
       if (
-        !beforeApproval ||
-        beforeApproval.status !==
+        !latestRun ||
+        latestRun.status !==
           "RUNNING"
       ) {
         return;
       }
 
-      const approvalNode =
-        workflow.nodes.find(
-          (node) =>
-            node.id ===
-            approvalStep.nodeId,
-        );
-
-      const latestApprovalStep =
-        beforeApproval.stepRuns.find(
+      const latestStep =
+        latestRun.stepRuns.find(
           (step) =>
             step.nodeId ===
-            approvalStep.nodeId,
+            missingNode.stepRun.nodeId,
         );
 
       if (
-        !latestApprovalStep ||
-        latestApprovalStep.status !==
+        latestStep &&
+        latestStep.status ===
           "PENDING"
       ) {
-        continue;
-      }
-
-      await editStepRun(
-        runId,
-        approvalStep.nodeId,
-        {
-          status:
-            "WAITING_APPROVAL",
-
-          approvalStatus:
-            "PENDING",
-
-          logs: [
-            ...latestApprovalStep.logs,
-
-            createLog(
-              `${
-                approvalNode?.name ??
-                approvalStep.nodeId
-              } Step이 사용자 승인을 기다리고 있습니다.`,
-            ),
-          ],
-        },
-      );
-
-      const afterApprovalStep =
-        await getRun(
+        await editStepRun(
           runId,
-        );
+          latestStep.nodeId,
+          {
+            status:
+              "FAILED",
 
-      if (
-        !afterApprovalStep ||
-        afterApprovalStep.status !==
-          "RUNNING"
-      ) {
-        return;
+            completedAt:
+              new Date().toISOString(),
+
+            logs: [
+              ...latestStep.logs,
+
+              createLog(
+                "Workflow Node를 찾지 못했습니다.",
+                "error",
+              ),
+            ],
+          },
+        );
       }
 
       await editRun(
         runId,
         {
           status:
-            "WAITING_APPROVAL",
+            "FAILED",
+
+          completedAt:
+            new Date().toISOString(),
         },
       );
 
+      return;
+    }
+
+    /*
+     * DENY는 가장 강한 정책이다.
+     *
+     * 하나라도 DENY가 있으면
+     * 어떤 실행도 시작하기 전에 차단한다.
+     */
+    const deniedResult =
+      policyResults.find(
+        (
+          result,
+        ) =>
+          result.node &&
+          result.policy
+            ?.decision ===
+            "DENY",
+      );
+
+    if (
+      deniedResult?.node &&
+      deniedResult.policy
+    ) {
+      await denyWorkflowNode(
+        runId,
+        deniedResult.node,
+        deniedResult.policy.reasons,
+      );
+
+      return;
+    }
+
+    /*
+     * REQUIRE_APPROVAL이 있는 경우
+     * 이미 APPROVED된 Step은 다시 승인받지 않는다.
+     *
+     * 따라서 기존 approveWorkflowStep()과
+     * 동일한 approvalStatus를 재사용한다.
+     */
+    const approvalResult =
+      policyResults.find(
+        (
+          result,
+        ) =>
+          result.node &&
+          result.policy
+            ?.decision ===
+            "REQUIRE_APPROVAL" &&
+          result.stepRun
+            .approvalStatus !==
+            "APPROVED",
+      );
+
+    if (
+      approvalResult?.node &&
+      approvalResult.policy
+    ) {
+      await waitForPolicyApproval(
+        runId,
+        approvalResult.node,
+        approvalResult.policy.reasons,
+        approvalResult.policy.riskLevel,
+      );
+
+      return;
+    }
+
+    /*
+     * 여기까지 통과하면:
+     *
+     * 1. ALLOW Node
+     * 2. 이전에 사용자 승인을 받은 REQUIRE_APPROVAL Node
+     *
+     * 만 남게 된다.
+     */
+    const executableNodeIds =
+      new Set(
+        policyResults
+          .filter(
+            (
+              result,
+            ) =>
+              result.node &&
+              result.policy &&
+              (
+                result.policy
+                  .decision ===
+                  "ALLOW" ||
+                (
+                  result.policy
+                    .decision ===
+                    "REQUIRE_APPROVAL" &&
+                  result.stepRun
+                    .approvalStatus ===
+                    "APPROVED"
+                )
+              ),
+          )
+          .map(
+            (
+              result,
+            ) =>
+              result.stepRun.nodeId,
+          ),
+      );
+
+    const approvedExecutableSteps =
+      executableSteps.filter(
+        (
+          stepRun,
+        ) =>
+          executableNodeIds.has(
+            stepRun.nodeId,
+          ),
+      );
+
+    if (
+      approvedExecutableSteps.length ===
+      0
+    ) {
       return;
     }
 
@@ -1008,11 +1256,8 @@ export async function continueWorkflowRun(
       return;
     }
 
-    /*
-     * 동일 DAG Level의 Node는 병렬 실행한다.
-     */
     await Promise.all(
-      executableSteps.map(
+      approvedExecutableSteps.map(
         async (
           stepRun,
         ) => {
@@ -1086,12 +1331,6 @@ export async function continueWorkflowRun(
         },
       ),
     );
-
-    /*
-     * 직접 실패/완료 판단하지 않고
-     * loop 처음으로 돌아가 Supervisor에게
-     * 최신 상태를 다시 평가받는다.
-     */
   }
 }
 
@@ -1840,11 +2079,6 @@ async function executeWorkflowNode(
         attempt <
         maximumAttempts;
 
-      /*
-       * Node 내부 Retry.
-       *
-       * Supervisor Recovery와 별개의 레이어다.
-       */
       if (
         decision.retryable &&
         retriesRemaining
@@ -1891,14 +2125,6 @@ async function executeWorkflowNode(
         continue;
       }
 
-      /*
-       * Node 자체의 Retry가 끝났다면 FAILED 처리한다.
-       *
-       * 여기서 Run 전체를 FAILED로 만들지 않는다.
-       *
-       * 다음 Orchestrator loop에서 Supervisor가
-       * 이 FAILED Step을 보고 Recovery 여부를 판단한다.
-       */
       const beforeFailure =
         await getRun(
           runId,
@@ -2059,12 +2285,6 @@ function getCompletionLogMessage(
         ): value is string =>
           typeof value ===
           "string",
-      )
-      .map(
-        (
-          targetId,
-        ) =>
-          targetId,
       );
 
   return `${node.name} Condition 평가가 완료되었습니다. 선택된 분기: ${
