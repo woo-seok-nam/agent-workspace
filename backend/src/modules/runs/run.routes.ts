@@ -3,6 +3,10 @@ import {
 } from "express";
 
 import {
+  readExecutionTraceController,
+} from "../../observability/observability.controller.js";
+
+import {
   approveStepController,
   cancelRunController,
   createRunController,
@@ -22,6 +26,11 @@ export const runRouter =
 runRouter.get(
   "/",
   listRuns,
+);
+
+runRouter.get(
+  "/:runId/trace",
+  readExecutionTraceController,
 );
 
 runRouter.get(

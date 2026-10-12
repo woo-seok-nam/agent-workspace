@@ -49,6 +49,10 @@ import {
   ApprovalModal,
 } from "../features/runs/components/ApprovalModal";
 
+import {
+  ExecutionTracePanel,
+} from "../features/runs/components/ExecutionTracePanel";
+
 import "../features/runs/WorkflowRuntime.css";
 
 type RuntimeControlAction =
@@ -90,7 +94,9 @@ export function WorkflowRuntimePage() {
     loading,
     setLoading,
   ] =
-    useState(true);
+    useState(
+      true,
+    );
 
   const [
     error,
@@ -98,19 +104,25 @@ export function WorkflowRuntimePage() {
   ] =
     useState<
       string | null
-    >(null);
+    >(
+      null,
+    );
 
   const [
     approvalOpen,
     setApprovalOpen,
   ] =
-    useState(false);
+    useState(
+      false,
+    );
 
   const [
     approvalProcessing,
     setApprovalProcessing,
   ] =
-    useState(false);
+    useState(
+      false,
+    );
 
   /*
    * STEP 44
@@ -123,7 +135,9 @@ export function WorkflowRuntimePage() {
   ] =
     useState<
       RuntimeControlAction | null
-    >(null);
+    >(
+      null,
+    );
 
   const [
     runtimeControlError,
@@ -131,105 +145,112 @@ export function WorkflowRuntimePage() {
   ] =
     useState<
       string | null
-    >(null);
+    >(
+      null,
+    );
 
-  useEffect(() => {
-    if (!runId) {
-      setError(
-        "Run ID가 없습니다.",
-      );
-
-      setLoading(
-        false,
-      );
-
-      return;
-    }
-
-    const currentRunId =
-      runId;
-
-    let cancelled =
-      false;
-
-    async function loadInitialRuntime() {
-      try {
-        setLoading(
-          true,
-        );
-
-        setError(
-          null,
-        );
-
-        const runData =
-          await fetchRun(
-            currentRunId,
-          );
-
-        const workflowData =
-          await fetchWorkflow(
-            runData.workflowId,
-          );
-
-        if (
-          cancelled
-        ) {
-          return;
-        }
-
-        setRun(
-          runData,
-        );
-
-        setWorkflow(
-          workflowData,
-        );
-
-        const firstStepRun =
-          runData.stepRuns[0];
-
-        if (
-          firstStepRun
-        ) {
-          setSelectedNodeId(
-            firstStepRun.nodeId,
-          );
-        }
-      } catch (
-        loadError
+  useEffect(
+    () => {
+      if (
+        !runId
       ) {
-        if (
-          cancelled
-        ) {
-          return;
-        }
-
         setError(
-          loadError instanceof Error
-            ? loadError.message
-            : "Runtime 정보를 불러오지 못했습니다.",
+          "Run ID가 없습니다.",
         );
-      } finally {
-        if (
-          !cancelled
-        ) {
+
+        setLoading(
+          false,
+        );
+
+        return;
+      }
+
+      const currentRunId =
+        runId;
+
+      let cancelled =
+        false;
+
+      async function loadInitialRuntime() {
+        try {
           setLoading(
-            false,
+            true,
           );
+
+          setError(
+            null,
+          );
+
+          const runData =
+            await fetchRun(
+              currentRunId,
+            );
+
+          const workflowData =
+            await fetchWorkflow(
+              runData.workflowId,
+            );
+
+          if (
+            cancelled
+          ) {
+            return;
+          }
+
+          setRun(
+            runData,
+          );
+
+          setWorkflow(
+            workflowData,
+          );
+
+          const firstStepRun =
+            runData.stepRuns[0];
+
+          if (
+            firstStepRun
+          ) {
+            setSelectedNodeId(
+              firstStepRun.nodeId,
+            );
+          }
+        } catch (
+          loadError
+        ) {
+          if (
+            cancelled
+          ) {
+            return;
+          }
+
+          setError(
+            loadError instanceof Error
+              ? loadError.message
+              : "Runtime 정보를 불러오지 못했습니다.",
+          );
+        } finally {
+          if (
+            !cancelled
+          ) {
+            setLoading(
+              false,
+            );
+          }
         }
       }
-    }
 
-    void loadInitialRuntime();
+      void loadInitialRuntime();
 
-    return () => {
-      cancelled =
-        true;
-    };
-  }, [
-    runId,
-  ]);
+      return () => {
+        cancelled =
+          true;
+      };
+    },
+    [
+      runId,
+    ],
+  );
 
   /*
    * Run 상태 polling.
@@ -241,108 +262,123 @@ export function WorkflowRuntimePage() {
    * PAUSED는 Resume될 가능성이 있으므로
    * polling을 계속 유지한다.
    */
-  useEffect(() => {
-    if (
-      !runId ||
-      !run
-    ) {
-      return;
-    }
+  useEffect(
+    () => {
+      if (
+        !runId ||
+        !run
+      ) {
+        return;
+      }
 
-    const terminalStatuses =
-      new Set([
-        "COMPLETED",
-        "FAILED",
-        "CANCELLED",
-      ]);
+      const terminalStatuses =
+        new Set([
+          "COMPLETED",
+          "FAILED",
+          "CANCELLED",
+        ]);
 
-    if (
-      terminalStatuses.has(
-        run.status,
-      )
-    ) {
-      return;
-    }
+      if (
+        terminalStatuses.has(
+          run.status,
+        )
+      ) {
+        return;
+      }
 
-    const intervalId =
-      window.setInterval(
-        () => {
-          void fetchRun(
-            runId,
-          )
-            .then(
-              (
-                updatedRun,
-              ) => {
-                setRun(
-                  updatedRun,
-                );
-              },
+      const intervalId =
+        window.setInterval(
+          () => {
+            void fetchRun(
+              runId,
             )
-            .catch(
-              () => {
-                /*
-                 * 일시적인 polling 실패는
-                 * 전체 Runtime 화면 오류로
-                 * 전환하지 않는다.
-                 */
-              },
-            );
-        },
-        1000,
-      );
+              .then(
+                (
+                  updatedRun,
+                ) => {
+                  setRun(
+                    updatedRun,
+                  );
+                },
+              )
+              .catch(
+                () => {
+                  /*
+                   * 일시적인 polling 실패는
+                   * 전체 Runtime 화면 오류로
+                   * 전환하지 않는다.
+                   */
+                },
+              );
+          },
+          1000,
+        );
 
-    return () => {
-      window.clearInterval(
-        intervalId,
-      );
-    };
-  }, [
-    runId,
-    run?.status,
-  ]);
+      return () => {
+        window.clearInterval(
+          intervalId,
+        );
+      };
+    },
+    [
+      runId,
+      run?.status,
+    ],
+  );
 
   const selectedNode =
-    useMemo(() => {
-      if (
-        !workflow ||
-        !selectedNodeId
-      ) {
-        return undefined;
-      }
+    useMemo(
+      () => {
+        if (
+          !workflow ||
+          !selectedNodeId
+        ) {
+          return undefined;
+        }
 
-      return workflow.nodes.find(
-        (node) =>
-          node.id ===
-          selectedNodeId,
-      );
-    }, [
-      workflow,
-      selectedNodeId,
-    ]);
+        return workflow.nodes.find(
+          (
+            node,
+          ) =>
+            node.id ===
+            selectedNodeId,
+        );
+      },
+      [
+        workflow,
+        selectedNodeId,
+      ],
+    );
 
   const selectedStepRun =
-    useMemo(() => {
-      if (
-        !run ||
-        !selectedNodeId
-      ) {
-        return undefined;
-      }
+    useMemo(
+      () => {
+        if (
+          !run ||
+          !selectedNodeId
+        ) {
+          return undefined;
+        }
 
-      return run.stepRuns.find(
-        (stepRun) =>
-          stepRun.nodeId ===
-          selectedNodeId,
-      );
-    }, [
-      run,
-      selectedNodeId,
-    ]);
+        return run.stepRuns.find(
+          (
+            stepRun,
+          ) =>
+            stepRun.nodeId ===
+            selectedNodeId,
+        );
+      },
+      [
+        run,
+        selectedNodeId,
+      ],
+    );
 
   const completedSteps =
     run?.stepRuns.filter(
-      (stepRun) =>
+      (
+        stepRun,
+      ) =>
         stepRun.status ===
         "COMPLETED",
     ).length ??
@@ -353,36 +389,46 @@ export function WorkflowRuntimePage() {
     0;
 
   const approvalStep =
-    useMemo(() => {
-      if (!run) {
-        return undefined;
+    useMemo(
+      () => {
+        if (
+          !run
+        ) {
+          return undefined;
+        }
+
+        return run.stepRuns.find(
+          (
+            stepRun,
+          ) =>
+            stepRun.status ===
+            "WAITING_APPROVAL",
+        );
+      },
+      [
+        run,
+      ],
+    );
+
+  useEffect(
+    () => {
+      if (
+        approvalProcessing
+      ) {
+        return;
       }
 
-      return run.stepRuns.find(
-        (stepRun) =>
-          stepRun.status ===
-          "WAITING_APPROVAL",
+      setApprovalOpen(
+        Boolean(
+          approvalStep,
+        ),
       );
-    }, [
-      run,
-    ]);
-
-  useEffect(() => {
-    if (
-      approvalProcessing
-    ) {
-      return;
-    }
-
-    setApprovalOpen(
-      Boolean(
-        approvalStep,
-      ),
-    );
-  }, [
-    approvalStep,
-    approvalProcessing,
-  ]);
+    },
+    [
+      approvalStep,
+      approvalProcessing,
+    ],
+  );
 
   /*
    * STEP 44
@@ -730,7 +776,9 @@ export function WorkflowRuntimePage() {
   const approvalNode =
     approvalStep
       ? workflow.nodes.find(
-          (node) =>
+          (
+            node,
+          ) =>
             node.id ===
             approvalStep.nodeId,
         )
@@ -912,6 +960,18 @@ export function WorkflowRuntimePage() {
           }
         />
       </div>
+
+      {/*
+       * STEP 50
+       *
+       * Backend Observability API에서 계산한
+       * Execution Trace를 별도 패널로 표시한다.
+       */}
+      <ExecutionTracePanel
+        runId={
+          run.id
+        }
+      />
 
       <ApprovalModal
         open={

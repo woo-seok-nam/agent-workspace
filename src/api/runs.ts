@@ -36,6 +36,163 @@ export interface DeleteRunResult {
   failedArtifactFiles: string[];
 }
 
+export type TracePolicyDecision =
+  | "ALLOW"
+  | "REQUIRE_APPROVAL"
+  | "DENY"
+  | "UNKNOWN";
+
+export type TraceRiskLevel =
+  | "LOW"
+  | "MEDIUM"
+  | "HIGH"
+  | "CRITICAL"
+  | "UNKNOWN";
+
+export interface ExecutionTraceTool {
+  id: string;
+
+  name: string;
+
+  type: string;
+
+  enabled: boolean;
+}
+
+export interface ExecutionTraceAgent {
+  id: string;
+
+  name: string;
+
+  modelId: string;
+}
+
+export interface ExecutionTraceLog {
+  id: string;
+
+  timestamp: string;
+
+  level:
+    | "info"
+    | "warning"
+    | "error";
+
+  message: string;
+}
+
+export interface ExecutionTraceStep {
+  stepRunId: string;
+
+  nodeId: string;
+
+  nodeName: string;
+
+  nodeType:
+    | "input"
+    | "agent"
+    | "tool"
+    | "condition"
+    | "approval"
+    | "output";
+
+  status:
+    | "PENDING"
+    | "QUEUED"
+    | "RUNNING"
+    | "WAITING_APPROVAL"
+    | "COMPLETED"
+    | "FAILED"
+    | "SKIPPED"
+    | "CANCELLED";
+
+  approvalStatus?:
+    | "PENDING"
+    | "APPROVED"
+    | "REJECTED";
+
+  startedAt?: string;
+
+  completedAt?: string;
+
+  durationMs?: number;
+
+  agent?: ExecutionTraceAgent;
+
+  tools: ExecutionTraceTool[];
+
+  retryCount: number;
+
+  recoveryCount: number;
+
+  policyDecision:
+    TracePolicyDecision;
+
+  riskLevel:
+    TraceRiskLevel;
+
+  tokenUsage: number;
+
+  cost: number;
+
+  logs: ExecutionTraceLog[];
+}
+
+export interface ExecutionTraceSummary {
+  totalSteps: number;
+
+  completedSteps: number;
+
+  failedSteps: number;
+
+  skippedSteps: number;
+
+  waitingApprovalSteps: number;
+
+  retryCount: number;
+
+  recoveryCount: number;
+
+  tokenUsage: number;
+
+  cost: number;
+
+  durationMs?: number;
+}
+
+export interface WorkflowExecutionTrace {
+  runId: string;
+
+  workflowId: string;
+
+  runName: string;
+
+  workflowName: string;
+
+  prompt?: string;
+
+  status:
+    | "IDLE"
+    | "QUEUED"
+    | "RUNNING"
+    | "PAUSED"
+    | "WAITING_APPROVAL"
+    | "COMPLETED"
+    | "FAILED"
+    | "CANCELLED";
+
+  startedAt?: string;
+
+  completedAt?: string;
+
+  durationMs?: number;
+
+  summary:
+    ExecutionTraceSummary;
+
+  steps:
+    ExecutionTraceStep[];
+}
+
 async function getApiErrorMessage(
   response: Response,
   fallbackMessage: string,
@@ -98,6 +255,31 @@ export async function fetchRun(
   const result =
     (await response.json()) as ApiResponse<
       WorkflowRun
+    >;
+
+  return result.data;
+}
+
+export async function fetchRunTrace(
+  runId: string,
+): Promise<WorkflowExecutionTrace> {
+  const response =
+    await fetch(
+      `${API_BASE_URL}/api/runs/${runId}/trace`,
+    );
+
+  if (!response.ok) {
+    throw new Error(
+      await getApiErrorMessage(
+        response,
+        "Execution Trace를 불러오지 못했습니다.",
+      ),
+    );
+  }
+
+  const result =
+    (await response.json()) as ApiResponse<
+      WorkflowExecutionTrace
     >;
 
   return result.data;
