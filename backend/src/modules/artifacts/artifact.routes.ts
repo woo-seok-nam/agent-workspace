@@ -5,6 +5,7 @@ import {
 import {
   downloadArtifact,
   listRunArtifacts,
+  readArtifactContent,
 } from "./artifact.controller.js";
 
 export const artifactRouter =
@@ -13,6 +14,11 @@ export const artifactRouter =
 artifactRouter.get(
   "/runs/:runId/artifacts",
   listRunArtifacts,
+);
+
+artifactRouter.get(
+  "/artifacts/:artifactId/content",
+  readArtifactContent,
 );
 
 artifactRouter.get(
