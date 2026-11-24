@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "id": "plan-write-review",
+  "name": "계획 → 작성 → 검토",
+  "steps": [
+    { "id": "plan", "agent": "planner", "provider": "openai" },
+    { "id": "draft", "agent": "writer", "provider": "openai" },
+    { "id": "review", "agent": "reviewer", "provider": "openai" }
+  ]
+}

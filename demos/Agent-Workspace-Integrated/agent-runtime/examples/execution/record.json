@@ -1,0 +1,448 @@
+{
+  "outcome": "draft",
+  "request": {
+    "request": "첨부한 기획안 A·B·C를 개발 난이도, 사용자 가치, 차별성으로 비교하고 캡스톤 주제를 추천하는 보고서 작성 절차를 만들어줘. 외부 검색 없이 첨부 자료만 사용해.",
+    "confirmed_requirements": [
+      "개발 난이도·사용자 가치·차별성으로 비교",
+      "외부 검색 없이 첨부 자료만 사용",
+      "비교표와 추천 근거를 포함한 보고서"
+    ],
+    "materials": [
+      {
+        "id": "a",
+        "name": "기획안 A",
+        "availability": "not_provided",
+        "description": "실행 전에 사용자가 제공할 기획안 파일. 현재 파일 내용을 읽지 않았음."
+      },
+      {
+        "id": "b",
+        "name": "기획안 B",
+        "availability": "not_provided",
+        "description": "실행 전에 사용자가 제공할 기획안 파일. 현재 파일 내용을 읽지 않았음."
+      },
+      {
+        "id": "c",
+        "name": "기획안 C",
+        "availability": "not_provided",
+        "description": "실행 전에 사용자가 제공할 기획안 파일. 현재 파일 내용을 읽지 않았음."
+      }
+    ],
+    "tools": [],
+    "guidance": [],
+    "policies": {
+      "allow_external_search": false
+    },
+    "clarifications": []
+  },
+  "response": {
+    "schema_version": "0.1",
+    "status": "draft",
+    "intent": {
+      "goal": "기획안 세 개를 비교하여 캡스톤에 적합한 안을 추천하는 보고서 작성 절차 설계",
+      "requirements": [
+        "개발 난이도·사용자 가치·차별성으로 비교",
+        "외부 검색 없이 첨부 자료만 사용",
+        "비교표와 추천 근거를 포함한 보고서"
+      ],
+      "assumptions": [
+        "별도 가중치가 없어 세 비교 기준을 동등하게 고려한다.",
+        "실행 전에 원자료의 텍스트가 제공된다."
+      ],
+      "deliverable": "비교표·추천 근거·한계를 포함한 보고서"
+    },
+    "questions": [],
+    "workflow": {
+      "name": "캡스톤 기획안 비교 및 추천 보고서",
+      "nodes": [
+        {
+          "id": "input",
+          "type": "input",
+          "name": "기획안과 조건 입력",
+          "input_ports": [],
+          "output_ports": [
+            {
+              "name": "proposals",
+              "description": "실행 전 기획안 3개에서 확보할 텍스트. 자료 확보 전에는 실행 불가.",
+              "type": "text",
+              "required": true,
+              "fields": []
+            },
+            {
+              "name": "requirements",
+              "description": "사용자 확정 조건",
+              "type": "text",
+              "required": true,
+              "fields": []
+            }
+          ],
+          "task": null
+        },
+        {
+          "id": "summarize",
+          "type": "work_step",
+          "name": "기획안 정리",
+          "input_ports": [
+            {
+              "name": "data",
+              "description": "선행 단계 결과",
+              "type": "text",
+              "required": true,
+              "fields": []
+            },
+            {
+              "name": "requirements",
+              "description": "사용자 조건",
+              "type": "text",
+              "required": true,
+              "fields": []
+            }
+          ],
+          "output_ports": [
+            {
+              "name": "result",
+              "description": "기획안 정리의 예상 결과",
+              "type": "text",
+              "required": true,
+              "fields": []
+            }
+          ],
+          "task": {
+            "kind": "work",
+            "purpose": "동일 항목으로 기획안을 파악한다.",
+            "instructions": "A·B·C의 목적·대상 사용자·핵심 기능·기술 요구를 추출하고 원문 위치와 누락 정보를 기록한다. 첨부 자료만 사용한다.",
+            "completion_criteria": [
+              "세 안이 동일 항목으로 정리되고 각 요약에 원문 위치 또는 미확인 표시가 있다."
+            ],
+            "rationale": {
+              "kind": "model_proposal",
+              "reference_id": null,
+              "location": null,
+              "reason": "동일 항목으로 기획안을 파악한다.에 필요한 절차로 제안한다."
+            },
+            "required_tools": [],
+            "missing_capabilities": [],
+            "requirement_refs": [
+              "개발 난이도·사용자 가치·차별성으로 비교",
+              "외부 검색 없이 첨부 자료만 사용",
+              "비교표와 추천 근거를 포함한 보고서"
+            ]
+          }
+        },
+        {
+          "id": "compare",
+          "type": "work_step",
+          "name": "기준별 비교",
+          "input_ports": [
+            {
+              "name": "data",
+              "description": "선행 단계 결과",
+              "type": "text",
+              "required": true,
+              "fields": []
+            },
+            {
+              "name": "requirements",
+              "description": "사용자 조건",
+              "type": "text",
+              "required": true,
+              "fields": []
+            }
+          ],
+          "output_ports": [
+            {
+              "name": "result",
+              "description": "기준별 비교의 예상 결과",
+              "type": "text",
+              "required": true,
+              "fields": []
+            }
+          ],
+          "task": {
+            "kind": "work",
+            "purpose": "세 기준으로 기획안을 비교한다.",
+            "instructions": "개발 난이도·사용자 가치·차별성 기준으로 세 안의 장단점을 비교표로 구성한다. 자료에 없는 값은 추측하지 않는다.",
+            "completion_criteria": [
+              "모든 안에 같은 기준이 적용되고 판단마다 근거가 연결된다."
+            ],
+            "rationale": {
+              "kind": "model_proposal",
+              "reference_id": null,
+              "location": null,
+              "reason": "세 기준으로 기획안을 비교한다.에 필요한 절차로 제안한다."
+            },
+            "required_tools": [],
+            "missing_capabilities": [],
+            "requirement_refs": [
+              "개발 난이도·사용자 가치·차별성으로 비교",
+              "외부 검색 없이 첨부 자료만 사용",
+              "비교표와 추천 근거를 포함한 보고서"
+            ]
+          }
+        },
+        {
+          "id": "recommend",
+          "type": "work_step",
+          "name": "추천안 도출",
+          "input_ports": [
+            {
+              "name": "data",
+              "description": "선행 단계 결과",
+              "type": "text",
+              "required": true,
+              "fields": []
+            },
+            {
+              "name": "requirements",
+              "description": "사용자 조건",
+              "type": "text",
+              "required": true,
+              "fields": []
+            }
+          ],
+          "output_ports": [
+            {
+              "name": "result",
+              "description": "추천안 도출의 예상 결과",
+              "type": "text",
+              "required": true,
+              "fields": []
+            }
+          ],
+          "task": {
+            "kind": "work",
+            "purpose": "비교 결과에서 추천 근거를 도출한다.",
+            "instructions": "비교표에 근거하여 캡스톤 적합성을 판단하고 추천 이유·대안·한계를 정리한다. 아직 자료가 없으면 추천 결론을 만들지 않는다.",
+            "completion_criteria": [
+              "추천 이유가 비교 결과와 일치하고 불확실성과 부족한 정보가 드러난다."
+            ],
+            "rationale": {
+              "kind": "model_proposal",
+              "reference_id": null,
+              "location": null,
+              "reason": "비교 결과에서 추천 근거를 도출한다.에 필요한 절차로 제안한다."
+            },
+            "required_tools": [],
+            "missing_capabilities": [],
+            "requirement_refs": [
+              "개발 난이도·사용자 가치·차별성으로 비교",
+              "외부 검색 없이 첨부 자료만 사용",
+              "비교표와 추천 근거를 포함한 보고서"
+            ]
+          }
+        },
+        {
+          "id": "write",
+          "type": "work_step",
+          "name": "보고서 작성",
+          "input_ports": [
+            {
+              "name": "data",
+              "description": "선행 단계 결과",
+              "type": "text",
+              "required": true,
+              "fields": []
+            },
+            {
+              "name": "requirements",
+              "description": "사용자 조건",
+              "type": "text",
+              "required": true,
+              "fields": []
+            },
+            {
+              "name": "comparison",
+              "description": "비교표와 근거",
+              "type": "text",
+              "required": true,
+              "fields": []
+            }
+          ],
+          "output_ports": [
+            {
+              "name": "result",
+              "description": "보고서 작성의 예상 결과",
+              "type": "text",
+              "required": true,
+              "fields": []
+            }
+          ],
+          "task": {
+            "kind": "work",
+            "purpose": "비교표와 추천 근거를 문서로 구성한다.",
+            "instructions": "비교표·추천안·선택 이유·근거·한계를 포함하는 보고서 초안을 작성한다.",
+            "completion_criteria": [
+              "사용자가 요구한 비교 기준과 추천 이유가 모두 포함되어 있다."
+            ],
+            "rationale": {
+              "kind": "model_proposal",
+              "reference_id": null,
+              "location": null,
+              "reason": "비교표와 추천 근거를 문서로 구성한다.에 필요한 절차로 제안한다."
+            },
+            "required_tools": [],
+            "missing_capabilities": [],
+            "requirement_refs": [
+              "개발 난이도·사용자 가치·차별성으로 비교",
+              "외부 검색 없이 첨부 자료만 사용",
+              "비교표와 추천 근거를 포함한 보고서"
+            ]
+          }
+        },
+        {
+          "id": "review",
+          "type": "work_step",
+          "name": "최종 검토",
+          "input_ports": [
+            {
+              "name": "data",
+              "description": "선행 단계 결과",
+              "type": "text",
+              "required": true,
+              "fields": []
+            },
+            {
+              "name": "requirements",
+              "description": "사용자 조건",
+              "type": "text",
+              "required": true,
+              "fields": []
+            },
+            {
+              "name": "source",
+              "description": "원문 대조용 입력 자료",
+              "type": "text",
+              "required": true,
+              "fields": []
+            }
+          ],
+          "output_ports": [
+            {
+              "name": "result",
+              "description": "최종 검토의 예상 결과",
+              "type": "text",
+              "required": true,
+              "fields": []
+            }
+          ],
+          "task": {
+            "kind": "final_review",
+            "purpose": "요구사항·근거·논리·완성도를 확인한다.",
+            "instructions": "초안과 원자료를 대조하고 외부 검색 금지 및 사용자 조건 충족 여부를 검사한다. 핵심 미해결 문제가 있으면 완료로 판단하지 않고 수정 필요 사항을 기록한다.",
+            "completion_criteria": [
+              "요구사항별 검토 결과와 근거가 있으며 미해결 문제와 검토된 산출물이 명확히 구분된다."
+            ],
+            "rationale": {
+              "kind": "model_proposal",
+              "reference_id": null,
+              "location": null,
+              "reason": "요구사항·근거·논리·완성도를 확인한다.에 필요한 절차로 제안한다."
+            },
+            "required_tools": [],
+            "missing_capabilities": [],
+            "requirement_refs": [
+              "개발 난이도·사용자 가치·차별성으로 비교",
+              "외부 검색 없이 첨부 자료만 사용",
+              "비교표와 추천 근거를 포함한 보고서"
+            ]
+          }
+        },
+        {
+          "id": "output",
+          "type": "output",
+          "name": "검토된 산출물 전달",
+          "input_ports": [
+            {
+              "name": "report",
+              "description": "검토된 보고서 및 미해결 사항",
+              "type": "text",
+              "required": true,
+              "fields": []
+            }
+          ],
+          "output_ports": [],
+          "task": null
+        }
+      ],
+      "edges": [
+        {
+          "source_node": "input",
+          "source_port": "proposals",
+          "target_node": "summarize",
+          "target_port": "data"
+        },
+        {
+          "source_node": "input",
+          "source_port": "requirements",
+          "target_node": "summarize",
+          "target_port": "requirements"
+        },
+        {
+          "source_node": "summarize",
+          "source_port": "result",
+          "target_node": "compare",
+          "target_port": "data"
+        },
+        {
+          "source_node": "input",
+          "source_port": "requirements",
+          "target_node": "compare",
+          "target_port": "requirements"
+        },
+        {
+          "source_node": "compare",
+          "source_port": "result",
+          "target_node": "recommend",
+          "target_port": "data"
+        },
+        {
+          "source_node": "input",
+          "source_port": "requirements",
+          "target_node": "recommend",
+          "target_port": "requirements"
+        },
+        {
+          "source_node": "recommend",
+          "source_port": "result",
+          "target_node": "write",
+          "target_port": "data"
+        },
+        {
+          "source_node": "input",
+          "source_port": "requirements",
+          "target_node": "write",
+          "target_port": "requirements"
+        },
+        {
+          "source_node": "write",
+          "source_port": "result",
+          "target_node": "review",
+          "target_port": "data"
+        },
+        {
+          "source_node": "input",
+          "source_port": "requirements",
+          "target_node": "review",
+          "target_port": "requirements"
+        },
+        {
+          "source_node": "compare",
+          "source_port": "result",
+          "target_node": "write",
+          "target_port": "comparison"
+        },
+        {
+          "source_node": "input",
+          "source_port": "proposals",
+          "target_node": "review",
+          "target_port": "source"
+        },
+        {
+          "source_node": "review",
+          "source_port": "result",
+          "target_node": "output",
+          "target_port": "report"
+        }
+      ]
+    }
+  }
+}

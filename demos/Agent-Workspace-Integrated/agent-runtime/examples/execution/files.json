@@ -1,0 +1,4 @@
+{
+  "proposals": ["materials/A.md", "materials/B.md", "materials/C.md"],
+  "requirements": ["materials/requirements.txt"]
+}

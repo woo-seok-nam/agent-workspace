@@ -1,0 +1,96 @@
+[
+  {
+    "id": "clear",
+    "input": {
+      "request": "기획안 A·B·C를 개발 난이도·사용자 가치·차별성으로 비교하고 추천 보고서를 작성하는 절차를 만들어줘.",
+      "confirmed_requirements": [
+        "개발 난이도·사용자 가치·차별성으로 비교"
+      ]
+    },
+    "expected_status": "draft",
+    "review": [
+      "같은 기준으로 비교",
+      "추천 근거 작성",
+      "최종 검토"
+    ],
+    "prerequisite_checks": {
+      "required_any": [
+        "input"
+      ],
+      "forbidden": [
+        "human",
+        "tool"
+      ],
+      "allow_unclassified": false
+    }
+  },
+  {
+    "id": "ambiguous",
+    "input": {
+      "request": "캡디 관련해서 뭐 좀 만들어줘."
+    },
+    "expected_status": "needs_clarification",
+    "review": [
+      "산출물 또는 목적 질문",
+      "workflow=null",
+      "질문 최대 3개"
+    ]
+  },
+  {
+    "id": "conflict",
+    "input": {
+      "request": "첨부 자료만 사용하고, 첨부 자료에 없는 오늘의 최신 시장 가격을 외부에서 확인하는 절차를 만들어줘.",
+      "confirmed_requirements": [
+        "첨부 자료만 사용",
+        "자료에 없는 오늘의 최신 시장 가격을 외부에서 확인"
+      ],
+      "policies": {
+        "allow_external_search": false
+      }
+    },
+    "expected_status": "needs_clarification",
+    "review": [
+      "충돌하는 자료 사용 범위를 질문",
+      "조건을 임의 삭제하지 않음"
+    ]
+  },
+  {
+    "id": "missing_material",
+    "input": {
+      "request": "아직 모으지 않은 인터뷰 자료를 분석해 사용자 요구사항 보고서를 만드는 절차를 만들어줘."
+    },
+    "expected_status": "draft",
+    "review": [
+      "자료 확보가 선행 조건 또는 단계",
+      "인터뷰를 이미 분석했다고 주장하지 않음"
+    ],
+    "prerequisite_checks": {
+      "required_any": [
+        "input",
+        "human"
+      ],
+      "forbidden": [],
+      "allow_unclassified": false
+    }
+  },
+  {
+    "id": "missing_tool",
+    "input": {
+      "request": "제공할 메모를 보고서로 정리하고 PDF 파일로 저장하는 절차를 만들어줘.",
+      "tools": []
+    },
+    "expected_status": "draft",
+    "review": [
+      "미등록 도구를 지정하지 않음",
+      "PDF 저장 기능 제약을 명시",
+      "파일이 생성됐다고 주장하지 않음"
+    ],
+    "prerequisite_checks": {
+      "required_any": [
+        "tool"
+      ],
+      "forbidden": [],
+      "allow_unclassified": false
+    }
+  }
+]
