@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "plan-write-timeout-review",
+  "name": "단계 제한 시간과 재개 예시",
+  "steps": [
+    {
+      "id": "plan",
+      "agent": "planner",
+      "provider": "openai"
+    },
+    {
+      "id": "draft",
+      "agent": "writer",
+      "provider": "openai",
+      "timeoutMs": 1000
+    },
+    {
+      "id": "review",
+      "agent": "reviewer",
+      "provider": "openai",
+      "tools": {
+        "maxModelCalls": 4,
+        "maxToolCalls": 8
+      }
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "plan-write-tool-review",
+  "name": "계획 → 작성 → 도구 검토",
+  "steps": [
+    {
+      "id": "plan",
+      "agent": "planner",
+      "provider": "openai"
+    },
+    {
+      "id": "draft",
+      "agent": "writer",
+      "provider": "openai"
+    },
+    {
+      "id": "review",
+      "agent": "reviewer",
+      "provider": "openai",
+      "tools": {
+        "maxModelCalls": 4,
+        "maxToolCalls": 8
+      }
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "name": "agent-runtime",
+  "version": "0.32.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "chat": "node --env-file-if-exists=.env --import tsx src/cli.ts",
+    "check": "tsc --noEmit",
+    "test": "node --import tsx --test --test-concurrency=1 tests/providers.test.ts tests/agents.test.ts tests/tools.test.ts tests/workflow.test.ts tests/persistence.test.ts tests/rerun.test.ts tests/artifacts.test.ts tests/workflow-tools.test.ts tests/ipc.test.ts tests/ipc-recovery.test.ts tests/approval.test.ts tests/cancellation.test.ts tests/timeout.test.ts tests/generator.test.ts tests/factchat.test.ts tests/execution.test.ts tests/execution-files.test.ts tests/execution-schema.test.ts tests/execution-store.test.ts tests/execution-resume.test.ts tests/execution-revise.test.ts tests/evaluation.test.ts tests/execution-readiness.test.ts tests/evaluation-compare.test.ts tests/execution-prepare.test.ts tests/generator-preview.test.ts tests/generator-revise.test.ts tests/generator-revision-report.test.ts tests/task.test.ts tests/desktop.test.ts",
+    "agent": "node --env-file-if-exists=.env --import tsx src/agent-cli.ts",
+    "doctor": "node --env-file-if-exists=.env --import tsx src/doctor.ts",
+    "tools": "node --env-file-if-exists=.env --import tsx src/tool-cli.ts",
+    "demo": "node --import tsx src/demo.ts",
+    "workflow": "node --env-file-if-exists=.env --import tsx src/workflow/cli.ts",
+    "workflow:demo": "node --import tsx src/workflow/cli.ts --demo",
+    "runs": "node --import tsx src/workflow/cli.ts --list",
+    "resume:demo": "node --import tsx src/workflow/cli.ts --demo --resume",
+    "resume": "node --env-file-if-exists=.env --import tsx src/workflow/cli.ts --resume",
+    "rerun:demo": "node --import tsx src/workflow/cli.ts --demo --rerun",
+    "rerun": "node --env-file-if-exists=.env --import tsx src/workflow/cli.ts --rerun",
+    "export": "node --import tsx src/workflow/export-cli.ts",
+    "workflow:tools:demo": "node --import tsx src/workflow/cli.ts --demo --with-tools",
+    "workflow:tools": "node --env-file-if-exists=.env --import tsx src/workflow/cli.ts --with-tools",
+    "sidecar": "node --env-file-if-exists=.env --import tsx src/ipc/sidecar.ts",
+    "ipc:demo": "node --import tsx src/ipc/demo.ts",
+    "workflow:review:demo": "node --import tsx src/workflow/cli.ts --demo --with-review",
+    "workflow:review": "node --env-file-if-exists=.env --import tsx src/workflow/cli.ts --with-review",
+    "approve:demo": "node --import tsx src/workflow/cli.ts --demo --approve",
+    "approve:live": "node --env-file-if-exists=.env --import tsx src/workflow/cli.ts --approve",
+    "cancel:demo": "node --import tsx src/workflow/cancel-demo.ts",
+    "timeout:demo": "node --import tsx src/workflow/timeout-demo.ts",
+    "generate": "node --env-file-if-exists=.env --import tsx src/generator/cli.ts",
+    "generate:demo": "node --import tsx src/generator/cli.ts --demo",
+    "generate:assets": "node --import tsx scripts/generator-assets.ts",
+    "test:generator": "node --import tsx --test tests/generator.test.ts tests/generator-preview.test.ts tests/generator-revise.test.ts tests/generator-revision-report.test.ts",
+    "models": "node --env-file-if-exists=.env --import tsx src/models-cli.ts",
+    "test:factchat": "node --import tsx --test tests/factchat.test.ts",
+    "execute": "node --env-file-if-exists=.env --import tsx src/execution/cli.ts",
+    "test:execution": "node --import tsx --test tests/execution.test.ts tests/execution-files.test.ts tests/execution-schema.test.ts tests/execution-store.test.ts tests/execution-resume.test.ts tests/execution-revise.test.ts tests/execution-readiness.test.ts tests/execution-prepare.test.ts",
+    "evaluate:generation": "node --env-file-if-exists=.env --import tsx src/evaluation/cli.ts",
+    "test:evaluation": "node --import tsx --test tests/evaluation.test.ts tests/evaluation-compare.test.ts",
+    "compare:generation": "node --env-file-if-exists=.env --import tsx src/evaluation/compare-cli.ts",
+    "prepare:execution": "node --env-file-if-exists=.env --import tsx src/execution/prepare-cli.ts",
+    "preview:generation": "node --env-file-if-exists=.env --import tsx src/generator/preview-cli.ts",
+    "task": "node --env-file-if-exists=.env --import tsx src/task/cli.ts",
+    "test:task": "node --import tsx --test tests/task.test.ts",
+    "desktop": "node --env-file-if-exists=.env --import tsx src/task/desktop-cli.ts"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3"
+  },
+  "dependencies": {
+    "@langchain/langgraph": "1.7.4",
+    "zod": "4.6.7"
+  }
+}

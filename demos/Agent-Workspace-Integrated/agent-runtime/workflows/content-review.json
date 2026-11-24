@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "plan-write-human-review",
+  "name": "초안 확인 후 승인",
+  "steps": [
+    {
+      "id": "plan",
+      "agent": "planner",
+      "provider": "openai"
+    },
+    {
+      "id": "draft",
+      "agent": "writer",
+      "provider": "openai"
+    },
+    {
+      "id": "review",
+      "agent": "reviewer",
+      "provider": "openai",
+      "tools": {
+        "maxModelCalls": 4,
+        "maxToolCalls": 8
+      },
+      "reviewBefore": true
+    }
+  ]
+}
